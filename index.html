@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glass To-Do</title>
+<title>ToDoLo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="theme-color" content="#1f8f7a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -74,12 +81,22 @@
   .brand {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 11px;
     font-size: 1.3rem;
     font-weight: 600;
     margin-bottom: 22px;
     padding-left: 6px;
     text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .brand-icon {
+    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25);
+    color: #fff;
   }
   .lists {
     list-style: none;
@@ -542,7 +559,9 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
-        <svg class="ico" viewBox="0 0 24 24" width="22" height="22"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
+        <span class="brand-icon">
+          <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
+        </span>
         ToDoLo
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
@@ -754,6 +773,8 @@
             <li>Date-based group separators (e.g. "June 2026") when sorting by due date, priority, etc.</li>
             <li>Smart sidebar views: All, Today, Tomorrow, and Next 7 Days</li>
             <li>Smart views moved into their own card with distinct colored icons and a "Lists" heading above your lists</li>
+            <li>App icon and PWA support: installable on Android with a manifest and offline-capable service worker</li>
+            <li>Brand icon redesigned as a frosted-glass chip to match the app's overall glassmorphism theme</li>
           </ul>
         </div>
       </div>
@@ -1444,6 +1465,12 @@
   };
 
   renderAll();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
 </script>
 </body>
 </html>
