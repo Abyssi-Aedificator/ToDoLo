@@ -835,7 +835,16 @@
       <h3 class="settings-subhead">Changelog</h3>
       <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">Alpha 0.3.0 <span class="current-badge">Current</span></div>
+          <div class="changelog-version">Alpha 0.4.0 <span class="current-badge">Current</span></div>
+          <ul>
+            <li>Completed sub-tasks now move to the bottom of the checklist</li>
+            <li>Completing every sub-task automatically completes the main task</li>
+            <li>When that auto-completes a recurring task, its sub-tasks reset and return to their original pre-completion order</li>
+            <li>Added a "No Date" section to the sidebar, showing all tasks without a due date</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">Alpha 0.3.0</div>
           <ul>
             <li>The "Today" smart view now also includes overdue tasks</li>
             <li>Added an "Overdue" section to the sidebar, showing all tasks past their due date</li>
@@ -914,7 +923,8 @@
     sunrise: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 17V9M8.5 12.5 12 9l3.5 3.5"/><path d="M3 20h18M5 17a7 7 0 0 1 14 0"/></svg>',
     calGrid: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/><circle cx="7.5" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/><circle cx="7.5" cy="18" r="1"/><circle cx="12" cy="18" r="1"/></svg>',
     sortAz: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M3 6h7M3 12h5M3 18h3"/><path d="M14 6l4-4 4 4M18 2v16"/></svg>',
-    alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>'
+    alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
+    calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
 
   const $ = id => document.getElementById(id);
@@ -980,14 +990,16 @@
     { id: 'overdue', name: 'Overdue', icon: 'alertTriangle', color: '#ff4d4d' },
     { id: 'today', name: 'Today', icon: 'sun', color: '#ff6b6b' },
     { id: 'tomorrow', name: 'Tomorrow', icon: 'sunrise', color: '#ffb454' },
-    { id: 'week', name: 'Next 7 Days', icon: 'calGrid', color: '#5b9bff' }
+    { id: 'week', name: 'Next 7 Days', icon: 'calGrid', color: '#5b9bff' },
+    { id: 'nodate', name: 'No Date', icon: 'calOff', color: '#a78bfa' }
   ];
-  const AGGREGATE_VIEWS = ['all', 'overdue', 'today', 'tomorrow', 'week'];
+  const AGGREGATE_VIEWS = ['all', 'overdue', 'today', 'tomorrow', 'week', 'nodate'];
   const isAllView = () => AGGREGATE_VIEWS.includes(state.activeId);
   const activeList = () => state.lists.find(l => l.id === state.activeId) || state.lists[0];
   const ownerOf = task => state.lists.find(l => l.todos.includes(task));
 
   function matchesSmartView(t) {
+    if (state.activeId === 'nodate') return !t.due;
     if (state.activeId !== 'overdue' && state.activeId !== 'today' && state.activeId !== 'tomorrow' && state.activeId !== 'week') return true;
     if (!t.due) return false;
     const days = daysFromToday(t.due);
@@ -1004,6 +1016,7 @@
     if (id === 'today') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) <= 0).length;
     if (id === 'tomorrow') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 1).length;
     if (id === 'week') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) >= 0 && daysFromToday(t.due) <= 7).length;
+    if (id === 'nodate') return allTodos.filter(t => !t.done && !t.due).length;
     return null;
   }
 
@@ -1155,7 +1168,7 @@
   }
 
   // ---- tasks ----
-  const SMART_TITLES = { all: 'All Tasks', overdue: 'Overdue', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days' };
+  const SMART_TITLES = { all: 'All Tasks', overdue: 'Overdue', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days', nodate: 'No Date' };
 
   function getShownTasks() {
     const all = isAllView();
@@ -1390,10 +1403,12 @@
       // recurring task: roll the due date forward and reset sub-tasks instead of completing
       t.due = nextDate(t.due, t.recur);
       t.subtasks.forEach(s => s.done = false);
+      restoreSubtaskOrder(t);
     } else {
       t.done = !t.done;
     }
     save(); renderAll();
+    if (editingTask && editingTask.id === t.id) renderSubs();
     if (t.done && editingTask && editingTask.id === t.id) closeTaskPanel();
   }
 
@@ -1404,6 +1419,22 @@
     else if (recur === 'monthly') dt.setMonth(dt.getMonth() + 1);
     const p = n => String(n).padStart(2, '0');
     return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`;
+  }
+
+  // remembers sub-task order from before any of them were completed, so a
+  // recurring task's checklist comes back in its original order on reset
+  function syncSubtaskOrder(t) {
+    if (t.subtasks.length && t.subtasks.every(s => !s.done)) {
+      t.subtaskOrigOrder = t.subtasks.map(s => s.id);
+    }
+  }
+  function restoreSubtaskOrder(t) {
+    if (!t.subtaskOrigOrder || !t.subtaskOrigOrder.length) return;
+    const map = new Map(t.subtasks.map(s => [s.id, s]));
+    const restored = t.subtaskOrigOrder.map(id => map.get(id)).filter(Boolean);
+    const knownIds = new Set(restored.map(s => s.id));
+    const extra = t.subtasks.filter(s => !knownIds.has(s.id));
+    t.subtasks = restored.concat(extra);
   }
 
   function addTask() {
@@ -1472,6 +1503,7 @@
   function renderSubs() {
     tSubs.innerHTML = '';
     if (!editingTask) return;
+    syncSubtaskOrder(editingTask);
     editingTask.subtasks.forEach((s, i) => {
       const li = document.createElement('li');
       if (s.done) li.classList.add('done');
@@ -1505,7 +1537,23 @@
       const ck = document.createElement('div');
       ck.className = 'scheck';
       ck.innerHTML = s.done ? ICON.check : '';
-      ck.onclick = () => { s.done = !s.done; renderSubs(); commit(); };
+      ck.onclick = () => {
+        s.done = !s.done;
+        // completed sub-tasks move to the bottom; un-completing puts it back above the done ones
+        const idx = editingTask.subtasks.indexOf(s);
+        editingTask.subtasks.splice(idx, 1);
+        if (s.done) {
+          editingTask.subtasks.push(s);
+        } else {
+          const firstDone = editingTask.subtasks.findIndex(x => x.done);
+          if (firstDone === -1) editingTask.subtasks.push(s);
+          else editingTask.subtasks.splice(firstDone, 0, s);
+        }
+        renderSubs(); commit();
+        if (s.done && editingTask.subtasks.length && editingTask.subtasks.every(x => x.done) && !editingTask.done) {
+          toggleTask(editingTask);
+        }
+      };
       const tx = document.createElement('span');
       tx.className = 'stext'; tx.textContent = s.text;
       const dl = document.createElement('button');
