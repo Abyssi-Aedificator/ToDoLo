@@ -835,9 +835,16 @@
       <h3 class="settings-subhead">Changelog</h3>
       <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">0.2.0 <span class="current-badge">Current</span></div>
+          <div class="changelog-version">Alpha 0.3.0 <span class="current-badge">Current</span></div>
           <ul>
-            <li>Version bumped to Alpha 0.2.0</li>
+            <li>The "Today" smart view now also includes overdue tasks</li>
+            <li>Added an "Overdue" section to the sidebar, showing all tasks past their due date</li>
+            <li>The first task in the current view now opens automatically in the detail panel when the app loads</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">Alpha 0.2.0</div>
+          <ul>
             <li>Deleting a list or task now asks for confirmation in a themed dialog instead of the browser's native prompt</li>
             <li>Left sidebar can be resized by dragging its edge, with the width remembered between sessions</li>
             <li>Right task-detail panel can be resized the same way, also remembered between sessions</li>
@@ -850,7 +857,7 @@
           </ul>
         </div>
         <div class="changelog-entry">
-          <div class="changelog-version">0.1.0</div>
+          <div class="changelog-version">Alpha 0.1.0</div>
           <ul>
             <li>Initial release: glassmorphism to-do app with multi-list support</li>
             <li>Task due dates, recurrence, priority, description, and sub-tasks</li>
@@ -906,7 +913,8 @@
     sun: '<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>',
     sunrise: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 17V9M8.5 12.5 12 9l3.5 3.5"/><path d="M3 20h18M5 17a7 7 0 0 1 14 0"/></svg>',
     calGrid: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/><circle cx="7.5" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/><circle cx="7.5" cy="18" r="1"/><circle cx="12" cy="18" r="1"/></svg>',
-    sortAz: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M3 6h7M3 12h5M3 18h3"/><path d="M14 6l4-4 4 4M18 2v16"/></svg>'
+    sortAz: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M3 6h7M3 12h5M3 18h3"/><path d="M14 6l4-4 4 4M18 2v16"/></svg>',
+    alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>'
   };
 
   const $ = id => document.getElementById(id);
@@ -969,20 +977,22 @@
   const save = () => localStorage.setItem('glass-todos-v2', JSON.stringify(state));
   const SMART_VIEWS = [
     { id: 'all', name: 'All', icon: 'stack', color: '#94a3b8' },
+    { id: 'overdue', name: 'Overdue', icon: 'alertTriangle', color: '#ff4d4d' },
     { id: 'today', name: 'Today', icon: 'sun', color: '#ff6b6b' },
     { id: 'tomorrow', name: 'Tomorrow', icon: 'sunrise', color: '#ffb454' },
     { id: 'week', name: 'Next 7 Days', icon: 'calGrid', color: '#5b9bff' }
   ];
-  const AGGREGATE_VIEWS = ['all', 'today', 'tomorrow', 'week'];
+  const AGGREGATE_VIEWS = ['all', 'overdue', 'today', 'tomorrow', 'week'];
   const isAllView = () => AGGREGATE_VIEWS.includes(state.activeId);
   const activeList = () => state.lists.find(l => l.id === state.activeId) || state.lists[0];
   const ownerOf = task => state.lists.find(l => l.todos.includes(task));
 
   function matchesSmartView(t) {
-    if (state.activeId !== 'today' && state.activeId !== 'tomorrow' && state.activeId !== 'week') return true;
+    if (state.activeId !== 'overdue' && state.activeId !== 'today' && state.activeId !== 'tomorrow' && state.activeId !== 'week') return true;
     if (!t.due) return false;
     const days = daysFromToday(t.due);
-    if (state.activeId === 'today') return days === 0;
+    if (state.activeId === 'overdue') return days < 0;
+    if (state.activeId === 'today') return days <= 0;
     if (state.activeId === 'tomorrow') return days === 1;
     if (state.activeId === 'week') return days >= 0 && days <= 7;
   }
@@ -990,7 +1000,8 @@
   function smartCount(id) {
     const allTodos = state.lists.flatMap(l => l.todos);
     if (id === 'all') return allTodos.filter(t => !t.done).length;
-    if (id === 'today') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 0).length;
+    if (id === 'overdue') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) < 0).length;
+    if (id === 'today') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) <= 0).length;
     if (id === 'tomorrow') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 1).length;
     if (id === 'week') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) >= 0 && daysFromToday(t.due) <= 7).length;
     return null;
@@ -1144,7 +1155,23 @@
   }
 
   // ---- tasks ----
-  const SMART_TITLES = { all: 'All Tasks', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days' };
+  const SMART_TITLES = { all: 'All Tasks', overdue: 'Overdue', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days' };
+
+  function getShownTasks() {
+    const all = isAllView();
+    // build a flat list of { task, owner } across the current view
+    const entries = [];
+    (all ? state.lists : [activeList()]).forEach(l => {
+      l.todos.forEach(t => entries.push({ t, owner: l }));
+    });
+    return entries.filter(({ t }) =>
+      (filter === 'all' ? true : filter === 'done' ? t.done : !t.done) &&
+      matchesDueFilter(t) && matchesPrioFilter(t) && matchesSmartView(t)
+    ).sort((a, b) => {
+      if (a.t.done !== b.t.done) return a.t.done ? 1 : -1;
+      return sortCompare(a.t, b.t, a.owner, b.owner);
+    });
+  }
 
   function renderTasks() {
     list.innerHTML = '';
@@ -1152,18 +1179,7 @@
     const all = isAllView();
     listTitle.textContent = SMART_TITLES[state.activeId] || activeList().name;
 
-    // build a flat list of { task, owner } across the current view
-    const entries = [];
-    (all ? state.lists : [activeList()]).forEach(l => {
-      l.todos.forEach(t => entries.push({ t, owner: l }));
-    });
-    const shown = entries.filter(({ t }) =>
-      (filter === 'all' ? true : filter === 'done' ? t.done : !t.done) &&
-      matchesDueFilter(t) && matchesPrioFilter(t) && matchesSmartView(t)
-    ).sort((a, b) => {
-      if (a.t.done !== b.t.done) return a.t.done ? 1 : -1;
-      return sortCompare(a.t, b.t, a.owner, b.owner);
-    });
+    const shown = getShownTasks();
 
     if (shown.length === 0) {
       const li = document.createElement('li');
@@ -1710,6 +1726,12 @@
   };
 
   renderAll();
+
+  // open the first task's detail panel by default on load
+  if (!editingTask) {
+    const shown = getShownTasks();
+    if (shown.length) openTaskPanel(shown[0].t, shown[0].owner);
+  }
 
   // ---- sidebar resize ----
   (() => {
