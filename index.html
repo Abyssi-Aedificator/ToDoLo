@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ToDoLo</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -12,7 +12,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { overscroll-behavior-y: none; }
+
+  /* hamburger toggle + drawer backdrop — only active on small screens */
+  .menu-btn { display: none; }
+  .drawer-backdrop { display: none; }
 
   /* ---------- THEMED SCROLLBARS ---------- */
   * {
@@ -482,6 +487,18 @@
     min-width: 280px;
     overflow-x: hidden;
   }
+  .menu-btn {
+    align-items: center; justify-content: center;
+    width: 42px; height: 42px; flex-shrink: 0;
+    margin-bottom: 12px;
+    border-radius: 12px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.28);
+    background: rgba(255,255,255,0.12); color: #fff;
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+    transition: background 0.2s, transform 0.1s;
+  }
+  .menu-btn:active { transform: scale(0.94); }
   h1 {
     font-size: 1.7rem;
     font-weight: 600;
@@ -603,24 +620,65 @@
   #clearDone:hover { opacity: 1; }
 
   @media (max-width: 720px) {
-    .shell { flex-direction: column; }
-    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.18); }
-    .lists { max-height: 150px; }
-    .main { overflow-y: auto; }
-    /* detail becomes a slide-over on small screens */
-    .detail {
-      position: fixed; top: 0; right: 0; bottom: 0; z-index: 20;
-      width: 0; border-left: none;
-      backdrop-filter: blur(18px) saturate(160%);
-      -webkit-backdrop-filter: blur(18px) saturate(160%);
-      background: rgba(20,40,50,0.55);
+    /* sidebar becomes a slide-in drawer toggled by the hamburger */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: min(290px, 86vw) !important;
+      z-index: 60;
+      transform: translateX(-100%);
+      transition: transform 0.28s ease;
+      border-right: 1px solid rgba(255,255,255,0.18);
+      border-bottom: none;
+      background: rgba(20,40,50,0.94);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      box-shadow: 8px 0 32px rgba(0,0,0,0.35);
+      padding-top: calc(22px + env(safe-area-inset-top));
+      padding-bottom: calc(22px + env(safe-area-inset-bottom));
+      padding-left: calc(18px + env(safe-area-inset-left));
     }
-    .detail.open { width: min(360px, 100vw); }
+    .sidebar.open { transform: none !important; }
+    .lists { max-height: none; }
+    .sidebar-resizer, .detail-resizer { display: none; }
+
+    .drawer-backdrop {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.45);
+    }
+    .drawer-backdrop.show { display: block; }
+
+    .main {
+      width: 100%;
+      overflow-y: auto;
+      padding: 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      padding-left: calc(16px + env(safe-area-inset-left));
+      padding-right: calc(16px + env(safe-area-inset-right));
+      padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .menu-btn { display: flex; }
+
+    /* full-screen task detail slide-over */
+    .detail {
+      position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 70;
+      width: 0; border-left: none;
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      background: rgba(20,40,50,0.94);
+    }
+    .detail.open { width: 100% !important; }
+    .detail-empty, .detail-body { min-width: 0; }
+    .detail-body {
+      padding-top: calc(22px + env(safe-area-inset-top));
+      padding-bottom: calc(22px + env(safe-area-inset-bottom));
+    }
   }
 </style>
 </head>
 <body>
   <div class="shell">
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
@@ -648,6 +706,9 @@
 
     <!-- MAIN -->
     <section class="main">
+      <button class="menu-btn" id="menuBtn" title="Menu" aria-label="Open menu">
+        <svg class="ico" viewBox="0 0 24 24" width="22" height="22"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
       <h1 id="listTitle">My Tasks</h1>
       <div class="subtitle">
         <svg class="ico" viewBox="0 0 24 24" width="14" height="14"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" fill="currentColor" stroke="none"/></svg>
@@ -835,7 +896,16 @@
       <h3 class="settings-subhead">Changelog</h3>
       <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">Alpha 0.4.0 <span class="current-badge">Current</span></div>
+          <div class="changelog-version">Alpha 0.5.0 <span class="current-badge">Current</span></div>
+          <ul>
+            <li>Optimized the app for Android phones and small screens</li>
+            <li>The sidebar is now a slide-in drawer opened by a menu button, so tasks fill the screen</li>
+            <li>The task detail panel opens full-screen on phones</li>
+            <li>Added safe-area padding for notches and gesture navigation bars</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">Alpha 0.4.0</div>
           <ul>
             <li>Completed sub-tasks now move to the bottom of the checklist</li>
             <li>Completing every sub-task automatically completes the main task</li>
@@ -1004,7 +1074,7 @@
     if (!t.due) return false;
     const days = daysFromToday(t.due);
     if (state.activeId === 'overdue') return days < 0;
-    if (state.activeId === 'today') return days <= 0;
+    if (state.activeId === 'today') return days === 0;
     if (state.activeId === 'tomorrow') return days === 1;
     if (state.activeId === 'week') return days >= 0 && days <= 7;
   }
@@ -1013,7 +1083,7 @@
     const allTodos = state.lists.flatMap(l => l.todos);
     if (id === 'all') return allTodos.filter(t => !t.done).length;
     if (id === 'overdue') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) < 0).length;
-    if (id === 'today') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) <= 0).length;
+    if (id === 'today') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 0).length;
     if (id === 'tomorrow') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 1).length;
     if (id === 'week') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) >= 0 && daysFromToday(t.due) <= 7).length;
     if (id === 'nodate') return allTodos.filter(t => !t.done && !t.due).length;
@@ -1044,7 +1114,7 @@
         badge.textContent = cnt;
         li.appendChild(badge);
       }
-      li.onclick = () => { state.activeId = v.id; save(); renderAll(); };
+      li.onclick = () => { state.activeId = v.id; save(); renderAll(); closeDrawer(); };
       smartNav.appendChild(li);
     });
 
@@ -1104,7 +1174,7 @@
       rm.onclick = e => { e.stopPropagation(); removeList(l.id); };
 
       li.append(dot, name, edit, rm, badge);
-      li.onclick = () => { state.activeId = l.id; save(); renderAll(); };
+      li.onclick = () => { state.activeId = l.id; save(); renderAll(); closeDrawer(); };
       listNav.appendChild(li);
     });
   }
@@ -1608,6 +1678,13 @@
   }
 
   // ---- events ----
+  // mobile slide-in drawer
+  const sidebarEl = document.querySelector('.sidebar');
+  function openDrawer() { sidebarEl.classList.add('open'); drawerBackdrop.classList.add('show'); }
+  function closeDrawer() { sidebarEl.classList.remove('open'); drawerBackdrop.classList.remove('show'); }
+  menuBtn.onclick = () => sidebarEl.classList.contains('open') ? closeDrawer() : openDrawer();
+  drawerBackdrop.onclick = closeDrawer;
+
   addBtn.onclick = addTask;
   input.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
   addListBtn.onclick = () => openModal();
