@@ -234,6 +234,10 @@
   }
   .new-list-btn:hover { background: rgba(255,255,255,0.22); }
   .new-list-btn:active { transform: scale(0.97); }
+  #syncBtn.syncing { border-style: solid; border-color: rgba(110,231,183,0.55); background: rgba(62,207,142,0.18); }
+  .sync-ico { transform-origin: 50% 50%; }
+  #syncBtn.syncing .sync-ico { animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ---------- MODAL ---------- */
   .overlay {
@@ -288,23 +292,65 @@
   }
 
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-  .settings-modal { width: 560px; max-height: 80vh; display: flex; flex-direction: column; }
-  .settings-subhead { font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; }
-  .backup-row { display: flex; gap: 10px; margin-bottom: 20px; }
-  .current-badge {
-    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.03em;
-    text-transform: uppercase; vertical-align: middle;
-    background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 7px; padding: 2px 8px; margin-left: 6px;
+
+  /* ---------- SETTINGS (tabbed) ---------- */
+  .settings-modal { width: 580px; max-height: 86vh; display: flex; flex-direction: column; padding: 24px; }
+  .settings-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .settings-head h2 { margin: 0; }
+  .settings-tabs {
+    display: flex; gap: 5px; padding: 5px; margin-bottom: 18px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 13px;
   }
-  .changelog { flex: 1; overflow-y: auto; margin-bottom: 20px; }
+  .settings-tab-btn {
+    flex: 1; padding: 9px 14px; border: none; border-radius: 9px;
+    background: transparent; color: rgba(255,255,255,0.68);
+    font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .settings-tab-btn:hover { color: #fff; }
+  .settings-tab-btn.active {
+    background: rgba(255,255,255,0.22);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  .settings-scroll { flex: 1; overflow-y: auto; margin: 0 -6px 18px; padding: 0 6px; }
+  .settings-panel { display: none; }
+  .settings-panel.active { display: block; animation: pop 0.2s ease; }
+
+  .settings-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+  .settings-card:last-child { margin-bottom: 0; }
+  .settings-card .backup-row:last-child { margin-bottom: 0; }
+  .settings-subhead {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.95rem; font-weight: 600; margin: 0 0 4px;
+  }
+  .settings-hint { font-size: 0.8rem; opacity: 0.7; margin: 0 0 12px; line-height: 1.45; }
+  .backup-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 0; }
+
+  .current-badge {
+    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.03em;
+    text-transform: uppercase; vertical-align: middle;
+    background: rgba(120,200,255,0.22); border: 1px solid rgba(150,210,255,0.4);
+    color: #cfeaff;
+    border-radius: 7px; padding: 2px 8px; margin-left: 8px;
+  }
   .changelog-entry { margin-bottom: 16px; }
+  .changelog-entry:last-child { margin-bottom: 4px; }
   .changelog-version {
     font-size: 0.95rem; font-weight: 600; color: #fff;
     margin-bottom: 8px;
   }
-  .changelog-entry ul { padding-left: 20px; }
-  .changelog-entry li { font-size: 0.9rem; opacity: 0.85; margin-bottom: 6px; }
+  .changelog-entry ul { padding-left: 18px; margin: 0; }
+  .changelog-entry li { font-size: 0.88rem; opacity: 0.82; margin-bottom: 6px; line-height: 1.4; }
   .btn-ghost, .btn-primary, .btn-danger {
     padding: 10px 18px; border-radius: 11px; cursor: pointer;
     font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.3);
@@ -674,6 +720,62 @@
       padding-bottom: calc(22px + env(safe-area-inset-bottom));
     }
   }
+
+  /* ---------- DROPBOX SYNC ---------- */
+  .dbx-blurb { font-size: 0.8rem; opacity: 0.72; margin: 2px 0 12px; line-height: 1.45; }
+  .dbx-link { color: #8ec5ff; text-decoration: none; font-weight: 500; }
+  .dbx-link:hover { text-decoration: underline; }
+  #dbxKey {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    color: #fff; font-size: 0.9rem; outline: none;
+    transition: background 0.2s, border 0.2s;
+  }
+  #dbxKey::placeholder { color: rgba(255,255,255,0.55); }
+  #dbxKey:focus { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6); }
+  .dbx-status {
+    font-size: 0.68rem; font-weight: 500; vertical-align: middle;
+    padding: 2px 9px; border-radius: 20px; margin-left: 6px;
+    background: rgba(170,179,197,0.18); color: rgba(255,255,255,0.7);
+  }
+  .dbx-status.connected { background: rgba(62,207,142,0.2); color: #6ee7b7; }
+  .dbx-account-row { font-size: 0.78rem; opacity: 0.78; margin: 2px 0 12px; }
+  .dbx-account-row span + span::before { content: ' · '; opacity: 0.6; }
+  .dbx-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0 0 14px; user-select: none; }
+  .dbx-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .dbx-toggle-track {
+    flex-shrink: 0; width: 38px; height: 22px; border-radius: 22px;
+    background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.28);
+    transition: background 0.2s; position: relative;
+  }
+  .dbx-toggle-thumb {
+    position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.35); transition: transform 0.2s;
+  }
+  .dbx-toggle input:checked + .dbx-toggle-track { background: rgba(62,207,142,0.55); border-color: rgba(110,231,183,0.6); }
+  .dbx-toggle input:checked + .dbx-toggle-track .dbx-toggle-thumb { transform: translateX(16px); }
+  .dbx-toggle input:focus-visible + .dbx-toggle-track { box-shadow: 0 0 0 3px rgba(120,200,255,0.4); }
+  .dbx-toggle-label { font-size: 0.82rem; opacity: 0.85; line-height: 1.35; }
+
+  /* ---------- TOAST ---------- */
+  .toast {
+    position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom));
+    transform: translate(-50%, 16px);
+    z-index: 200; pointer-events: none;
+    max-width: min(90vw, 420px);
+    padding: 12px 20px; border-radius: 14px;
+    font-size: 0.88rem; font-weight: 500; color: #fff; text-align: center;
+    background: rgba(20,40,50,0.7);
+    border: 1px solid rgba(255,255,255,0.25);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    opacity: 0; transition: opacity 0.25s, transform 0.25s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
 </head>
 <body>
@@ -697,6 +799,10 @@
       <button class="new-list-btn" id="addListBtn">
         <svg class="ico" viewBox="0 0 24 24" width="18" height="18"><path d="M12 5v14M5 12h14"/></svg>
         New list
+      </button>
+      <button class="new-list-btn" id="syncBtn" style="display:none">
+        <svg class="ico sync-ico" viewBox="0 0 24 24" width="18" height="18"><path d="M17 2l3 3-3 3M7 22l-3-3 3-3"/><path d="M20 5H9a5 5 0 0 0-5 5M4 19h11a5 5 0 0 0 5-5"/></svg>
+        <span id="syncBtnLabel">Sync now</span>
       </button>
       <button class="new-list-btn" id="settingsBtn">
         <svg class="ico" viewBox="0 0 24 24" width="18" height="18"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V20a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.56-1.03 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0A1.7 1.7 0 0 0 11.05 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1.03 1.56h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.56 1.03H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.56 1.03Z"/></svg>
@@ -884,19 +990,70 @@
   <!-- SETTINGS MODAL -->
   <div class="overlay" id="settingsOverlay">
     <div class="modal settings-modal">
-      <h2>Settings</h2>
-
-      <h3 class="settings-subhead">Backup</h3>
-      <div class="backup-row">
-        <button class="btn-ghost" id="exportBtn">Export backup</button>
-        <button class="btn-ghost" id="importBtn">Import backup</button>
-        <input type="file" id="importFile" accept="application/json" hidden>
+      <div class="settings-head">
+        <h2>Settings</h2>
       </div>
 
-      <h3 class="settings-subhead">Changelog</h3>
-      <div class="changelog">
+      <div class="settings-tabs">
+        <button class="settings-tab-btn active" data-tab="general">General</button>
+        <button class="settings-tab-btn" data-tab="changelog">Changelog</button>
+      </div>
+
+      <div class="settings-scroll">
+        <!-- GENERAL TAB -->
+        <div class="settings-panel active" data-panel="general">
+          <div class="settings-card">
+            <h3 class="settings-subhead">Backup</h3>
+            <p class="settings-hint">Save all your lists and tasks to a file on this device, or load one back in.</p>
+            <div class="backup-row">
+              <button class="btn-ghost" id="exportBtn">Export backup</button>
+              <button class="btn-ghost" id="importBtn">Import backup</button>
+              <input type="file" id="importFile" accept="application/json" hidden>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3 class="settings-subhead">Dropbox sync <span id="dbxStatus" class="dbx-status"></span></h3>
+            <p class="settings-hint">Sync through your own Dropbox account so the same tasks are available on your PC and Android phone. Your data goes straight from your browser to Dropbox — never through any server of ours.</p>
+            <div id="dbxSetup">
+              <label class="field-label">Dropbox App key <a href="https://www.dropbox.com/developers/apps" target="_blank" rel="noopener" class="dbx-link">(get one free →)</a></label>
+              <input type="text" id="dbxKey" placeholder="e.g. abcd1234efgh567" autocomplete="off" spellcheck="false">
+              <div class="backup-row" style="margin-top:12px">
+                <button class="btn-primary" onclick="dropboxConnect()">Connect to Dropbox</button>
+              </div>
+            </div>
+            <div id="dbxConnected" style="display:none">
+              <p class="dbx-account-row"><span id="dbxAccount"></span><span id="dbxLastSync">never synced</span></p>
+              <label class="dbx-toggle">
+                <input type="checkbox" id="dbxAutoSync" onchange="dropboxSetAutoSync(this.checked)">
+                <span class="dbx-toggle-track"><span class="dbx-toggle-thumb"></span></span>
+                <span class="dbx-toggle-label">Auto-sync newer backups when the app opens</span>
+              </label>
+              <div class="backup-row">
+                <button class="btn-ghost" onclick="dropboxUpload()">⬆ Upload</button>
+                <button class="btn-ghost" onclick="dropboxDownload()">⬇ Download</button>
+                <button class="btn-danger" onclick="dropboxDisconnect()">Disconnect</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHANGELOG TAB -->
+        <div class="settings-panel" data-panel="changelog">
+        <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">Alpha 0.5.0 <span class="current-badge">Current</span></div>
+          <div class="changelog-version">Alpha 0.6.0 <span class="current-badge">Current</span></div>
+          <ul>
+            <li>Added Dropbox sync — connect your own Dropbox account to sync your tasks between PC and Android</li>
+            <li>Upload to and download from Dropbox straight from the browser; your data never passes through any server of ours</li>
+            <li>On launch, get prompted if a newer backup is waiting on Dropbox, with one tap to sync it in</li>
+            <li>Optional auto-sync: turn it on to silently pull newer Dropbox backups whenever the app opens, no prompt</li>
+            <li>The "Today" view now shows only tasks due today; overdue tasks live in the Overdue section</li>
+            <li>Redesigned the Settings page with General/Changelog tabs and themed glass cards</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">Alpha 0.5.0</div>
           <ul>
             <li>Optimized the app for Android phones and small screens</li>
             <li>The sidebar is now a slide-in drawer opened by a menu button, so tasks fill the screen</li>
@@ -958,7 +1115,9 @@
             <li>Brand icon redesigned as a frosted-glass chip to match the app's overall glassmorphism theme</li>
           </ul>
         </div>
-      </div>
+        </div><!-- .changelog -->
+        </div><!-- .settings-panel changelog -->
+      </div><!-- .settings-scroll -->
       <div class="modal-actions">
         <button class="btn-primary" id="settingsClose">Close</button>
       </div>
@@ -976,6 +1135,21 @@
       </div>
     </div>
   </div>
+
+  <!-- DROPBOX NEWER-BACKUP PROMPT -->
+  <div class="overlay" id="dbxSyncOverlay">
+    <div class="modal confirm-modal">
+      <h2>Newer backup on Dropbox</h2>
+      <p>Your Dropbox backup was updated <b id="dbxSyncWhen"></b> — probably from another device. Downloading it will replace what's on this device.</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="dbxSyncLater">Not now</button>
+        <button class="btn-primary" id="dbxSyncNow">⬇ Sync now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
 
 <script>
   const ICON = {
@@ -1054,7 +1228,7 @@
   });
   let filter = localStorage.getItem('glass-todos-filter') || 'all';
 
-  const save = () => localStorage.setItem('glass-todos-v2', JSON.stringify(state));
+  const save = () => { localStorage.setItem('glass-todos-v2', JSON.stringify(state)); if (typeof scheduleAutoUpload === 'function') scheduleAutoUpload(); };
   const SMART_VIEWS = [
     { id: 'all', name: 'All', icon: 'stack', color: '#94a3b8' },
     { id: 'overdue', name: 'Overdue', icon: 'alertTriangle', color: '#ff4d4d' },
@@ -1696,8 +1870,18 @@
   // ---- settings modal ----
   const settingsBtn = $('settingsBtn'), settingsOverlay = $('settingsOverlay'), settingsClose = $('settingsClose');
   settingsBtn.onclick = () => settingsOverlay.classList.add('show');
+  $('syncBtn').onclick = () => { clearTimeout(_syncTimer); dropboxUpload(false); };
   settingsClose.onclick = () => settingsOverlay.classList.remove('show');
   settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
+
+  // settings tabs
+  document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+    btn.onclick = () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.settings-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+    };
+  });
 
   // ---- backup / restore ----
   const exportBtn = $('exportBtn'), importBtn = $('importBtn'), importFile = $('importFile');
@@ -1929,6 +2113,227 @@
       document.addEventListener('mouseup', onUp);
     });
   })();
+
+  // ---- toast ----
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  /* ---------- Dropbox sync (client-side OAuth2 PKCE, no backend) ---------- */
+  const DBX_KEY = 'todolo.dropbox';
+  const DBX_PATH = '/todolo-backup.json';
+  let dbx = JSON.parse(localStorage.getItem(DBX_KEY) || 'null') ||
+    { appKey: '', accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false };
+  const dbxSave = () => localStorage.setItem(DBX_KEY, JSON.stringify(dbx));
+  const dbxRedirectUri = () => location.origin + location.pathname;
+
+  // auto-upload: debounced push after 10s of inactivity
+  let _syncTimer = null, _skipAutoUpload = false, _lastUploadedState = '', _syncing = 0;
+  function scheduleAutoUpload() {
+    if (!dbx.accessToken) return;
+    if (_skipAutoUpload) { _skipAutoUpload = false; return; } // don't bounce a just-downloaded state back up
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(() => dropboxUpload(true), 10000);
+  }
+  function setSyncing(on) {
+    _syncing += on ? 1 : -1;
+    const btn = $('syncBtn');
+    if (btn) btn.classList.toggle('syncing', _syncing > 0);
+  }
+
+  function b64url(buf) {
+    return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function randomString(len) {
+    const a = new Uint8Array(len); crypto.getRandomValues(a); return b64url(a).slice(0, len);
+  }
+  async function pkceChallenge(verifier) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+    return b64url(digest);
+  }
+
+  async function dropboxConnect() {
+    const key = $('dbxKey').value.trim();
+    if (!key) { toast('Enter your Dropbox App key first'); return; }
+    if (!isSecureContext) { toast('⚠ Dropbox sync needs HTTPS (or localhost)'); return; }
+    dbx.appKey = key; dbxSave();
+    const verifier = randomString(64);
+    sessionStorage.setItem('todolo.dbx.verifier', verifier);
+    const challenge = await pkceChallenge(verifier);
+    location.href = 'https://www.dropbox.com/oauth2/authorize?' + new URLSearchParams({
+      client_id: key, response_type: 'code', code_challenge: challenge, code_challenge_method: 'S256',
+      token_access_type: 'offline', redirect_uri: dbxRedirectUri()
+    });
+  }
+
+  async function dropboxHandleRedirect() {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    if (!code) return;
+    history.replaceState(null, '', location.pathname + location.hash); // strip ?code= from the URL
+    settingsOverlay.classList.add('show');
+    const verifier = sessionStorage.getItem('todolo.dbx.verifier');
+    if (!verifier || !dbx.appKey) return;
+    try {
+      const res = await fetch('https://api.dropboxapi.com/oauth2/token', {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ code, grant_type: 'authorization_code', client_id: dbx.appKey, code_verifier: verifier, redirect_uri: dbxRedirectUri() })
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error_description || j.error || 'auth failed');
+      dbx.accessToken = j.access_token; dbx.refreshToken = j.refresh_token || dbx.refreshToken;
+      dbx.expiresAt = Date.now() + (j.expires_in || 14400) * 1000; dbxSave();
+      await dropboxFetchAccount();
+      toast('Dropbox connected');
+      dropboxCheckForUpdates();
+    } catch (err) { toast('⚠ Dropbox connection failed: ' + err.message); }
+    updateDropboxUI();
+  }
+
+  async function dropboxRefreshIfNeeded() {
+    if (dbx.accessToken && Date.now() < dbx.expiresAt - 30000) return true;
+    if (!dbx.refreshToken || !dbx.appKey) return !!dbx.accessToken;
+    const res = await fetch('https://api.dropboxapi.com/oauth2/token', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: dbx.refreshToken, client_id: dbx.appKey })
+    });
+    const j = await res.json();
+    if (!res.ok) return false;
+    dbx.accessToken = j.access_token; dbx.expiresAt = Date.now() + (j.expires_in || 14400) * 1000; dbxSave();
+    return true;
+  }
+
+  async function dropboxFetchAccount() {
+    try {
+      const res = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + dbx.accessToken }
+      });
+      if (res.ok) { const j = await res.json(); dbx.account = j.email || (j.name && j.name.display_name) || ''; dbxSave(); }
+    } catch (e) {}
+  }
+
+  function dbxParseBackup(text) {
+    const parsed = JSON.parse(text);
+    const d = parsed && parsed.data ? parsed.data : parsed; // accept wrapped or raw
+    if (!d || !Array.isArray(d.lists) || !d.lists.length) throw new Error('bad backup format');
+    return d;
+  }
+  function dbxApplyData(d) {
+    state = d;
+    state.lists.forEach(l => { (l.todos || []).forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; }); });
+    if (!state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
+    _lastUploadedState = JSON.stringify(state); // we now match Dropbox; don't re-upload it
+    _skipAutoUpload = true;
+    save(); renderAll();
+  }
+
+  async function dropboxUpload(silent) {
+    if (!await dropboxRefreshIfNeeded()) { if (!silent) toast('⚠ Dropbox session expired — reconnect'); return; }
+    const snapshot = JSON.stringify(state);
+    if (silent && snapshot === _lastUploadedState) return; // nothing changed since last push
+    const payload = { app: 'ToDoLo', version: 1, exportedAt: new Date().toISOString(), data: state };
+    setSyncing(true);
+    try {
+      const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
+        method: 'POST', headers: {
+          'Authorization': 'Bearer ' + dbx.accessToken, 'Content-Type': 'application/octet-stream',
+          'Dropbox-API-Arg': JSON.stringify({ path: DBX_PATH, mode: 'overwrite', mute: true })
+        }, body: JSON.stringify(payload, null, 2)
+      });
+      if (!res.ok) throw new Error('upload failed (' + res.status + ')');
+      _lastUploadedState = snapshot;
+      dbx.lastSync = new Date().toLocaleString(); dbx.lastSyncAt = Date.now(); dbxSave(); updateDropboxUI();
+      toast(silent ? 'Auto-synced to Dropbox' : 'Uploaded to Dropbox');
+    } catch (err) { toast('⚠ ' + err.message); }
+    finally { setSyncing(false); }
+  }
+
+  async function dropboxDownload(skipConfirm) {
+    if (!await dropboxRefreshIfNeeded()) { toast('⚠ Dropbox session expired — reconnect'); return; }
+    try {
+      const res = await fetch('https://content.dropboxapi.com/2/files/download', {
+        method: 'POST', headers: {
+          'Authorization': 'Bearer ' + dbx.accessToken,
+          'Dropbox-API-Arg': JSON.stringify({ path: DBX_PATH })
+        }
+      });
+      if (res.status === 409) { toast('No backup in Dropbox yet — upload one first'); return; }
+      if (!res.ok) throw new Error('download failed (' + res.status + ')');
+      const d = dbxParseBackup(await res.text());
+      if (!skipConfirm && !await confirmDialog('Download from Dropbox? It will replace all your current lists and tasks.')) return;
+      dbxApplyData(d);
+      dbx.lastSync = new Date().toLocaleString(); dbx.lastSyncAt = Date.now(); dbxSave(); updateDropboxUI();
+      toast('Synced from Dropbox');
+    } catch (err) { toast('⚠ ' + (err.message === 'bad backup format' ? 'Dropbox file isn\'t a ToDoLo backup' : err.message)); }
+  }
+
+  async function dropboxDisconnect() {
+    if (!await confirmDialog('Disconnect Dropbox? You can reconnect any time with your App key.')) return;
+    dbx = { appKey: dbx.appKey, accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false };
+    dbxSave(); updateDropboxUI(); toast('Dropbox disconnected');
+  }
+
+  function dropboxSetAutoSync(on) {
+    dbx.autoSync = !!on; dbxSave();
+    toast(on ? 'Auto-sync on launch enabled' : 'Auto-sync on launch disabled');
+    if (on) dropboxCheckForUpdates();
+  }
+
+  // Offer to pull in the remote file if it's newer than our last local sync.
+  async function dropboxCheckForUpdates() {
+    if (!dbx.accessToken) return;
+    if (!await dropboxRefreshIfNeeded()) return;
+    try {
+      const res = await fetch('https://api.dropboxapi.com/2/files/get_metadata', {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + dbx.accessToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: DBX_PATH })
+      });
+      if (!res.ok) return; // no remote file yet, or a transient error
+      const j = await res.json();
+      const remoteAt = Date.parse(j.server_modified || '');
+      if (!remoteAt) return;
+      if (remoteAt > (dbx.lastSyncAt || 0) + 5000 && remoteAt !== dbx.dismissedRemoteAt) {
+        if (dbx.autoSync) dropboxDownload(true);  // pull silently without prompting
+        else openDbxSyncPrompt(remoteAt);
+      }
+    } catch (e) { /* offline or blocked — silently skip */ }
+  }
+  let _dbxPendingRemoteAt = 0;
+  function openDbxSyncPrompt(remoteAt) {
+    _dbxPendingRemoteAt = remoteAt;
+    $('dbxSyncWhen').textContent = new Date(remoteAt).toLocaleString();
+    $('dbxSyncOverlay').classList.add('show');
+  }
+  function closeDbxSyncPrompt() {
+    if (_dbxPendingRemoteAt) { dbx.dismissedRemoteAt = _dbxPendingRemoteAt; dbxSave(); }
+    $('dbxSyncOverlay').classList.remove('show');
+  }
+  $('dbxSyncLater').onclick = closeDbxSyncPrompt;
+  $('dbxSyncNow').onclick = () => { dropboxDownload(true); closeDbxSyncPrompt(); };
+  $('dbxSyncOverlay').addEventListener('click', e => { if (e.target === $('dbxSyncOverlay')) closeDbxSyncPrompt(); });
+
+  function updateDropboxUI() {
+    const setup = $('dbxSetup'), connected = $('dbxConnected'), st = $('dbxStatus');
+    if (!setup) return;
+    $('dbxKey').value = dbx.appKey || '';
+    const isConnected = !!dbx.accessToken;
+    setup.style.display = isConnected ? 'none' : 'block';
+    connected.style.display = isConnected ? 'block' : 'none';
+    $('dbxAccount').textContent = dbx.account ? 'Connected as ' + dbx.account : 'Connected';
+    $('dbxLastSync').textContent = dbx.lastSync ? 'last synced ' + dbx.lastSync : 'never synced';
+    $('dbxAutoSync').checked = !!dbx.autoSync;
+    st.textContent = isConnected ? 'Connected' : 'Not connected';
+    st.classList.toggle('connected', isConnected);
+    const syncBtn = $('syncBtn');
+    if (syncBtn) syncBtn.style.display = isConnected ? 'flex' : 'none';
+  }
+  updateDropboxUI();
+  dropboxHandleRedirect();
+  dropboxCheckForUpdates();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
