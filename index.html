@@ -1025,6 +1025,11 @@
             <div id="dbxConnected" style="display:none">
               <p class="dbx-account-row"><span id="dbxAccount"></span><span id="dbxLastSync">never synced</span></p>
               <label class="dbx-toggle">
+                <input type="checkbox" id="dbxAutoUpload" onchange="dropboxSetAutoUpload(this.checked)">
+                <span class="dbx-toggle-track"><span class="dbx-toggle-thumb"></span></span>
+                <span class="dbx-toggle-label">Auto-upload changes 10 seconds after you stop editing</span>
+              </label>
+              <label class="dbx-toggle">
                 <input type="checkbox" id="dbxAutoSync" onchange="dropboxSetAutoSync(this.checked)">
                 <span class="dbx-toggle-track"><span class="dbx-toggle-thumb"></span></span>
                 <span class="dbx-toggle-label">Auto-sync newer backups when the app opens</span>
@@ -1048,6 +1053,8 @@
             <li>Upload to and download from Dropbox straight from the browser; your data never passes through any server of ours</li>
             <li>On launch, get prompted if a newer backup is waiting on Dropbox, with one tap to sync it in</li>
             <li>Optional auto-sync: turn it on to silently pull newer Dropbox backups whenever the app opens, no prompt</li>
+            <li>Optional auto-upload: turn it on to push your changes to Dropbox 10 seconds after you stop editing</li>
+            <li>Added a "Sync now" button to the sidebar for an instant manual upload, with a spinning icon while a sync runs</li>
             <li>The "Today" view now shows only tasks due today; overdue tasks live in the Overdue section</li>
             <li>Redesigned the Settings page with General/Changelog tabs and themed glass cards</li>
           </ul>
@@ -2127,14 +2134,14 @@
   const DBX_KEY = 'todolo.dropbox';
   const DBX_PATH = '/todolo-backup.json';
   let dbx = JSON.parse(localStorage.getItem(DBX_KEY) || 'null') ||
-    { appKey: '', accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false };
+    { appKey: '', accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false, autoUpload: false };
   const dbxSave = () => localStorage.setItem(DBX_KEY, JSON.stringify(dbx));
   const dbxRedirectUri = () => location.origin + location.pathname;
 
   // auto-upload: debounced push after 10s of inactivity
   let _syncTimer = null, _skipAutoUpload = false, _lastUploadedState = '', _syncing = 0;
   function scheduleAutoUpload() {
-    if (!dbx.accessToken) return;
+    if (!dbx.accessToken || !dbx.autoUpload) return;
     if (_skipAutoUpload) { _skipAutoUpload = false; return; } // don't bounce a just-downloaded state back up
     clearTimeout(_syncTimer);
     _syncTimer = setTimeout(() => dropboxUpload(true), 10000);
@@ -2273,8 +2280,14 @@
 
   async function dropboxDisconnect() {
     if (!await confirmDialog('Disconnect Dropbox? You can reconnect any time with your App key.')) return;
-    dbx = { appKey: dbx.appKey, accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false };
+    dbx = { appKey: dbx.appKey, accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false, autoUpload: false };
     dbxSave(); updateDropboxUI(); toast('Dropbox disconnected');
+  }
+
+  function dropboxSetAutoUpload(on) {
+    dbx.autoUpload = !!on; dbxSave();
+    toast(on ? 'Auto-upload enabled' : 'Auto-upload disabled');
+    if (!on) clearTimeout(_syncTimer);
   }
 
   function dropboxSetAutoSync(on) {
@@ -2325,6 +2338,7 @@
     connected.style.display = isConnected ? 'block' : 'none';
     $('dbxAccount').textContent = dbx.account ? 'Connected as ' + dbx.account : 'Connected';
     $('dbxLastSync').textContent = dbx.lastSync ? 'last synced ' + dbx.lastSync : 'never synced';
+    $('dbxAutoUpload').checked = !!dbx.autoUpload;
     $('dbxAutoSync').checked = !!dbx.autoSync;
     st.textContent = isConnected ? 'Connected' : 'Not connected';
     st.classList.toggle('connected', isConnected);
