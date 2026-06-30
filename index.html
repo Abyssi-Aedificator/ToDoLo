@@ -22,17 +22,17 @@
   /* ---------- THEMED SCROLLBARS ---------- */
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.35) transparent;
+    scrollbar-color: rgba(var(--w),0.35) transparent;
   }
   *::-webkit-scrollbar { width: 10px; height: 10px; }
   *::-webkit-scrollbar-track { background: transparent; }
   *::-webkit-scrollbar-thumb {
-    background-color: rgba(255,255,255,0.25);
+    background-color: rgba(var(--w),0.25);
     border-radius: 10px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
-  *::-webkit-scrollbar-thumb:hover { background-color: rgba(255,255,255,0.45); }
+  *::-webkit-scrollbar-thumb:hover { background-color: rgba(var(--w),0.45); }
 
   /* line-style icons that match the airy glass look */
   svg {
@@ -44,11 +44,56 @@
     display: block;
   }
 
+  /* ---------- THEME SYSTEM ----------
+     Two independent axes:
+       data-mode  = light | dark   → text + glass tint (neutrals)
+       data-color = teal(default) | blue | purple | pink | orange | green → background hue
+  */
+  :root {
+    /* DARK mode neutrals (default) */
+    --w: 255, 255, 255;          /* glass tint channel */
+    --ink: #ffffff;              /* text / icons */
+    --panel-solid: rgba(20, 40, 50, 0.94);
+    --toast-bg: rgba(20, 40, 50, 0.72);
+    --select-bg: #15323b;
+    /* default colour = teal (dark) */
+    --bg-gradient: linear-gradient(135deg, #0f2027 0%, #2c5364 50%, #00b4a0 100%);
+    --blob-1: rgba(0, 200, 180, 0.38);
+    --blob-2: rgba(90, 140, 200, 0.30);
+  }
+  /* LIGHT mode neutrals + default teal (light) */
+  html[data-mode="light"] {
+    --w: 38, 50, 71;
+    --ink: #ffffff;
+    --panel-solid: rgba(248, 250, 252, 0.94);
+    --toast-bg: rgba(38, 50, 71, 0.92);
+    --select-bg: #eef2f7;
+    --bg-gradient: linear-gradient(135deg, #c9efe2 0%, #9fd8e8 50%, #d8f1d0 100%);
+  }
+
+  /* ---- colour hues (background gradient + blobs) ---- */
+  html[data-color="blue"]   { --bg-gradient: linear-gradient(135deg, #131a5a 0%, #2f7fd6 50%, #36d0e0 100%); --blob-1: rgba(70,150,240,0.38);  --blob-2: rgba(60,210,225,0.32); }
+  html[data-color="purple"] { --bg-gradient: linear-gradient(135deg, #2a1055 0%, #7b3fbf 50%, #d76d77 100%); --blob-1: rgba(150,110,240,0.40); --blob-2: rgba(230,120,150,0.34); }
+  html[data-color="pink"]   { --bg-gradient: linear-gradient(135deg, #5b1648 0%, #d6478f 50%, #ff8c69 100%); --blob-1: rgba(240,110,180,0.40); --blob-2: rgba(255,150,110,0.34); }
+  html[data-color="orange"] { --bg-gradient: linear-gradient(135deg, #7c2d12 0%, #ef7a18 50%, #f5d020 100%); --blob-1: rgba(245,150,60,0.40);  --blob-2: rgba(245,210,40,0.34); }
+  html[data-color="green"]  { --bg-gradient: linear-gradient(135deg, #0a2417 0%, #14803d 50%, #a3e635 100%); --blob-1: rgba(110,210,120,0.38); --blob-2: rgba(180,225,70,0.34); }
+
+  /* light-mode pale multi-hue variants (override the dark gradient) */
+  html[data-mode="light"][data-color="blue"]   { --bg-gradient: linear-gradient(135deg, #d3e4fb 0%, #aaccf5 50%, #c6ebf6 100%); }
+  html[data-mode="light"][data-color="purple"] { --bg-gradient: linear-gradient(135deg, #ebe1fb 0%, #d6c0f0 50%, #f4cfe6 100%); }
+  html[data-mode="light"][data-color="pink"]   { --bg-gradient: linear-gradient(135deg, #fbd9ea 0%, #f7bcd6 50%, #ffd6c2 100%); }
+  html[data-mode="light"][data-color="orange"] { --bg-gradient: linear-gradient(135deg, #fce3c4 0%, #fad29a 50%, #fdeeb0 100%); }
+  html[data-mode="light"][data-color="green"]  { --bg-gradient: linear-gradient(135deg, #daf0c9 0%, #bce5a8 50%, #e8f5b0 100%); }
+
+  /* in light mode, don't darken the page behind modals (keeps panels bright) */
+  html[data-mode="light"] .overlay { background: rgba(70, 100, 140, 0.14); }
+  html[data-mode="light"] .modal { background: rgba(var(--w), 0.28); }
+
   body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     height: 100vh;
     display: flex;
-    background: linear-gradient(135deg, #0f2027 0%, #2c5364 45%, #00b4a0 80%, #f7b733 100%);
+    background: var(--bg-gradient);
     background-attachment: fixed;
     overflow: hidden;
   }
@@ -63,12 +108,12 @@
   }
   body::before {
     width: 300px; height: 300px;
-    background: rgba(0, 255, 200, 0.45);
+    background: var(--blob-1);
     top: -80px; left: -60px;
   }
   body::after {
     width: 350px; height: 350px;
-    background: rgba(255, 120, 180, 0.4);
+    background: var(--blob-2);
     bottom: -100px; right: -80px;
   }
 
@@ -80,12 +125,12 @@
     height: 100%;
     border-radius: 0;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(var(--w), 0.12);
     backdrop-filter: blur(18px) saturate(160%);
     -webkit-backdrop-filter: blur(18px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(var(--w), 0.25);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-    color: #fff;
+    color: var(--ink);
   }
 
   /* ---------- SIDEBAR ---------- */
@@ -93,8 +138,8 @@
     width: 230px;
     flex-shrink: 0;
     padding: 26px 18px;
-    background: rgba(255, 255, 255, 0.10);
-    border-right: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(var(--w), 0.10);
+    border-right: 1px solid rgba(var(--w), 0.18);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -108,7 +153,7 @@
     background: transparent;
   }
   .sidebar-resizer:hover, .sidebar-resizer.dragging {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(var(--w), 0.25);
   }
   .shell.resizing { user-select: none; }
   .brand {
@@ -124,12 +169,12 @@
   .brand-icon {
     display: flex; align-items: center; justify-content: center;
     width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px;
-    background: rgba(255,255,255,0.14);
-    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(var(--w),0.14);
+    border: 1px solid rgba(var(--w),0.3);
     backdrop-filter: blur(8px) saturate(160%);
     -webkit-backdrop-filter: blur(8px) saturate(160%);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25);
-    color: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18), inset 0 1px 0 rgba(var(--w),0.25);
+    color: var(--ink);
   }
   .lists {
     list-style: none;
@@ -145,25 +190,30 @@
     border-radius: 12px;
     cursor: pointer;
     font-size: 0.92rem;
+  }
+  /* tighter spacing for the user's lists (smart views keep their breathing room) */
+  #listNav li {
+    padding: 7px 12px;
+    margin-bottom: 2px;
     border: 1px solid transparent;
     transition: background 0.2s, border 0.2s;
   }
-  .lists li:hover { background: rgba(255,255,255,0.14); }
+  .lists li:hover { background: rgba(var(--w),0.14); }
   .lists li.active {
-    background: rgba(255,255,255,0.26);
-    border-color: rgba(255,255,255,0.35);
+    background: rgba(var(--w),0.26);
+    border-color: rgba(var(--w),0.35);
   }
   .lists .name { flex: 1; word-break: break-word; }
   .lists .badge {
     font-size: 0.72rem;
     opacity: 0.8;
-    background: rgba(255,255,255,0.2);
+    background: rgba(var(--w),0.2);
     padding: 1px 8px;
     border-radius: 10px;
   }
   .lists .remove {
     display: flex; align-items: center; justify-content: center;
-    background: none; border: none; color: rgba(255,255,255,0.55);
+    background: none; border: none; color: rgba(var(--w),0.55);
     cursor: pointer; padding: 2px;
     opacity: 0; transition: opacity 0.15s, color 0.2s;
   }
@@ -178,8 +228,8 @@
 
   .smart-views {
     flex: 0 0 auto; overflow: visible;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(var(--w),0.06);
+    border: 1px solid rgba(var(--w),0.12);
     border-radius: 14px;
     padding: 6px;
     margin-bottom: 16px;
@@ -194,11 +244,11 @@
   .smart-views .smart-item:last-child { margin-bottom: 0; }
   .smart-views .smart-item::before {
     content: ''; position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
-    width: 3px; height: 0; border-radius: 3px; background: #fff;
+    width: 3px; height: 0; border-radius: 3px; background: var(--ink);
     transition: height 0.15s;
   }
   .smart-views .smart-item.active::before { height: 60%; }
-  .smart-views .smart-item.active { background: rgba(255,255,255,0.16); border-color: transparent; }
+  .smart-views .smart-item.active { background: rgba(var(--w),0.16); border-color: transparent; }
   .smart-views .smart-item .all-icon { flex-shrink: 0; }
   .lists-heading {
     display: flex; align-items: center; justify-content: space-between;
@@ -209,17 +259,17 @@
   .lists-sort-btn {
     display: flex; align-items: center; justify-content: center;
     width: 22px; height: 22px; border-radius: 7px;
-    background: transparent; border: 1px solid rgba(255,255,255,0.25);
-    color: #fff; opacity: 0.8; cursor: pointer;
+    background: transparent; border: 1px solid rgba(var(--w),0.25);
+    color: var(--ink); opacity: 0.8; cursor: pointer;
     transition: background 0.2s, opacity 0.2s;
   }
-  .lists-sort-btn:hover { background: rgba(255,255,255,0.18); opacity: 1; }
+  .lists-sort-btn:hover { background: rgba(var(--w),0.18); opacity: 1; }
   .lists li.dragging, .subtasks li.dragging { opacity: 0.4; }
-  .lists li.drag-over, .subtasks li.drag-over { box-shadow: inset 0 2px 0 rgba(255,255,255,0.7); }
+  .lists li.drag-over, .subtasks li.drag-over { box-shadow: inset 0 2px 0 rgba(var(--w),0.7); }
   .subtasks li[draggable="true"] { cursor: grab; }
   .lists .all-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.9; }
   .lists .all-item + li { margin-top: 4px; }
-  .all-divider { height: 1px; background: rgba(255,255,255,0.18); margin: 4px 2px 8px; }
+  .all-divider { height: 1px; background: rgba(var(--w),0.18); margin: 4px 2px 8px; }
 
   .new-list-btn {
     display: flex; align-items: center; justify-content: center;
@@ -227,12 +277,12 @@
     margin-top: 14px;
     padding: 12px;
     border-radius: 12px;
-    border: 1px dashed rgba(255,255,255,0.4);
-    background: rgba(255,255,255,0.12);
-    color: #fff; font-size: 0.9rem; cursor: pointer;
+    border: 1px dashed rgba(var(--w),0.4);
+    background: rgba(var(--w),0.12);
+    color: var(--ink); font-size: 0.9rem; cursor: pointer;
     transition: background 0.2s, transform 0.15s;
   }
-  .new-list-btn:hover { background: rgba(255,255,255,0.22); }
+  .new-list-btn:hover { background: rgba(var(--w),0.22); }
   .new-list-btn:active { transform: scale(0.97); }
   #syncBtn.syncing { border-style: solid; border-color: rgba(110,231,183,0.55); background: rgba(62,207,142,0.18); }
   .sync-ico { transform-origin: 50% 50%; }
@@ -253,12 +303,12 @@
     width: 340px; max-width: calc(100vw - 40px);
     padding: 26px;
     border-radius: 20px;
-    background: rgba(255,255,255,0.16);
+    background: rgba(var(--w),0.16);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
-    border: 1px solid rgba(255,255,255,0.3);
+    border: 1px solid rgba(var(--w),0.3);
     box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    color: #fff;
+    color: var(--ink);
     animation: pop 0.2s ease;
   }
   .modal h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 18px; }
@@ -271,13 +321,13 @@
     width: 100%;
     padding: 12px 14px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff; font-size: 0.95rem; outline: none;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.95rem; outline: none;
     margin-bottom: 16px;
   }
-  #modalName::placeholder { color: rgba(255,255,255,0.6); }
-  #modalName:focus { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6); }
+  #modalName::placeholder { color: rgba(var(--w),0.6); }
+  #modalName:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
 
   .swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
   .swatch {
@@ -287,8 +337,8 @@
   }
   .swatch:hover { transform: scale(1.12); }
   .swatch.selected {
-    border-color: #fff;
-    box-shadow: 0 0 0 2px rgba(255,255,255,0.4);
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px rgba(var(--w),0.4);
   }
 
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
@@ -299,30 +349,30 @@
   .settings-head h2 { margin: 0; }
   .settings-tabs {
     display: flex; gap: 5px; padding: 5px; margin-bottom: 18px;
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(var(--w),0.07);
+    border: 1px solid rgba(var(--w),0.14);
     border-radius: 13px;
   }
   .settings-tab-btn {
     flex: 1; padding: 9px 14px; border: none; border-radius: 9px;
-    background: transparent; color: rgba(255,255,255,0.68);
+    background: transparent; color: rgba(var(--w),0.68);
     font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer;
     transition: background 0.2s, color 0.2s;
   }
-  .settings-tab-btn:hover { color: #fff; }
+  .settings-tab-btn:hover { color: var(--ink); }
   .settings-tab-btn.active {
-    background: rgba(255,255,255,0.22);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: #fff;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+    background: rgba(var(--w),0.22);
+    border: 1px solid rgba(var(--w),0.3);
+    color: var(--ink);
+    box-shadow: inset 0 1px 0 rgba(var(--w),0.2);
   }
   .settings-scroll { flex: 1; overflow-y: auto; margin: 0 -6px 18px; padding: 0 6px; }
   .settings-panel { display: none; }
   .settings-panel.active { display: block; animation: pop 0.2s ease; }
 
   .settings-card {
-    background: rgba(255,255,255,0.07);
-    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(var(--w),0.07);
+    border: 1px solid rgba(var(--w),0.14);
     border-radius: 16px;
     padding: 16px 18px;
     margin-bottom: 14px;
@@ -334,6 +384,46 @@
     font-size: 0.95rem; font-weight: 600; margin: 0 0 4px;
   }
   .settings-hint { font-size: 0.8rem; opacity: 0.7; margin: 0 0 12px; line-height: 1.45; }
+
+  .mode-toggle {
+    display: flex; gap: 5px; padding: 5px;
+    background: rgba(var(--w),0.07); border: 1px solid rgba(var(--w),0.14);
+    border-radius: 13px; max-width: 280px;
+  }
+  .mode-btn {
+    flex: 1; padding: 10px 14px; border: 1px solid transparent; border-radius: 9px;
+    background: transparent; color: rgba(var(--w),0.7);
+    font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .mode-btn:hover { color: var(--ink); }
+  .mode-btn.active {
+    background: rgba(var(--w),0.22); border-color: rgba(var(--w),0.3);
+    color: var(--ink); box-shadow: inset 0 1px 0 rgba(var(--w),0.2);
+  }
+
+  .theme-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+  .theme-swatch {
+    width: 54px; cursor: pointer; text-align: center;
+    border: none; background: none; padding: 0; color: inherit; font: inherit;
+  }
+  .theme-swatch .theme-chip {
+    display: block;
+    width: 54px; height: 40px; border-radius: 12px;
+    border: 2px solid rgba(var(--w),0.25);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(var(--w),0.3);
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .theme-swatch:hover .theme-chip { transform: translateY(-2px); }
+  .theme-swatch.selected .theme-chip {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px rgba(var(--w),0.5), 0 4px 12px rgba(0,0,0,0.25);
+  }
+  .theme-swatch .theme-name {
+    display: block; font-size: 0.68rem; opacity: 0.8; margin-top: 6px;
+    white-space: nowrap;
+  }
+  .theme-swatch.selected .theme-name { opacity: 1; font-weight: 600; }
   .backup-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 0; }
 
   .current-badge {
@@ -346,22 +436,22 @@
   .changelog-entry { margin-bottom: 16px; }
   .changelog-entry:last-child { margin-bottom: 4px; }
   .changelog-version {
-    font-size: 0.95rem; font-weight: 600; color: #fff;
+    font-size: 0.95rem; font-weight: 600; color: var(--ink);
     margin-bottom: 8px;
   }
   .changelog-entry ul { padding-left: 18px; margin: 0; }
   .changelog-entry li { font-size: 0.88rem; opacity: 0.82; margin-bottom: 6px; line-height: 1.4; }
   .btn-ghost, .btn-primary, .btn-danger {
     padding: 10px 18px; border-radius: 11px; cursor: pointer;
-    font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.3);
+    font-size: 0.9rem; border: 1px solid rgba(var(--w),0.3);
     transition: background 0.2s, transform 0.15s, border-color 0.2s;
   }
-  .btn-ghost { background: transparent; color: #fff; }
-  .btn-ghost:hover { background: rgba(255,255,255,0.15); }
-  .btn-primary { background: rgba(255,255,255,0.3); color: #fff; font-weight: 600; }
-  .btn-primary:hover { background: rgba(255,255,255,0.45); }
+  .btn-ghost { background: transparent; color: var(--ink); }
+  .btn-ghost:hover { background: rgba(var(--w),0.15); }
+  .btn-primary { background: rgba(var(--w),0.3); color: var(--ink); font-weight: 600; }
+  .btn-primary:hover { background: rgba(var(--w),0.45); }
   .btn-danger {
-    background: rgba(255,77,77,0.55); color: #fff; font-weight: 600;
+    background: rgba(255,77,77,0.55); color: var(--ink); font-weight: 600;
     border-color: rgba(255,160,160,0.55);
     box-shadow: 0 4px 14px rgba(255,60,60,0.25);
   }
@@ -378,8 +468,8 @@
     flex-shrink: 0;
     overflow: hidden;
     position: relative;
-    background: rgba(255,255,255,0.10);
-    border-left: 1px solid rgba(255,255,255,0.18);
+    background: rgba(var(--w),0.10);
+    border-left: 1px solid rgba(var(--w),0.18);
     transition: width 0.28s ease;
   }
   .detail.open { width: 360px; }
@@ -393,7 +483,7 @@
     background: transparent;
   }
   .detail-resizer:hover, .detail-resizer.dragging {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(var(--w), 0.25);
   }
   .detail-empty {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -418,11 +508,11 @@
   .icon-btn {
     display: flex; align-items: center; justify-content: center;
     width: 32px; height: 32px; border-radius: 9px; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.25);
-    background: rgba(255,255,255,0.1); color: #fff;
+    border: 1px solid rgba(var(--w),0.25);
+    background: rgba(var(--w),0.1); color: var(--ink);
     transition: background 0.2s;
   }
-  .icon-btn:hover { background: rgba(255,255,255,0.22); }
+  .icon-btn:hover { background: rgba(var(--w),0.22); }
   .detail-actions {
     display: flex; justify-content: flex-end; gap: 10px;
     margin-top: auto; padding-top: 16px;
@@ -430,25 +520,25 @@
 
   #tTitle {
     width: 100%; padding: 12px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff; font-size: 0.95rem; outline: none; margin-bottom: 4px;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.95rem; outline: none; margin-bottom: 4px;
   }
-  #tTitle::placeholder { color: rgba(255,255,255,0.55); }
+  #tTitle::placeholder { color: rgba(var(--w),0.55); }
   #tTitle:focus, #tDesc:focus, #tDue:focus, #tList:focus, #tRecur:focus, #tSubInput:focus {
-    background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6);
+    background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6);
   }
   #tDesc, #tList, #tDue, #tRecur, #tSubInput {
     width: 100%;
     padding: 11px 13px;
     border-radius: 11px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff; font-size: 0.9rem; outline: none;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.9rem; outline: none;
     font-family: inherit;
   }
   #tDesc { resize: vertical; margin-bottom: 4px; }
-  #tDesc::placeholder, #tSubInput::placeholder { color: rgba(255,255,255,0.55); }
+  #tDesc::placeholder, #tSubInput::placeholder { color: rgba(var(--w),0.55); }
   /* themed dropdowns: custom chevron + dark glass option list */
   #tList, #tRecur {
     appearance: none; -webkit-appearance: none; -moz-appearance: none;
@@ -460,8 +550,8 @@
     cursor: pointer;
   }
   #tList option, #tRecur option {
-    background: #15323b;
-    color: #fff;
+    background: var(--select-bg);
+    color: var(--ink);
   }
   #tList option:checked, #tRecur option:checked { background: #1f6f6a; }
   #tRecur:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -478,34 +568,58 @@
   .prio-group { display: flex; gap: 6px; }
   .prio-group button {
     flex: 1; padding: 9px 0; border-radius: 9px; cursor: pointer;
-    font-size: 0.78rem; color: #fff;
-    border: 1px solid rgba(255,255,255,0.25);
-    background: rgba(255,255,255,0.1);
+    font-size: 0.78rem; color: var(--ink);
+    border: 1px solid rgba(var(--w),0.25);
+    background: rgba(var(--w),0.1);
     transition: all 0.15s;
   }
   .prio-group button[data-prio="low"].on  { background: #2ecc71; border-color: #2ecc71; }
   .prio-group button[data-prio="med"].on  { background: #ffd60a; border-color: #ffd60a; color: #5a4a00; }
   .prio-group button[data-prio="high"].on { background: #ff4d4d; border-color: #ff4d4d; }
-  .prio-group button[data-prio="none"].on { background: rgba(255,255,255,0.35); }
+  .prio-group button[data-prio="none"].on { background: rgba(var(--w),0.35); }
 
   .subtasks { list-style: none; margin: 6px 0 10px; }
   .subtasks li {
     display: flex; align-items: center; gap: 10px;
     padding: 8px 10px; margin-bottom: 6px; border-radius: 10px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(var(--w),0.1);
   }
   .subtasks .scheck {
     width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.6); cursor: pointer;
+    border: 2px solid rgba(var(--w),0.6); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
   }
   .subtasks li.done .scheck { background: rgba(120,255,180,0.8); border-color: rgba(120,255,180,0.8); color: #14532d; }
   .subtasks .stext { flex: 1; font-size: 0.88rem; }
   .subtasks li.done .stext { text-decoration: line-through; opacity: 0.5; }
-  .subtasks .sdel { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; display: flex; }
+  .subtasks .sdel { background: none; border: none; color: rgba(var(--w),0.6); cursor: pointer; display: flex; }
   .subtasks .sdel:hover { color: #ff8a8a; }
   .sub-add { display: flex; gap: 8px; margin-bottom: 20px; }
   #tSubAdd { display: flex; align-items: center; justify-content: center; padding: 0 14px; }
+
+  /* tag editor (detail panel) */
+  .tag-edit { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .tag-edit:empty { display: none; }
+  .tag-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.78rem; padding: 3px 6px 3px 10px; border-radius: 9px;
+    background: rgba(var(--w),0.18); border: 1px solid rgba(var(--w),0.2);
+  }
+  .tag-x {
+    display: flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border: none; border-radius: 50%;
+    background: rgba(var(--w),0.18); color: var(--ink);
+    font-size: 0.85rem; line-height: 1; cursor: pointer; padding: 0;
+  }
+  .tag-x:hover { background: rgba(255,80,80,0.5); }
+  #tTagInput {
+    width: 100%; padding: 11px 14px; border-radius: 12px;
+    border: 1px solid rgba(var(--w),0.3); background: rgba(var(--w),0.1);
+    color: var(--ink); font-size: 0.9rem; outline: none; margin-bottom: 4px;
+  }
+  #tTagInput::placeholder { color: rgba(var(--w),0.5); }
+  #tTagInput:focus { background: rgba(var(--w),0.18); border-color: rgba(var(--w),0.6); }
+  .chip.tag-chip { background: rgba(120,170,255,0.22); }
 
   /* task row meta */
   .task-main { flex: 1; min-width: 0; cursor: pointer; }
@@ -514,7 +628,7 @@
   .chip {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 0.72rem; padding: 2px 8px; border-radius: 8px;
-    background: rgba(255,255,255,0.16); opacity: 0.9;
+    background: rgba(var(--w),0.16); opacity: 0.9;
   }
   .chip.overdue { background: rgba(255,80,80,0.35); }
   .chip.due-today { background: rgba(255,193,7,0.32); }
@@ -538,8 +652,8 @@
     width: 42px; height: 42px; flex-shrink: 0;
     margin-bottom: 12px;
     border-radius: 12px; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.28);
-    background: rgba(255,255,255,0.12); color: #fff;
+    border: 1px solid rgba(var(--w),0.28);
+    background: rgba(var(--w),0.12); color: var(--ink);
     backdrop-filter: blur(8px) saturate(160%);
     -webkit-backdrop-filter: blur(8px) saturate(160%);
     transition: background 0.2s, transform 0.1s;
@@ -559,36 +673,36 @@
     flex: 1;
     padding: 13px 16px;
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff; font-size: 0.95rem; outline: none;
+    border: 1px solid rgba(var(--w), 0.3);
+    background: rgba(var(--w), 0.15);
+    color: var(--ink); font-size: 0.95rem; outline: none;
     transition: background 0.2s, border 0.2s;
   }
-  #taskInput::placeholder { color: rgba(255,255,255,0.65); }
-  #taskInput:focus { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6); }
+  #taskInput::placeholder { color: rgba(var(--w),0.65); }
+  #taskInput:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
   #addBtn {
     display: flex; align-items: center; justify-content: center;
     padding: 0 20px; border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.25);
-    color: #fff; cursor: pointer;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.25);
+    color: var(--ink); cursor: pointer;
     transition: transform 0.15s, background 0.2s;
   }
-  #addBtn:hover { background: rgba(255,255,255,0.4); }
+  #addBtn:hover { background: rgba(var(--w),0.4); }
   #addBtn:active { transform: scale(0.92); }
 
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; row-gap: 10px; }
   .filter {
     flex: 1 1 70px; padding: 7px; border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: transparent; color: #fff; font-size: 0.8rem;
+    border: 1px solid rgba(var(--w),0.2);
+    background: transparent; color: var(--ink); font-size: 0.8rem;
     cursor: pointer; opacity: 0.7; transition: all 0.2s;
   }
-  .filter.active { background: rgba(255,255,255,0.28); opacity: 1; }
+  .filter.active { background: rgba(var(--w),0.28); opacity: 1; }
   .filter-select {
     flex: 1 1 130px; padding: 7px 26px 7px 10px; border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background-color: transparent; color: #fff; font-size: 0.8rem;
+    border: 1px solid rgba(var(--w),0.2);
+    background-color: transparent; color: var(--ink); font-size: 0.8rem;
     cursor: pointer; opacity: 0.85; font-family: inherit;
     appearance: none; -webkit-appearance: none; -moz-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -596,16 +710,16 @@
     background-position: right 8px center;
     background-size: 14px;
   }
-  .filter-select option { background: #15323b; color: #fff; }
+  .filter-select option { background: var(--select-bg); color: var(--ink); }
   .filter-select option:checked { background: #1f6f6a; }
   .filter-reset {
     flex: 0 0 auto; width: 34px; padding: 7px;
     display: flex; align-items: center; justify-content: center;
-    border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
-    background: transparent; color: #fff; cursor: pointer;
+    border-radius: 10px; border: 1px solid rgba(var(--w),0.2);
+    background: transparent; color: var(--ink); cursor: pointer;
     opacity: 0.7; transition: all 0.2s;
   }
-  .filter-reset:hover { opacity: 1; background: rgba(255,255,255,0.14); }
+  .filter-reset:hover { opacity: 1; background: rgba(var(--w),0.14); }
   .sort-row { margin-bottom: 16px; align-items: center; }
   .sort-label { font-size: 0.8rem; opacity: 0.75; flex: 0 0 auto; }
   .sort-label.sort-then { margin-left: 8px; }
@@ -616,8 +730,8 @@
   #list li {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 13px 14px; margin-bottom: 10px; border-radius: 14px;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(var(--w),0.12);
+    border: 1px solid rgba(var(--w),0.18);
     animation: pop 0.25s ease;
   }
   #list li.empty { align-items: center; }
@@ -625,19 +739,19 @@
     background: none; border: none; padding: 4px 2px; margin-bottom: 6px;
     display: flex; align-items: center; gap: 10px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
-    color: rgba(255,255,255,0.6); text-transform: uppercase;
+    color: rgba(var(--w),0.6); text-transform: uppercase;
     animation: none;
   }
-  #list li.group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.18); }
+  #list li.group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
   #list li.group-sep:not(:first-child) { margin-top: 4px; }
-  #list li.selected { background: rgba(255,255,255,0.24); border-color: rgba(255,255,255,0.45); }
+  #list li.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
   @keyframes pop {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   .check {
     width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.6); cursor: pointer;
+    border: 2px solid rgba(var(--w),0.6); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.8rem; transition: background 0.2s;
   }
@@ -648,7 +762,7 @@
   #list li.done .text { text-decoration: line-through; opacity: 0.55; }
   .del {
     display: flex; align-items: center; justify-content: center;
-    background: none; border: none; color: rgba(255,255,255,0.6);
+    background: none; border: none; color: rgba(var(--w),0.6);
     cursor: pointer; padding: 4px; transition: color 0.2s, transform 0.15s;
   }
   .del:hover { color: #ff8a8a; transform: scale(1.2); }
@@ -660,7 +774,7 @@
     margin-top: 16px; font-size: 0.8rem; opacity: 0.85;
   }
   #clearDone {
-    background: none; border: none; color: #fff; opacity: 0.8;
+    background: none; border: none; color: var(--ink); opacity: 0.8;
     cursor: pointer; text-decoration: underline; font-size: 0.8rem;
   }
   #clearDone:hover { opacity: 1; }
@@ -673,9 +787,9 @@
       z-index: 60;
       transform: translateX(-100%);
       transition: transform 0.28s ease;
-      border-right: 1px solid rgba(255,255,255,0.18);
+      border-right: 1px solid rgba(var(--w),0.18);
       border-bottom: none;
-      background: rgba(20,40,50,0.94);
+      background: var(--panel-solid);
       backdrop-filter: blur(20px) saturate(160%);
       -webkit-backdrop-filter: blur(20px) saturate(160%);
       box-shadow: 8px 0 32px rgba(0,0,0,0.35);
@@ -711,7 +825,7 @@
       width: 0; border-left: none;
       backdrop-filter: blur(20px) saturate(160%);
       -webkit-backdrop-filter: blur(20px) saturate(160%);
-      background: rgba(20,40,50,0.94);
+      background: var(--panel-solid);
     }
     .detail.open { width: 100% !important; }
     .detail-empty, .detail-body { min-width: 0; }
@@ -729,17 +843,17 @@
     width: 100%;
     padding: 11px 14px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
-    color: #fff; font-size: 0.9rem; outline: none;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.9rem; outline: none;
     transition: background 0.2s, border 0.2s;
   }
-  #dbxKey::placeholder { color: rgba(255,255,255,0.55); }
-  #dbxKey:focus { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6); }
+  #dbxKey::placeholder { color: rgba(var(--w),0.55); }
+  #dbxKey:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
   .dbx-status {
     font-size: 0.68rem; font-weight: 500; vertical-align: middle;
     padding: 2px 9px; border-radius: 20px; margin-left: 6px;
-    background: rgba(170,179,197,0.18); color: rgba(255,255,255,0.7);
+    background: rgba(170,179,197,0.18); color: rgba(var(--w),0.7);
   }
   .dbx-status.connected { background: rgba(62,207,142,0.2); color: #6ee7b7; }
   .dbx-account-row { font-size: 0.78rem; opacity: 0.78; margin: 2px 0 12px; }
@@ -748,12 +862,12 @@
   .dbx-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
   .dbx-toggle-track {
     flex-shrink: 0; width: 38px; height: 22px; border-radius: 22px;
-    background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.28);
+    background: rgba(var(--w),0.18); border: 1px solid rgba(var(--w),0.28);
     transition: background 0.2s; position: relative;
   }
   .dbx-toggle-thumb {
     position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
-    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.35); transition: transform 0.2s;
+    background: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.35); transition: transform 0.2s;
   }
   .dbx-toggle input:checked + .dbx-toggle-track { background: rgba(62,207,142,0.55); border-color: rgba(110,231,183,0.6); }
   .dbx-toggle input:checked + .dbx-toggle-track .dbx-toggle-thumb { transform: translateX(16px); }
@@ -768,8 +882,8 @@
     max-width: min(90vw, 420px);
     padding: 12px 20px; border-radius: 14px;
     font-size: 0.88rem; font-weight: 500; color: #fff; text-align: center;
-    background: rgba(20,40,50,0.7);
-    border: 1px solid rgba(255,255,255,0.25);
+    background: var(--toast-bg);
+    border: 1px solid rgba(var(--w),0.25);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
     box-shadow: 0 8px 30px rgba(0,0,0,0.35);
@@ -777,6 +891,13 @@
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
+<script>
+  // apply the saved mode + colour before first paint to avoid a flash
+  try {
+    var _m = localStorage.getItem('glass-todos-mode'); if (_m === 'light') document.documentElement.dataset.mode = 'light';
+    var _c = localStorage.getItem('glass-todos-color'); if (_c && _c !== 'teal') document.documentElement.dataset.color = _c;
+  } catch (e) {}
+</script>
 </head>
 <body>
   <div class="shell">
@@ -844,6 +965,9 @@
           <option value="med">Med</option>
           <option value="low">Low</option>
           <option value="none">None</option>
+        </select>
+        <select id="tagFilter" class="filter-select">
+          <option value="any">Any tag</option>
         </select>
         <button class="filter-reset" id="resetFilters" title="Reset all filters">
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
@@ -955,6 +1079,10 @@
           <button type="button" data-prio="high">High</button>
         </div>
 
+        <label class="field-label">Tags</label>
+        <div class="tag-edit" id="tTags"></div>
+        <input type="text" id="tTagInput" placeholder="Add a tag and press Enter…" maxlength="30">
+
         <div class="field-label sub-heading">
           <span>Sub-tasks</span>
           <button class="lists-sort-btn" id="subsSortBtn" title="Sort alphabetically"></button>
@@ -1003,6 +1131,19 @@
         <!-- GENERAL TAB -->
         <div class="settings-panel active" data-panel="general">
           <div class="settings-card">
+            <h3 class="settings-subhead">Appearance</h3>
+            <p class="settings-hint">Choose a light or dark look.</p>
+            <div class="mode-toggle" id="modeToggle">
+              <button class="mode-btn" data-mode="light">☀ Light</button>
+              <button class="mode-btn" data-mode="dark">☾ Dark</button>
+            </div>
+          </div>
+          <div class="settings-card">
+            <h3 class="settings-subhead">Colour</h3>
+            <p class="settings-hint">Pick the background colour.</p>
+            <div class="theme-grid" id="colorGrid"></div>
+          </div>
+          <div class="settings-card">
             <h3 class="settings-subhead">Backup</h3>
             <p class="settings-hint">Save all your lists and tasks to a file on this device, or load one back in.</p>
             <div class="backup-row">
@@ -1047,7 +1188,20 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">Alpha 0.6.0 <span class="current-badge">Current</span></div>
+          <div class="changelog-version">Alpha 0.7.0 <span class="current-badge">Current</span></div>
+          <ul>
+            <li>Added a theme system in Settings with two parts: a Light/Dark appearance toggle and a separate colour picker</li>
+            <li>Six background colours (Teal, Blue, Purple, Pink, Orange, Green), each a multi-colour gradient with its own light and dark variant</li>
+            <li>Your appearance and colour choices are saved and applied instantly</li>
+            <li>Light mode keeps the white text and now shows brighter, less murky panels and modals</li>
+            <li>Tasks can now have tags: add them in the detail panel, see them on task rows, and filter by tag</li>
+            <li>Deleting the task that's open in the detail panel now closes that panel</li>
+            <li>Completing a recurring task now closes its detail panel too</li>
+            <li>Made the sidebar list items more compact for a tidier list of lists</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">Alpha 0.6.0</div>
           <ul>
             <li>Added Dropbox sync — connect your own Dropbox account to sync your tasks between PC and Android</li>
             <li>Upload to and download from Dropbox straight from the browser; your data never passes through any server of ours</li>
@@ -1184,7 +1338,7 @@
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
   const filters = document.querySelectorAll('.filter');
-  const dueFilter = $('dueFilter'), prioFilter = $('prioFilter');
+  const dueFilter = $('dueFilter'), prioFilter = $('prioFilter'), tagFilter = $('tagFilter');
   const sortBy = $('sortBy'), sortDir = $('sortDir');
   const sortBy2 = $('sortBy2'), sortDir2 = $('sortDir2');
   const sortBy3 = $('sortBy3'), sortDir3 = $('sortDir3');
@@ -1194,6 +1348,7 @@
   const tTitle = $('tTitle'), tDesc = $('tDesc'), tList = $('tList'), tDue = $('tDue');
   const tRecur = $('tRecur'), tPrio = $('tPrio'), tSubs = $('tSubs');
   const tSubInput = $('tSubInput'), tSubAdd = $('tSubAdd');
+  const tTags = $('tTags'), tTagInput = $('tTagInput');
   const tDelete = $('tDelete'), tClose = $('tClose');
 
   const COLORS = ['#ff4d4d','#ff9f1c','#ffd60a','#a3e635','#2ecc71','#1abc9c','#00bcd4',
@@ -1231,6 +1386,7 @@
       if (t.recur === undefined) t.recur = 'none';
       if (t.priority === undefined) t.priority = 'none';
       if (!Array.isArray(t.subtasks)) t.subtasks = [];
+      if (!Array.isArray(t.tags)) t.tags = [];
     });
   });
   let filter = localStorage.getItem('glass-todos-filter') || 'all';
@@ -1430,15 +1586,32 @@
     });
     return entries.filter(({ t }) =>
       (filter === 'all' ? true : filter === 'done' ? t.done : !t.done) &&
-      matchesDueFilter(t) && matchesPrioFilter(t) && matchesSmartView(t)
+      matchesDueFilter(t) && matchesPrioFilter(t) && matchesTagFilter(t) && matchesSmartView(t)
     ).sort((a, b) => {
       if (a.t.done !== b.t.done) return a.t.done ? 1 : -1;
       return sortCompare(a.t, b.t, a.owner, b.owner);
     });
   }
 
+  function allTags() {
+    const set = new Set();
+    state.lists.forEach(l => l.todos.forEach(t => (t.tags || []).forEach(tag => set.add(tag))));
+    return [...set].sort();
+  }
+  function populateTagFilter() {
+    const tags = allTags();
+    const cur = tagFilter.value;
+    tagFilter.innerHTML = '<option value="any">Any tag</option><option value="__none">No tag</option>'
+      + tags.map(t => `<option value="${t}">#${t}</option>`).join('');
+    // keep the saved/current selection if it still exists, else fall back to Any
+    const saved = localStorage.getItem('glass-todos-tag-filter') || 'any';
+    const want = cur && cur !== 'any' ? cur : saved;
+    tagFilter.value = [...tagFilter.options].some(o => o.value === want) ? want : 'any';
+  }
+
   function renderTasks() {
     list.innerHTML = '';
+    populateTagFilter();
 
     const all = isAllView();
     listTitle.textContent = SMART_TITLES[state.activeId] || activeList().name;
@@ -1448,7 +1621,7 @@
     if (shown.length === 0) {
       const li = document.createElement('li');
       li.className = 'empty';
-      li.textContent = (filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any')
+      li.textContent = (filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any' && tagFilter.value === 'any')
         ? 'Nothing here yet — add a task!' : 'No tasks in this view.';
       list.appendChild(li);
     }
@@ -1492,6 +1665,7 @@
         e.stopPropagation();
         if (!await confirmDialog(`Delete the task "${t.text}"?`)) return;
         owner.todos = owner.todos.filter(x => x.id !== t.id);
+        if (editingTask && editingTask.id === t.id) closeTaskPanel();
         save(); renderAll();
       };
 
@@ -1550,6 +1724,12 @@
       c.title = t.desc;
       meta.appendChild(c); any = true;
     }
+    (t.tags || []).forEach(tag => {
+      const c = document.createElement('span');
+      c.className = 'chip tag-chip';
+      c.textContent = '#' + tag;
+      meta.appendChild(c); any = true;
+    });
     return any ? meta : null;
   }
 
@@ -1581,6 +1761,13 @@
     const v = prioFilter.value;
     if (v === 'any') return true;
     return (t.priority || 'none') === v;
+  }
+
+  function matchesTagFilter(t) {
+    const v = tagFilter.value;
+    if (v === 'any') return true;
+    if (v === '__none') return !t.tags || !t.tags.length;
+    return (t.tags || []).includes(v);
   }
 
   const PRIO_RANK = { none: 0, low: 1, med: 2, high: 3 };
@@ -1650,6 +1837,7 @@
   }
 
   function toggleTask(t) {
+    const completing = !t.done; // true when this click marks the task done (or rolls a recurring one forward)
     if (!t.done && t.recur && t.recur !== 'none' && t.due) {
       // recurring task: roll the due date forward and reset sub-tasks instead of completing
       t.due = nextDate(t.due, t.recur);
@@ -1660,7 +1848,8 @@
     }
     save(); renderAll();
     if (editingTask && editingTask.id === t.id) renderSubs();
-    if (t.done && editingTask && editingTask.id === t.id) closeTaskPanel();
+    // close the detail panel on completion (normal done, or recurring roll-forward)
+    if (completing && editingTask && editingTask.id === t.id) closeTaskPanel();
   }
 
   function nextDate(d, recur) {
@@ -1695,7 +1884,7 @@
     const target = isAllView() ? state.lists[0] : activeList();
     const task = {
       id: Date.now(), text: val, done: false,
-      desc: '', due: '', recur: 'none', priority: 'none', subtasks: []
+      desc: '', due: '', recur: 'none', priority: 'none', subtasks: [], tags: []
     };
     target.todos.unshift(task);
     input.value = '';
@@ -1717,6 +1906,7 @@
 
     populateListSelect(editingTaskList.id);
     renderPrio();
+    renderTags();
     renderSubs();
     detail.classList.add('open', 'showing-task');
     applyDetailWidth();
@@ -1750,6 +1940,30 @@
   function renderPrio() {
     const p = editingTask ? editingTask.priority : 'none';
     [...tPrio.children].forEach(b => b.classList.toggle('on', b.dataset.prio === p));
+  }
+  function renderTags() {
+    tTags.innerHTML = '';
+    if (!editingTask) return;
+    if (!Array.isArray(editingTask.tags)) editingTask.tags = [];
+    editingTask.tags.forEach(tag => {
+      const chip = document.createElement('span');
+      chip.className = 'tag-pill';
+      chip.innerHTML = `#${tag}<button type="button" class="tag-x" title="Remove">×</button>`;
+      chip.querySelector('.tag-x').onclick = () => {
+        editingTask.tags = editingTask.tags.filter(x => x !== tag);
+        renderTags(); commit();
+      };
+      tTags.appendChild(chip);
+    });
+  }
+  function addTag() {
+    if (!editingTask) return;
+    const raw = tTagInput.value.trim().replace(/^#+/, '').toLowerCase();
+    tTagInput.value = '';
+    if (!raw) return;
+    if (!Array.isArray(editingTask.tags)) editingTask.tags = [];
+    if (!editingTask.tags.includes(raw)) editingTask.tags.push(raw);
+    renderTags(); commit();
   }
   function renderSubs() {
     tSubs.innerHTML = '';
@@ -1881,6 +2095,52 @@
   settingsClose.onclick = () => settingsOverlay.classList.remove('show');
   settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
 
+  // ---- theme system (mode + colour) ----
+  // chip preview gradients mirror the CSS; [dark, light] per colour
+  const THEME_COLORS = [
+    { id: 'teal',   name: 'Teal',   dark: 'linear-gradient(135deg, #0f2027, #2c5364, #00b4a0)', light: 'linear-gradient(135deg, #c9efe2, #9fd8e8, #d8f1d0)' },
+    { id: 'blue',   name: 'Blue',   dark: 'linear-gradient(135deg, #131a5a, #2f7fd6, #36d0e0)', light: 'linear-gradient(135deg, #d3e4fb, #aaccf5, #c6ebf6)' },
+    { id: 'purple', name: 'Purple', dark: 'linear-gradient(135deg, #2a1055, #7b3fbf, #d76d77)', light: 'linear-gradient(135deg, #ebe1fb, #d6c0f0, #f4cfe6)' },
+    { id: 'pink',   name: 'Pink',   dark: 'linear-gradient(135deg, #5b1648, #d6478f, #ff8c69)', light: 'linear-gradient(135deg, #fbd9ea, #f7bcd6, #ffd6c2)' },
+    { id: 'orange', name: 'Orange', dark: 'linear-gradient(135deg, #7c2d12, #ef7a18, #f5d020)', light: 'linear-gradient(135deg, #fce3c4, #fad29a, #fdeeb0)' },
+    { id: 'green',  name: 'Green',  dark: 'linear-gradient(135deg, #0a2417, #14803d, #a3e635)', light: 'linear-gradient(135deg, #daf0c9, #bce5a8, #e8f5b0)' }
+  ];
+  const currentMode = () => localStorage.getItem('glass-todos-mode') === 'light' ? 'light' : 'dark';
+  const currentColor = () => localStorage.getItem('glass-todos-color') || 'teal';
+
+  function applyMode(m) {
+    if (m === 'light') document.documentElement.dataset.mode = 'light';
+    else delete document.documentElement.dataset.mode;
+    localStorage.setItem('glass-todos-mode', m);
+  }
+  function applyColor(c) {
+    if (c === 'teal') delete document.documentElement.dataset.color;
+    else document.documentElement.dataset.color = c;
+    localStorage.setItem('glass-todos-color', c);
+  }
+  function renderModeToggle() {
+    const m = currentMode();
+    document.querySelectorAll('#modeToggle .mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === m);
+      b.onclick = () => { applyMode(b.dataset.mode); renderModeToggle(); renderColors(); };
+    });
+  }
+  function renderColors() {
+    const grid = $('colorGrid');
+    if (!grid) return;
+    const mode = currentMode(), active = currentColor();
+    grid.innerHTML = '';
+    THEME_COLORS.forEach(c => {
+      const b = document.createElement('button');
+      b.className = 'theme-swatch' + (c.id === active ? ' selected' : '');
+      b.innerHTML = `<span class="theme-chip" style="background:${c[mode]}"></span><span class="theme-name">${c.name}</span>`;
+      b.onclick = () => { applyColor(c.id); renderColors(); };
+      grid.appendChild(b);
+    });
+  }
+  renderModeToggle();
+  renderColors();
+
   // settings tabs
   document.querySelectorAll('.settings-tab-btn').forEach(btn => {
     btn.onclick = () => {
@@ -1921,7 +2181,7 @@
     if (!await confirmDialog('Restoring this backup will replace all your current lists and tasks. Continue?')) return;
     state = data;
     state.lists.forEach(l => {
-      l.todos.forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; });
+      l.todos.forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; });
     });
     if (!state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
     save(); renderAll();
@@ -1953,6 +2213,8 @@
   tList.addEventListener('change', changeTaskList);
   tSubAdd.onclick = addSub;
   tSubInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSub(); } });
+  tTagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
+  tTagInput.addEventListener('blur', addTag);
   tPrio.addEventListener('click', e => {
     const b = e.target.closest('button[data-prio]');
     if (b) setPriority(b.dataset.prio);
@@ -1976,6 +2238,7 @@
   prioFilter.value = localStorage.getItem('glass-todos-prio-filter') || 'any';
   dueFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-due-filter', dueFilter.value); renderTasks(); });
   prioFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-prio-filter', prioFilter.value); renderTasks(); });
+  tagFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); renderTasks(); });
 
   sortBy.value = localStorage.getItem('glass-todos-sort-by') || 'manual';
   if (localStorage.getItem('glass-todos-sort-dir') === 'desc') sortDir.classList.add('desc');
@@ -2022,8 +2285,10 @@
     localStorage.setItem('glass-todos-filter', 'all');
     dueFilter.value = 'any';
     prioFilter.value = 'any';
+    tagFilter.value = 'any';
     localStorage.setItem('glass-todos-due-filter', 'any');
     localStorage.setItem('glass-todos-prio-filter', 'any');
+    localStorage.setItem('glass-todos-tag-filter', 'any');
     renderTasks();
   };
 
@@ -2231,7 +2496,7 @@
   }
   function dbxApplyData(d) {
     state = d;
-    state.lists.forEach(l => { (l.todos || []).forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; }); });
+    state.lists.forEach(l => { (l.todos || []).forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; }); });
     if (!state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
     _lastUploadedState = JSON.stringify(state); // we now match Dropbox; don't re-upload it
     _skipAutoUpload = true;
