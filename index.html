@@ -213,7 +213,7 @@
   }
   .lists .remove {
     display: flex; align-items: center; justify-content: center;
-    background: none; border: none; color: rgba(var(--w),0.55);
+    background: none; border: none; color: rgba(255,255,255,0.55);
     cursor: pointer; padding: 2px;
     opacity: 0; transition: opacity 0.15s, color 0.2s;
   }
@@ -326,7 +326,7 @@
     color: var(--ink); font-size: 0.95rem; outline: none;
     margin-bottom: 16px;
   }
-  #modalName::placeholder { color: rgba(var(--w),0.6); }
+  #modalName::placeholder { color: rgba(255,255,255,0.6); }
   #modalName:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
 
   .swatches { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
@@ -355,7 +355,7 @@
   }
   .settings-tab-btn {
     flex: 1; padding: 9px 14px; border: none; border-radius: 9px;
-    background: transparent; color: rgba(var(--w),0.68);
+    background: transparent; color: var(--ink); opacity: 0.68;
     font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer;
     transition: background 0.2s, color 0.2s;
   }
@@ -392,7 +392,7 @@
   }
   .mode-btn {
     flex: 1; padding: 10px 14px; border: 1px solid transparent; border-radius: 9px;
-    background: transparent; color: rgba(var(--w),0.7);
+    background: transparent; color: var(--ink); opacity: 0.7;
     font: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer;
     transition: background 0.2s, color 0.2s;
   }
@@ -459,8 +459,8 @@
   .confirm-modal { width: 360px; }
   .confirm-modal p { font-size: 0.92rem; opacity: 0.9; margin-bottom: 22px; line-height: 1.4; }
   .btn-primary:active, .btn-ghost:active { transform: scale(0.95); }
-  .btn-ghost.danger { color: #ff8a8a; }
-  .btn-ghost.danger:hover { background: rgba(255,90,90,0.18); }
+  .btn-ghost.danger { background: rgba(255,60,60,0.8); color: #fff; border-color: transparent; }
+  .btn-ghost.danger:hover { background: #ff3c3c; }
 
   /* ---------- TASK DETAIL PANEL ---------- */
   .detail {
@@ -524,7 +524,7 @@
     background: rgba(var(--w),0.15);
     color: var(--ink); font-size: 0.95rem; outline: none; margin-bottom: 4px;
   }
-  #tTitle::placeholder { color: rgba(var(--w),0.55); }
+  #tTitle::placeholder { color: rgba(255,255,255,0.55); }
   #tTitle:focus, #tDesc:focus, #tDue:focus, #tList:focus, #tRecur:focus, #tSubInput:focus {
     background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6);
   }
@@ -538,7 +538,7 @@
     font-family: inherit;
   }
   #tDesc { resize: vertical; margin-bottom: 4px; }
-  #tDesc::placeholder, #tSubInput::placeholder { color: rgba(var(--w),0.55); }
+  #tDesc::placeholder, #tSubInput::placeholder { color: rgba(255,255,255,0.55); }
   /* themed dropdowns: custom chevron + dark glass option list */
   #tList, #tRecur {
     appearance: none; -webkit-appearance: none; -moz-appearance: none;
@@ -592,7 +592,7 @@
   .subtasks li.done .scheck { background: rgba(120,255,180,0.8); border-color: rgba(120,255,180,0.8); color: #14532d; }
   .subtasks .stext { flex: 1; font-size: 0.88rem; }
   .subtasks li.done .stext { text-decoration: line-through; opacity: 0.5; }
-  .subtasks .sdel { background: none; border: none; color: rgba(var(--w),0.6); cursor: pointer; display: flex; }
+  .subtasks .sdel { background: none; border: none; color: var(--ink); opacity: 0.6; cursor: pointer; display: flex; }
   .subtasks .sdel:hover { color: #ff8a8a; }
   .sub-add { display: flex; gap: 8px; margin-bottom: 20px; }
   #tSubAdd { display: flex; align-items: center; justify-content: center; padding: 0 14px; }
@@ -603,24 +603,27 @@
   .tag-pill {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 0.78rem; padding: 3px 6px 3px 10px; border-radius: 9px;
-    background: rgba(var(--w),0.18); border: 1px solid rgba(var(--w),0.2);
+    border: 1px solid transparent;
+    transition: filter 0.15s;
   }
+  .tag-pill:hover { filter: brightness(1.25); }
   .tag-x {
     display: flex; align-items: center; justify-content: center;
     width: 16px; height: 16px; border: none; border-radius: 50%;
-    background: rgba(var(--w),0.18); color: var(--ink);
+    background: transparent; color: inherit;
     font-size: 0.85rem; line-height: 1; cursor: pointer; padding: 0;
+    opacity: 0.7;
   }
-  .tag-x:hover { background: rgba(255,80,80,0.5); }
+  .tag-x:hover { background: rgba(255,80,80,0.4); opacity: 1; }
   #tTagInput {
     width: 100%; padding: 11px 14px; border-radius: 12px;
     border: 1px solid rgba(var(--w),0.3); background: rgba(var(--w),0.1);
     color: var(--ink); font-size: 0.9rem; outline: none; margin-bottom: 4px;
   }
-  #tTagInput::placeholder { color: rgba(var(--w),0.5); }
+  #tTagInput::placeholder { color: rgba(255,255,255,0.5); }
   #tTagInput:focus { background: rgba(var(--w),0.18); border-color: rgba(var(--w),0.6); }
-  .chip.tag-chip { background: rgba(120,170,255,0.22); cursor: pointer; transition: background 0.15s; }
-  .chip.tag-chip:hover { background: rgba(120,170,255,0.4); }
+  .chip.tag-chip { cursor: pointer; transition: filter 0.15s; border: 1px solid transparent; }
+  .chip.tag-chip:hover { filter: brightness(1.35); }
 
   /* task row meta */
   .task-main { flex: 1; min-width: 0; cursor: pointer; }
@@ -679,7 +682,7 @@
     color: var(--ink); font-size: 0.95rem; outline: none;
     transition: background 0.2s, border 0.2s;
   }
-  #taskInput::placeholder { color: rgba(var(--w),0.65); }
+  #taskInput::placeholder { color: rgba(255,255,255,0.65); }
   #taskInput:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
   #addBtn {
     display: flex; align-items: center; justify-content: center;
@@ -719,17 +722,19 @@
     background: rgba(var(--w),0.08); color: var(--ink);
     font-size: 0.85rem; font-family: inherit; outline: none;
   }
-  .filter-search::placeholder { color: rgba(var(--w),0.5); }
+  .filter-search::placeholder { color: rgba(255,255,255,0.5); }
   .filter-search:focus { background: rgba(var(--w),0.14); border-color: rgba(var(--w),0.5); }
   .filter-search::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.6); cursor: pointer; }
   .filter-reset {
-    flex: 0 0 auto; width: 34px; padding: 7px;
+    flex: 0 0 auto; width: 34px; height: 34px;
     display: flex; align-items: center; justify-content: center;
-    border-radius: 10px; border: 1px solid rgba(var(--w),0.2);
-    background: transparent; color: var(--ink); cursor: pointer;
-    opacity: 0.7; transition: all 0.2s;
+    border-radius: 10px; border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.14); color: var(--ink); cursor: pointer;
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+    opacity: 0.75; transition: all 0.2s;
   }
-  .filter-reset:hover { opacity: 1; background: rgba(var(--w),0.14); }
+  .filter-reset:hover { opacity: 1; background: rgba(var(--w),0.25); }
   .sort-row { margin-bottom: 16px; align-items: center; }
   .sort-label { font-size: 0.8rem; opacity: 0.75; flex: 0 0 auto; }
   .sort-label.sort-then { margin-left: 8px; }
@@ -749,7 +754,7 @@
     background: none; border: none; padding: 4px 2px; margin-bottom: 6px;
     display: flex; align-items: center; gap: 10px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
-    color: rgba(var(--w),0.6); text-transform: uppercase;
+    color: var(--ink); opacity: 0.6; text-transform: uppercase;
     animation: none;
   }
   #list li.group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
@@ -772,7 +777,7 @@
   #list li.done .text { text-decoration: line-through; opacity: 0.55; }
   .del {
     display: flex; align-items: center; justify-content: center;
-    background: none; border: none; color: rgba(var(--w),0.6);
+    background: none; border: none; color: var(--ink); opacity: 0.6;
     cursor: pointer; padding: 4px; transition: color 0.2s, transform 0.15s;
   }
   .del:hover { color: #ff8a8a; transform: scale(1.2); }
@@ -858,12 +863,12 @@
     color: var(--ink); font-size: 0.9rem; outline: none;
     transition: background 0.2s, border 0.2s;
   }
-  #dbxKey::placeholder { color: rgba(var(--w),0.55); }
+  #dbxKey::placeholder { color: rgba(255,255,255,0.55); }
   #dbxKey:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
   .dbx-status {
     font-size: 0.68rem; font-weight: 500; vertical-align: middle;
     padding: 2px 9px; border-radius: 20px; margin-left: 6px;
-    background: rgba(170,179,197,0.18); color: rgba(var(--w),0.7);
+    background: rgba(170,179,197,0.18); color: var(--ink); opacity: 0.7;
   }
   .dbx-status.connected { background: rgba(62,207,142,0.2); color: #6ee7b7; }
   .dbx-account-row { font-size: 0.78rem; opacity: 0.78; margin: 2px 0 12px; }
@@ -1199,7 +1204,18 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">Alpha 0.8.0 <span class="current-badge">Current</span></div>
+          <div class="changelog-version">Alpha 0.9.0 <span class="current-badge">Current</span></div>
+          <ul>
+            <li>Tag chips in task rows and the detail panel now each get their own colour, derived from the tag name — so work, personal, shopping, and every other tag is always easy to tell apart at a glance</li>
+            <li>Tag colours automatically avoid clashing with whichever background theme you have selected (Teal, Blue, Purple, Pink, Orange, or Green)</li>
+            <li>Tag colours update immediately when you switch themes — in the task list and the detail panel — no page refresh needed</li>
+            <li>When sorting by due date, tasks are now grouped by day (Today, Tomorrow, Yesterday, or weekday + date) instead of by month</li>
+            <li>The "Delete task" button in the detail panel now has a solid red background with white text for a clearer, more prominent danger action</li>
+            <li>The reset-filters button next to the search bar now has the same frosted-glass look as the rest of the icon buttons</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">Alpha 0.8.0</div>
           <ul>
             <li>Added a search box above the filters — find tasks by title, description, or tag as you type</li>
             <li>Tag chips on task rows are now clickable to instantly filter by that tag</li>
@@ -1374,6 +1390,25 @@
   const COLORS = ['#ff4d4d','#ff9f1c','#ffd60a','#a3e635','#2ecc71','#1abc9c','#00bcd4',
                   '#3b82f6','#6366f1','#8b5cf6','#c026d3','#ec4899','#9c6b4a','#94a3b8'];
   let pickedColor = COLORS[0];
+
+  const TAG_COLORS = ['#ff6b6b','#ff922b','#fcc419','#69db7c','#20c997','#38d9a9','#22b8cf',
+                      '#4dabf7','#748ffc','#9775fa','#da77f2','#f783ac','#a9e34b','#ffd43b'];
+  const THEME_TAG_EXCLUDE = {
+    teal:   [4, 5, 6],
+    blue:   [7],
+    purple: [8, 9, 10],
+    pink:   [10, 11],
+    orange: [1, 2, 13],
+    green:  [3, 12, 4]
+  };
+  function tagColor(tag) {
+    const theme = currentColor();
+    const exclude = THEME_TAG_EXCLUDE[theme] || [];
+    const avail = TAG_COLORS.filter((_, i) => !exclude.includes(i));
+    let h = 0;
+    for (let i = 0; i < tag.length; i++) h = ((h << 5) - h) + tag.charCodeAt(i);
+    return avail[Math.abs(h) % avail.length];
+  }
 
   // ---- themed confirm dialog (replaces native confirm()) ----
   const confirmOverlay = $('confirmOverlay'), confirmMessage = $('confirmMessage');
@@ -1747,6 +1782,10 @@
     (t.tags || []).forEach(tag => {
       const c = document.createElement('span');
       c.className = 'chip tag-chip';
+      const col = tagColor(tag);
+      c.style.background = col;
+      c.style.borderColor = col;
+      c.style.color = '#fff';
       c.textContent = '#' + tag;
       c.title = `Filter by #${tag}`;
       c.onclick = e => {
@@ -1835,7 +1874,12 @@
 
   function monthYearLabel(dateStr) {
     const d = new Date(dateStr + 'T00:00');
-    return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const diff = Math.round((d - today) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    if (diff === -1) return 'Yesterday';
+    return `${d.toLocaleDateString(undefined, { weekday: 'short' })}, ${MONTH_NAMES[d.getMonth()]} ${d.getDate()}`;
   }
 
   const PRIO_LABEL = { none: 'No priority', low: 'Low priority', med: 'Med priority', high: 'High priority' };
@@ -1983,6 +2027,10 @@
     editingTask.tags.forEach(tag => {
       const chip = document.createElement('span');
       chip.className = 'tag-pill';
+      const col = tagColor(tag);
+      chip.style.background = col;
+      chip.style.borderColor = col;
+      chip.style.color = '#fff';
       chip.innerHTML = `#${tag}<button type="button" class="tag-x" title="Remove">×</button>`;
       chip.querySelector('.tag-x').onclick = () => {
         editingTask.tags = editingTask.tags.filter(x => x !== tag);
@@ -2169,7 +2217,7 @@
       const b = document.createElement('button');
       b.className = 'theme-swatch' + (c.id === active ? ' selected' : '');
       b.innerHTML = `<span class="theme-chip" style="background:${c[mode]}"></span><span class="theme-name">${c.name}</span>`;
-      b.onclick = () => { applyColor(c.id); renderColors(); };
+      b.onclick = () => { applyColor(c.id); renderColors(); renderTasks(); renderTags(); };
       grid.appendChild(b);
     });
   }
