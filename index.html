@@ -619,7 +619,8 @@
   }
   #tTagInput::placeholder { color: rgba(var(--w),0.5); }
   #tTagInput:focus { background: rgba(var(--w),0.18); border-color: rgba(var(--w),0.6); }
-  .chip.tag-chip { background: rgba(120,170,255,0.22); }
+  .chip.tag-chip { background: rgba(120,170,255,0.22); cursor: pointer; transition: background 0.15s; }
+  .chip.tag-chip:hover { background: rgba(120,170,255,0.4); }
 
   /* task row meta */
   .task-main { flex: 1; min-width: 0; cursor: pointer; }
@@ -712,6 +713,15 @@
   }
   .filter-select option { background: var(--select-bg); color: var(--ink); }
   .filter-select option:checked { background: #1f6f6a; }
+  .filter-search {
+    flex: 1 1 100%; padding: 8px 12px; border-radius: 10px;
+    border: 1px solid rgba(var(--w),0.2);
+    background: rgba(var(--w),0.08); color: var(--ink);
+    font-size: 0.85rem; font-family: inherit; outline: none;
+  }
+  .filter-search::placeholder { color: rgba(var(--w),0.5); }
+  .filter-search:focus { background: rgba(var(--w),0.14); border-color: rgba(var(--w),0.5); }
+  .filter-search::-webkit-search-cancel-button { filter: grayscale(1) brightness(1.6); cursor: pointer; }
   .filter-reset {
     flex: 0 0 auto; width: 34px; padding: 7px;
     display: flex; align-items: center; justify-content: center;
@@ -948,6 +958,7 @@
       </div>
 
       <div class="filters" id="filterRow">
+        <input type="search" id="searchInput" class="filter-search" placeholder="Search tasks…" maxlength="100">
         <button class="filter active" data-filter="all">All</button>
         <button class="filter" data-filter="active">Active</button>
         <button class="filter" data-filter="done">Done</button>
@@ -1188,7 +1199,15 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">Alpha 0.7.0 <span class="current-badge">Current</span></div>
+          <div class="changelog-version">Alpha 0.8.0 <span class="current-badge">Current</span></div>
+          <ul>
+            <li>Added a search box above the filters — find tasks by title, description, or tag as you type</li>
+            <li>Tag chips on task rows are now clickable to instantly filter by that tag</li>
+            <li>Press Escape in the search box to clear it; the reset-filters button clears the search too</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">Alpha 0.7.0</div>
           <ul>
             <li>Added a theme system in Settings with two parts: a Light/Dark appearance toggle and a separate colour picker</li>
             <li>Six background colours (Teal, Blue, Purple, Pink, Orange, Green), each a multi-colour gradient with its own light and dark variant</li>
@@ -1339,6 +1358,7 @@
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
   const filters = document.querySelectorAll('.filter');
   const dueFilter = $('dueFilter'), prioFilter = $('prioFilter'), tagFilter = $('tagFilter');
+  const searchInput = $('searchInput');
   const sortBy = $('sortBy'), sortDir = $('sortDir');
   const sortBy2 = $('sortBy2'), sortDir2 = $('sortDir2');
   const sortBy3 = $('sortBy3'), sortDir3 = $('sortDir3');
@@ -1586,7 +1606,7 @@
     });
     return entries.filter(({ t }) =>
       (filter === 'all' ? true : filter === 'done' ? t.done : !t.done) &&
-      matchesDueFilter(t) && matchesPrioFilter(t) && matchesTagFilter(t) && matchesSmartView(t)
+      matchesDueFilter(t) && matchesPrioFilter(t) && matchesTagFilter(t) && matchesSearch(t) && matchesSmartView(t)
     ).sort((a, b) => {
       if (a.t.done !== b.t.done) return a.t.done ? 1 : -1;
       return sortCompare(a.t, b.t, a.owner, b.owner);
@@ -1621,7 +1641,7 @@
     if (shown.length === 0) {
       const li = document.createElement('li');
       li.className = 'empty';
-      li.textContent = (filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any' && tagFilter.value === 'any')
+      li.textContent = (filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any' && tagFilter.value === 'any' && !searchInput.value.trim())
         ? 'Nothing here yet — add a task!' : 'No tasks in this view.';
       list.appendChild(li);
     }
@@ -1728,6 +1748,13 @@
       const c = document.createElement('span');
       c.className = 'chip tag-chip';
       c.textContent = '#' + tag;
+      c.title = `Filter by #${tag}`;
+      c.onclick = e => {
+        e.stopPropagation();
+        tagFilter.value = tag;
+        localStorage.setItem('glass-todos-tag-filter', tag);
+        renderTasks();
+      };
       meta.appendChild(c); any = true;
     });
     return any ? meta : null;
@@ -1761,6 +1788,14 @@
     const v = prioFilter.value;
     if (v === 'any') return true;
     return (t.priority || 'none') === v;
+  }
+
+  function matchesSearch(t) {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) return true;
+    return t.text.toLowerCase().includes(q)
+      || (t.desc || '').toLowerCase().includes(q)
+      || (t.tags || []).some(tag => tag.includes(q));
   }
 
   function matchesTagFilter(t) {
@@ -2239,6 +2274,8 @@
   dueFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-due-filter', dueFilter.value); renderTasks(); });
   prioFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-prio-filter', prioFilter.value); renderTasks(); });
   tagFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); renderTasks(); });
+  searchInput.addEventListener('input', renderTasks);
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { searchInput.value = ''; renderTasks(); searchInput.blur(); e.stopPropagation(); } });
 
   sortBy.value = localStorage.getItem('glass-todos-sort-by') || 'manual';
   if (localStorage.getItem('glass-todos-sort-dir') === 'desc') sortDir.classList.add('desc');
@@ -2286,6 +2323,7 @@
     dueFilter.value = 'any';
     prioFilter.value = 'any';
     tagFilter.value = 'any';
+    searchInput.value = '';
     localStorage.setItem('glass-todos-due-filter', 'any');
     localStorage.setItem('glass-todos-prio-filter', 'any');
     localStorage.setItem('glass-todos-tag-filter', 'any');
