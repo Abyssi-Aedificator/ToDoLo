@@ -69,6 +69,7 @@
     --panel-solid: rgba(248, 250, 252, 0.94);
     --toast-bg: rgba(38, 50, 71, 0.92);
     --select-bg: rgba(38,50,71,0.88);
+    --a: 42, 73, 91;
     --bg-gradient: linear-gradient(135deg, #c9efe2 0%, #9fd8e8 50%, #d8f1d0 100%);
   }
 
@@ -80,11 +81,11 @@
   html[data-color="green"]  { --a: 20, 128, 61; --bg-gradient: linear-gradient(135deg, #0a2417 0%, #14803d 50%, #a3e635 100%); --blob-1: rgba(110,210,120,0.38); --blob-2: rgba(180,225,70,0.34); }
 
   /* light-mode pale multi-hue variants (override the dark gradient) */
-  html[data-mode="light"][data-color="blue"]   { --bg-gradient: linear-gradient(135deg, #d3e4fb 0%, #aaccf5 50%, #c6ebf6 100%); }
-  html[data-mode="light"][data-color="purple"] { --bg-gradient: linear-gradient(135deg, #ebe1fb 0%, #d6c0f0 50%, #f4cfe6 100%); }
-  html[data-mode="light"][data-color="pink"]   { --bg-gradient: linear-gradient(135deg, #fbd9ea 0%, #f7bcd6 50%, #ffd6c2 100%); }
-  html[data-mode="light"][data-color="orange"] { --bg-gradient: linear-gradient(135deg, #fce3c4 0%, #fad29a 50%, #fdeeb0 100%); }
-  html[data-mode="light"][data-color="green"]  { --bg-gradient: linear-gradient(135deg, #daf0c9 0%, #bce5a8 50%, #e8f5b0 100%); }
+  html[data-mode="light"][data-color="blue"]   { --a: 44, 104, 171; --bg-gradient: linear-gradient(135deg, #d3e4fb 0%, #aaccf5 50%, #c6ebf6 100%); }
+  html[data-mode="light"][data-color="purple"] { --a: 98, 59, 155; --bg-gradient: linear-gradient(135deg, #ebe1fb 0%, #d6c0f0 50%, #f4cfe6 100%); }
+  html[data-mode="light"][data-color="pink"]   { --a: 161, 65, 121; --bg-gradient: linear-gradient(135deg, #fbd9ea 0%, #f7bcd6 50%, #ffd6c2 100%); }
+  html[data-mode="light"][data-color="orange"] { --a: 179, 100, 38; --bg-gradient: linear-gradient(135deg, #fce3c4 0%, #fad29a 50%, #fdeeb0 100%); }
+  html[data-mode="light"][data-color="green"]  { --a: 25, 105, 64; --bg-gradient: linear-gradient(135deg, #daf0c9 0%, #bce5a8 50%, #e8f5b0 100%); }
 
   /* in light mode, don't darken the page behind modals (keeps panels bright) */
   html[data-mode="light"] .overlay { background: rgba(70, 100, 140, 0.14); }
@@ -551,6 +552,7 @@
   #tDesc::placeholder, #tSubInput::placeholder { color: rgba(255,255,255,0.55); }
   /* ---- custom glass list-selector ---- */
   .gl-select { position: relative; z-index: 10; }
+  .gl-select.open { z-index: 30; }
   .gl-select-trigger {
     width: 100%; padding: 11px 13px; border-radius: 11px;
     border: 1px solid rgba(var(--w),0.3);
