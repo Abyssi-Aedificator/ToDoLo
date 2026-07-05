@@ -57,6 +57,7 @@
     --toast-bg: rgba(20, 40, 50, 0.72);
     --select-bg: #15323b;
     /* default colour = teal (dark) */
+    --a: 44, 83, 100;
     --bg-gradient: linear-gradient(135deg, #0f2027 0%, #2c5364 50%, #00b4a0 100%);
     --blob-1: rgba(0, 200, 180, 0.38);
     --blob-2: rgba(90, 140, 200, 0.30);
@@ -67,16 +68,16 @@
     --ink: #ffffff;
     --panel-solid: rgba(248, 250, 252, 0.94);
     --toast-bg: rgba(38, 50, 71, 0.92);
-    --select-bg: #eef2f7;
+    --select-bg: rgba(38,50,71,0.88);
     --bg-gradient: linear-gradient(135deg, #c9efe2 0%, #9fd8e8 50%, #d8f1d0 100%);
   }
 
   /* ---- colour hues (background gradient + blobs) ---- */
-  html[data-color="blue"]   { --bg-gradient: linear-gradient(135deg, #131a5a 0%, #2f7fd6 50%, #36d0e0 100%); --blob-1: rgba(70,150,240,0.38);  --blob-2: rgba(60,210,225,0.32); }
-  html[data-color="purple"] { --bg-gradient: linear-gradient(135deg, #2a1055 0%, #7b3fbf 50%, #d76d77 100%); --blob-1: rgba(150,110,240,0.40); --blob-2: rgba(230,120,150,0.34); }
-  html[data-color="pink"]   { --bg-gradient: linear-gradient(135deg, #5b1648 0%, #d6478f 50%, #ff8c69 100%); --blob-1: rgba(240,110,180,0.40); --blob-2: rgba(255,150,110,0.34); }
-  html[data-color="orange"] { --bg-gradient: linear-gradient(135deg, #7c2d12 0%, #ef7a18 50%, #f5d020 100%); --blob-1: rgba(245,150,60,0.40);  --blob-2: rgba(245,210,40,0.34); }
-  html[data-color="green"]  { --bg-gradient: linear-gradient(135deg, #0a2417 0%, #14803d 50%, #a3e635 100%); --blob-1: rgba(110,210,120,0.38); --blob-2: rgba(180,225,70,0.34); }
+  html[data-color="blue"]   { --a: 47, 127, 214; --bg-gradient: linear-gradient(135deg, #131a5a 0%, #2f7fd6 50%, #36d0e0 100%); --blob-1: rgba(70,150,240,0.38);  --blob-2: rgba(60,210,225,0.32); }
+  html[data-color="purple"] { --a: 123, 63, 191; --bg-gradient: linear-gradient(135deg, #2a1055 0%, #7b3fbf 50%, #d76d77 100%); --blob-1: rgba(150,110,240,0.40); --blob-2: rgba(230,120,150,0.34); }
+  html[data-color="pink"]   { --a: 214, 71, 143; --bg-gradient: linear-gradient(135deg, #5b1648 0%, #d6478f 50%, #ff8c69 100%); --blob-1: rgba(240,110,180,0.40); --blob-2: rgba(255,150,110,0.34); }
+  html[data-color="orange"] { --a: 239, 122, 24; --bg-gradient: linear-gradient(135deg, #7c2d12 0%, #ef7a18 50%, #f5d020 100%); --blob-1: rgba(245,150,60,0.40);  --blob-2: rgba(245,210,40,0.34); }
+  html[data-color="green"]  { --a: 20, 128, 61; --bg-gradient: linear-gradient(135deg, #0a2417 0%, #14803d 50%, #a3e635 100%); --blob-1: rgba(110,210,120,0.38); --blob-2: rgba(180,225,70,0.34); }
 
   /* light-mode pale multi-hue variants (override the dark gradient) */
   html[data-mode="light"][data-color="blue"]   { --bg-gradient: linear-gradient(135deg, #d3e4fb 0%, #aaccf5 50%, #c6ebf6 100%); }
@@ -534,10 +535,10 @@
     color: var(--ink); font-size: 0.95rem; outline: none; margin-bottom: 4px;
   }
   #tTitle::placeholder { color: rgba(255,255,255,0.55); }
-  #tTitle:focus, #tDesc:focus, #tDue:focus, #tList:focus, #tRecur:focus, #tSubInput:focus {
+  #tTitle:focus, #tDesc:focus, #tDue:focus, #tRecur:focus, #tSubInput:focus {
     background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6);
   }
-  #tDesc, #tList, #tDue, #tRecur, #tSubInput {
+  #tDesc, #tDue, #tSubInput {
     width: 100%;
     padding: 11px 13px;
     border-radius: 11px;
@@ -548,21 +549,59 @@
   }
   #tDesc { resize: vertical; margin-bottom: 4px; }
   #tDesc::placeholder, #tSubInput::placeholder { color: rgba(255,255,255,0.55); }
-  /* themed dropdowns: custom chevron + dark glass option list */
-  #tList, #tRecur {
-    appearance: none; -webkit-appearance: none; -moz-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 11px center;
-    background-size: 16px;
-    padding-right: 34px;
-    cursor: pointer;
+  /* ---- custom glass list-selector ---- */
+  .gl-select { position: relative; z-index: 10; }
+  .gl-select-trigger {
+    width: 100%; padding: 11px 13px; border-radius: 11px;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.9rem; outline: none;
+    font-family: inherit;
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    text-align: left; transition: background 0.2s, border-color 0.2s;
   }
-  #tList option, #tRecur option {
-    background: var(--select-bg);
-    color: var(--ink);
+  .gl-select-trigger:hover,
+  .gl-select-trigger:focus-visible {
+    background: rgba(var(--w),0.25);
+    border-color: rgba(var(--w),0.6);
   }
-  #tList option:checked, #tRecur option:checked { background: #1f6f6a; }
+  .gl-sel-dot {
+    width: 11px; height: 11px; flex-shrink: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(0,0,0,0.25);
+    display: block;
+  }
+  .gl-chevron {
+    margin-left: auto; flex-shrink: 0; opacity: 0.7;
+    transition: transform 0.2s;
+  }
+  .gl-select.open .gl-chevron { transform: rotate(180deg); }
+  .gl-select-menu {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+    z-index: 100;
+    background: rgba(var(--a), 0.88);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(var(--w),0.25);
+    border-radius: 12px; padding: 6px;
+    display: none;
+    max-height: 240px; overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  .gl-select.open .gl-select-menu { display: block; }
+  .gl-select-trigger:disabled { opacity: 0.4; cursor: not-allowed; }
+  .gl-select-item {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 12px; border-radius: 9px;
+    border: none; background: transparent;
+    color: var(--ink); font-size: 0.9rem; cursor: pointer;
+    font-family: inherit; text-align: left;
+    transition: background 0.15s;
+  }
+  .gl-select-item:hover { background: rgba(var(--w),0.18); }
+  .gl-select-item.selected { background: rgba(var(--w),0.26); }
+
   #tRecur:disabled { opacity: 0.4; cursor: not-allowed; }
   /* brighten the native date picker icon on the dark glass */
   #tDue::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.8; cursor: pointer; }
@@ -712,19 +751,14 @@
     cursor: pointer; opacity: 0.7; transition: all 0.2s;
   }
   .filter.active { background: rgba(var(--w),0.28); opacity: 1; }
-  .filter-select {
-    flex: 1 1 130px; padding: 7px 26px 7px 10px; border-radius: 10px;
+  .gl-select-sm { flex: 1 1 130px; }
+  .sort-row .gl-select-sm { flex: 1 1 110px; }
+  .gl-select-sm .gl-select-trigger {
+    padding: 7px 10px; border-radius: 10px;
     border: 1px solid rgba(var(--w),0.2);
-    background-color: transparent; color: var(--ink); font-size: 0.8rem;
-    cursor: pointer; opacity: 0.85; font-family: inherit;
-    appearance: none; -webkit-appearance: none; -moz-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 14px;
+    font-size: 0.8rem; gap: 6px;
   }
-  .filter-select option { background: var(--select-bg); color: var(--ink); }
-  .filter-select option:checked { background: #1f6f6a; }
+  .gl-select-sm .gl-chevron { width: 14px; height: 14px; }
   .filter-search {
     flex: 1 1 100%; padding: 8px 12px; border-radius: 10px;
     border: 1px solid rgba(var(--w),0.2);
@@ -988,24 +1022,27 @@
         <button class="filter active" data-filter="all">All</button>
         <button class="filter" data-filter="active">Active</button>
         <button class="filter" data-filter="done">Done</button>
-        <select id="dueFilter" class="filter-select">
-          <option value="any">Any due date</option>
-          <option value="overdue">Overdue</option>
-          <option value="today">Due today</option>
-          <option value="week">Due this week</option>
-          <option value="month">Due this month</option>
-          <option value="none">No due date</option>
-        </select>
-        <select id="prioFilter" class="filter-select">
-          <option value="any">Any priority</option>
-          <option value="high">High</option>
-          <option value="med">Med</option>
-          <option value="low">Low</option>
-          <option value="none">None</option>
-        </select>
-        <select id="tagFilter" class="filter-select">
-          <option value="any">Any tag</option>
-        </select>
+        <div class="gl-select gl-select-sm" id="dueFilter">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-select-label">Any due date</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu"></div>
+        </div>
+        <div class="gl-select gl-select-sm" id="prioFilter">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-select-label">Any priority</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu"></div>
+        </div>
+        <div class="gl-select gl-select-sm" id="tagFilter">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-select-label">Any tag</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu"></div>
+        </div>
         <button class="filter-reset" id="resetFilters" title="Reset all filters">
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
         </button>
@@ -1013,46 +1050,37 @@
 
       <div class="filters sort-row" id="sortRow">
         <span class="sort-label">Sort by</span>
-        <select id="sortBy" class="filter-select">
-          <option value="manual">Manual</option>
-          <option value="due">Due date</option>
-          <option value="priority">Priority</option>
-          <option value="alpha">Title (A–Z)</option>
-          <option value="created">Date created</option>
-          <option value="recur">Recurrence</option>
-          <option value="subtasks">Sub-task progress</option>
-          <option value="list">List name</option>
-        </select>
+        <div class="gl-select gl-select-sm" id="sortBy">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-select-label">Manual</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu"></div>
+        </div>
         <button class="filter-reset" id="sortDir" title="Toggle sort direction">
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
         </button>
 
         <span class="sort-label sort-then">then by</span>
-        <select id="sortBy2" class="filter-select">
-          <option value="none">None</option>
-          <option value="due">Due date</option>
-          <option value="priority">Priority</option>
-          <option value="alpha">Title (A–Z)</option>
-          <option value="created">Date created</option>
-          <option value="recur">Recurrence</option>
-          <option value="subtasks">Sub-task progress</option>
-          <option value="list">List name</option>
-        </select>
+        <div class="gl-select gl-select-sm" id="sortBy2">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-select-label">None</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu"></div>
+        </div>
         <button class="filter-reset" id="sortDir2" title="Toggle second sort direction">
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
         </button>
 
         <span class="sort-label sort-then">then by</span>
-        <select id="sortBy3" class="filter-select">
-          <option value="none">None</option>
-          <option value="due">Due date</option>
-          <option value="priority">Priority</option>
-          <option value="alpha">Title (A–Z)</option>
-          <option value="created">Date created</option>
-          <option value="recur">Recurrence</option>
-          <option value="subtasks">Sub-task progress</option>
-          <option value="list">List name</option>
-        </select>
+        <div class="gl-select gl-select-sm" id="sortBy3">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-select-label">None</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu"></div>
+        </div>
         <button class="filter-reset" id="sortDir3" title="Toggle third sort direction">
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
         </button>
@@ -1090,7 +1118,14 @@
         <textarea id="tDesc" placeholder="Add some details…" rows="3"></textarea>
 
         <label class="field-label">List</label>
-        <select id="tList"></select>
+        <div class="gl-select" id="tList">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-sel-dot" id="tListDot"></span>
+            <span id="tListLabel">Select a list</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu" id="tListMenu"></div>
+        </div>
 
         <div class="field-grid">
           <div>
@@ -1099,12 +1134,13 @@
           </div>
           <div>
             <label class="field-label">Recurrence</label>
-            <select id="tRecur">
-              <option value="none">None</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
+            <div class="gl-select" id="tRecur">
+              <button class="gl-select-trigger" type="button">
+                <span class="gl-select-label">None</span>
+                <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="gl-select-menu"></div>
+            </div>
           </div>
         </div>
 
@@ -1232,6 +1268,7 @@
         <div class="changelog-entry">
           <div class="changelog-version">development <span class="current-badge">Current</span></div>
           <ul>
+            <li>Custom glass-themed dropdowns: filter, sort, list, and recurrence selects now use tinted glass panels matching your theme colour</li>
             <li>Drag-to-reorder tasks in the main list (when sorted manually)</li>
             <li>Undo on task delete and "Clear completed", via a toast action</li>
           </ul>
@@ -1312,24 +1349,51 @@
   const APP_VERSION = 'development';
 
   const $ = id => document.getElementById(id);
+
+  function createGlassSelect(id, opts, initialValue, onChange) {
+    const el = $(id);
+    const label = el.querySelector('.gl-select-label');
+    const menu = el.querySelector('.gl-select-menu');
+    let _value = initialValue, _disabled = false, _opts = opts;
+    function render() {
+      menu.innerHTML = '';
+      _opts.forEach(o => {
+        const btn = document.createElement('button');
+        btn.className = 'gl-select-item' + (o.value === _value ? ' selected' : '');
+        btn.type = 'button'; btn.textContent = o.label; btn.dataset.value = o.value;
+        btn.addEventListener('click', e => { e.stopPropagation(); if (_disabled) return; _value = o.value; label.textContent = o.label; render(); el.classList.remove('open'); onChange(o.value); });
+        menu.appendChild(btn);
+      });
+    }
+    function setLabel() { const m = _opts.find(o => o.value === _value); label.textContent = m ? m.label : ''; }
+    setLabel(); render();
+    el.querySelector('.gl-select-trigger').addEventListener('click', e => { e.stopPropagation(); if (_disabled) return; el.classList.toggle('open'); });
+    return Object.defineProperties({}, {
+      value: { get: () => _value, set: v => { _value = v; setLabel(); render(); } },
+      disabled: { get: () => _disabled, set: v => { _disabled = v; el.querySelector('.gl-select-trigger').disabled = v; } },
+      setOptions: { value: function(newOpts) { _opts = newOpts; if (!_opts.some(o => o.value === _value)) { _value = _opts.length ? _opts[0].value : ''; } setLabel(); render(); } }
+    });
+  }
+
   const listNav = $('listNav'), smartNav = $('smartNav'), addListBtn = $('addListBtn');
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
   const filters = document.querySelectorAll('.filter');
-  const dueFilter = $('dueFilter'), prioFilter = $('prioFilter'), tagFilter = $('tagFilter');
+  let dueFilter, prioFilter, tagFilter;
   const searchInput = $('searchInput');
-  const sortBy = $('sortBy'), sortDir = $('sortDir');
-  const sortBy2 = $('sortBy2'), sortDir2 = $('sortDir2');
-  const sortBy3 = $('sortBy3'), sortDir3 = $('sortDir3');
+  let sortBy; const sortDir = $('sortDir');
+  let sortBy2; const sortDir2 = $('sortDir2');
+  let sortBy3; const sortDir3 = $('sortDir3');
   const overlay = $('overlay'), modalName = $('modalName'), swatches = $('swatches');
   const modalCancel = $('modalCancel'), modalCreate = $('modalCreate');
   const detail = $('detail');
   const tTitle = $('tTitle'), tDesc = $('tDesc'), tList = $('tList'), tDue = $('tDue');
-  const tRecur = $('tRecur'), tPrio = $('tPrio'), tSubs = $('tSubs');
+  let tRecur; const tPrio = $('tPrio'), tSubs = $('tSubs');
   const tSubInput = $('tSubInput'), tSubAdd = $('tSubAdd');
   const tTags = $('tTags'), tTagInput = $('tTagInput');
   const tDelete = $('tDelete'), tClose = $('tClose');
+  const tListMenu = $('tListMenu'), tListDot = $('tListDot'), tListLabel = $('tListLabel');
 
   const COLORS = ['#ff4d4d','#ff9f1c','#ffd60a','#a3e635','#2ecc71','#1abc9c','#00bcd4',
                   '#3b82f6','#6366f1','#8b5cf6','#c026d3','#ec4899','#9c6b4a','#94a3b8'];
@@ -1600,12 +1664,12 @@
   function populateTagFilter() {
     const tags = allTags();
     const cur = tagFilter.value;
-    tagFilter.innerHTML = '<option value="any">Any tag</option><option value="__none">No tag</option>'
-      + tags.map(t => `<option value="${t}">#${t}</option>`).join('');
-    // keep the saved/current selection if it still exists, else fall back to Any
+    const opts = [{value:'any', label:'Any tag'}, {value:'__none', label:'No tag'}]
+      .concat(tags.map(t => ({value:t, label:'#' + t})));
+    tagFilter.setOptions(opts);
     const saved = localStorage.getItem('glass-todos-tag-filter') || 'any';
     const want = cur && cur !== 'any' ? cur : saved;
-    tagFilter.value = [...tagFilter.options].some(o => o.value === want) ? want : 'any';
+    tagFilter.value = opts.some(o => o.value === want) ? want : 'any';
   }
 
   function renderTasks() {
@@ -1965,16 +2029,28 @@
     renderTasks(); // refresh selected-row highlight
   }
   function populateListSelect(selId) {
-    tList.innerHTML = '';
+    const menu = tListMenu;
+    menu.innerHTML = '';
     state.lists.forEach(l => {
-      const o = document.createElement('option');
-      o.value = l.id; o.textContent = l.name;
-      if (l.id === selId) o.selected = true;
-      tList.appendChild(o);
+      const btn = document.createElement('button');
+      btn.className = 'gl-select-item' + (l.id === selId ? ' selected' : '');
+      btn.type = 'button';
+      btn.dataset.id = l.id;
+      const dot = document.createElement('span');
+      dot.className = 'gl-sel-dot';
+      dot.style.background = l.color;
+      const label = document.createElement('span');
+      label.textContent = l.name;
+      btn.append(dot, label);
+      btn.onclick = () => selectTaskList(l.id);
+      menu.appendChild(btn);
     });
+    const cur = state.lists.find(l => l.id === selId);
+    if (cur) { tListDot.style.background = cur.color; tListLabel.textContent = cur.name; }
   }
 
   function closeTaskPanel() {
+    tList.classList.remove('open');
     detail.classList.remove('open', 'showing-task');
     detail.style.width = '';
     editingTask = null;
@@ -2101,9 +2177,9 @@
     renderPrio(); commit();
   }
 
-  function changeTaskList() {
+  function selectTaskList(listId) {
     if (!editingTask) return;
-    const targetId = Number(tList.value);
+    const targetId = Number(listId);
     if (targetId === editingTaskList.id) return;
     editingTaskList.todos = editingTaskList.todos.filter(x => x.id !== editingTask.id);
     const target = state.lists.find(l => l.id === targetId);
@@ -2112,6 +2188,7 @@
     editingTaskList = target || editingTaskList;
     save();
     if (leftView) closeTaskPanel(); else renderAll();
+    tList.classList.remove('open');
   }
 
   function deleteTask() {
@@ -2137,7 +2214,7 @@
   function renderAll() {
     renderNav();
     renderTasks();
-    if (editingTask) populateListSelect(Number(tList.value) || editingTaskList.id);
+    if (editingTask) populateListSelect(editingTaskList.id);
   }
 
   // ---- events ----
@@ -2307,8 +2384,11 @@
       commit();
     }
   });
-  tRecur.addEventListener('change', () => { if (editingTask) { editingTask.recur = tRecur.value; commit(); } });
-  tList.addEventListener('change', changeTaskList);
+  tRecur = createGlassSelect('tRecur', [
+    {value:'none', label:'None'}, {value:'daily', label:'Daily'}, {value:'weekly', label:'Weekly'}, {value:'monthly', label:'Monthly'}
+  ], 'none', () => { if (editingTask) { editingTask.recur = tRecur.value; commit(); } });
+  tList.querySelector('.gl-select-trigger').addEventListener('click', () => tList.classList.toggle('open'));
+  document.addEventListener('click', e => { document.querySelectorAll('.gl-select.open').forEach(el => { if (!el.contains(e.target)) el.classList.remove('open'); }); });
   tSubAdd.onclick = addSub;
   tSubInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSub(); } });
   tTagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
@@ -2319,7 +2399,7 @@
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); closeTaskPanel(); }
+    if (e.key === 'Escape') { document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); }
   });
 
   filters.forEach(f => f.classList.toggle('active', f.dataset.filter === filter));
@@ -2332,35 +2412,49 @@
     renderTasks();
   });
 
-  dueFilter.value = localStorage.getItem('glass-todos-due-filter') || 'any';
-  prioFilter.value = localStorage.getItem('glass-todos-prio-filter') || 'any';
-  dueFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-due-filter', dueFilter.value); renderTasks(); });
-  prioFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-prio-filter', prioFilter.value); renderTasks(); });
-  tagFilter.addEventListener('change', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); renderTasks(); });
+  dueFilter = createGlassSelect('dueFilter', [
+    {value:'any', label:'Any due date'}, {value:'overdue', label:'Overdue'}, {value:'today', label:'Due today'},
+    {value:'week', label:'Due this week'}, {value:'month', label:'Due this month'}, {value:'none', label:'No due date'}
+  ], localStorage.getItem('glass-todos-due-filter') || 'any', () => { localStorage.setItem('glass-todos-due-filter', dueFilter.value); renderTasks(); });
+  prioFilter = createGlassSelect('prioFilter', [
+    {value:'any', label:'Any priority'}, {value:'high', label:'High'}, {value:'med', label:'Med'}, {value:'low', label:'Low'}, {value:'none', label:'None'}
+  ], localStorage.getItem('glass-todos-prio-filter') || 'any', () => { localStorage.setItem('glass-todos-prio-filter', prioFilter.value); renderTasks(); });
+  tagFilter = createGlassSelect('tagFilter', [
+    {value:'any', label:'Any tag'}, {value:'__none', label:'No tag'}
+  ], localStorage.getItem('glass-todos-tag-filter') || 'any', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); renderTasks(); });
   searchInput.addEventListener('input', renderTasks);
   searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { searchInput.value = ''; renderTasks(); searchInput.blur(); e.stopPropagation(); } });
 
-  sortBy.value = localStorage.getItem('glass-todos-sort-by') || 'manual';
+  sortBy = createGlassSelect('sortBy', [
+    {value:'manual', label:'Manual'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
+    {value:'alpha', label:'Title (A–Z)'}, {value:'created', label:'Date created'}, {value:'recur', label:'Recurrence'},
+    {value:'subtasks', label:'Sub-task progress'}, {value:'list', label:'List name'}
+  ], localStorage.getItem('glass-todos-sort-by') || 'manual', () => { localStorage.setItem('glass-todos-sort-by', sortBy.value); renderTasks(); });
   if (localStorage.getItem('glass-todos-sort-dir') === 'desc') sortDir.classList.add('desc');
-  sortBy.addEventListener('change', () => { localStorage.setItem('glass-todos-sort-by', sortBy.value); renderTasks(); });
   sortDir.onclick = () => {
     sortDir.classList.toggle('desc');
     localStorage.setItem('glass-todos-sort-dir', sortDir.classList.contains('desc') ? 'desc' : 'asc');
     renderTasks();
   };
 
-  sortBy2.value = localStorage.getItem('glass-todos-sort-by-2') || 'none';
+  sortBy2 = createGlassSelect('sortBy2', [
+    {value:'none', label:'None'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
+    {value:'alpha', label:'Title (A–Z)'}, {value:'created', label:'Date created'}, {value:'recur', label:'Recurrence'},
+    {value:'subtasks', label:'Sub-task progress'}, {value:'list', label:'List name'}
+  ], localStorage.getItem('glass-todos-sort-by-2') || 'none', () => { localStorage.setItem('glass-todos-sort-by-2', sortBy2.value); renderTasks(); });
   if (localStorage.getItem('glass-todos-sort-dir-2') === 'desc') sortDir2.classList.add('desc');
-  sortBy2.addEventListener('change', () => { localStorage.setItem('glass-todos-sort-by-2', sortBy2.value); renderTasks(); });
   sortDir2.onclick = () => {
     sortDir2.classList.toggle('desc');
     localStorage.setItem('glass-todos-sort-dir-2', sortDir2.classList.contains('desc') ? 'desc' : 'asc');
     renderTasks();
   };
 
-  sortBy3.value = localStorage.getItem('glass-todos-sort-by-3') || 'none';
+  sortBy3 = createGlassSelect('sortBy3', [
+    {value:'none', label:'None'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
+    {value:'alpha', label:'Title (A–Z)'}, {value:'created', label:'Date created'}, {value:'recur', label:'Recurrence'},
+    {value:'subtasks', label:'Sub-task progress'}, {value:'list', label:'List name'}
+  ], localStorage.getItem('glass-todos-sort-by-3') || 'none', () => { localStorage.setItem('glass-todos-sort-by-3', sortBy3.value); renderTasks(); });
   if (localStorage.getItem('glass-todos-sort-dir-3') === 'desc') sortDir3.classList.add('desc');
-  sortBy3.addEventListener('change', () => { localStorage.setItem('glass-todos-sort-by-3', sortBy3.value); renderTasks(); });
   sortDir3.onclick = () => {
     sortDir3.classList.toggle('desc');
     localStorage.setItem('glass-todos-sort-dir-3', sortDir3.classList.contains('desc') ? 'desc' : 'asc');
