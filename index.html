@@ -790,6 +790,24 @@
   #addBtn:hover { background: rgba(var(--w),0.4); }
   #addBtn:active { transform: scale(0.92); }
 
+  .filters-toggle {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 9px 14px; margin-bottom: 12px;
+    border-radius: 12px; border: 1px solid rgba(var(--w),0.22);
+    background: rgba(var(--w),0.1); color: var(--ink);
+    font-size: 0.85rem; font-family: inherit; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .filters-toggle:hover { background: rgba(var(--w),0.18); }
+  .filters-toggle-chevron { margin-left: auto; flex-shrink: 0; opacity: 0.75; transition: transform 0.2s; }
+  .filters-toggle.open .filters-toggle-chevron { transform: rotate(180deg); }
+  .filters-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: rgba(var(--w),0.32); font-size: 0.7rem; font-weight: 700;
+  }
+  .filters-panel { display: none; }
+  .filters-panel.open { display: block; }
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; row-gap: 10px; }
   .filter {
     flex: 1 1 70px; padding: 7px; border-radius: 10px;
@@ -1064,6 +1082,13 @@
         <button id="addBtn" title="Add task"><svg class="ico" viewBox="0 0 24 24" width="22" height="22"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
 
+      <button class="filters-toggle" id="filtersToggleBtn" type="button" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span>Filters &amp; sort</span>
+        <span class="filters-badge" id="filtersBadge" hidden>0</span>
+        <svg class="gl-chevron filters-toggle-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="filters-panel" id="filtersPanel">
       <div class="filters" id="filterRow">
         <input type="search" id="searchInput" class="filter-search" placeholder="Search tasks…" maxlength="100">
         <button class="filter active" data-filter="all">All</button>
@@ -1135,6 +1160,7 @@
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
         </button>
       </div>
+      </div><!-- .filters-panel -->
 
       <ul id="list"></ul>
 
@@ -1332,6 +1358,12 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">development <span class="current-badge">Current</span></div>
+          <ul>
+            <li>Filters &amp; sort are now tucked into a collapsible section with a badge showing how many filters are active</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.1.0 <span class="current-badge">2026-07-05</span></div>
           <ul>
             <li>Custom glass-themed dropdowns: filter, sort, list, and recurrence selects now use tinted glass panels matching your theme colour</li>
@@ -1343,7 +1375,7 @@
           </ul>
         </div>
         <div class="changelog-entry">
-          <div class="changelog-version">1.0.0</div>
+          <div class="changelog-version">1.0.0 <span class="current-badge">2026-07-03</span></div>
           <ul>
             <li>Full release — stable, polished, and ready for everyday use</li>
           </ul>
@@ -1415,7 +1447,7 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = 'development';
 
   const $ = id => document.getElementById(id);
 
@@ -1523,6 +1555,7 @@
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
+  const filtersToggleBtn = $('filtersToggleBtn'), filtersPanel = $('filtersPanel'), filtersBadge = $('filtersBadge');
   const filters = document.querySelectorAll('.filter');
   let dueFilter, prioFilter, tagFilter;
   const searchInput = $('searchInput');
@@ -1819,6 +1852,7 @@
   function renderTasks() {
     list.innerHTML = '';
     populateTagFilter();
+    updateFiltersBadge();
 
     const all = isAllView();
     listTitle.textContent = SMART_TITLES[state.activeId] || activeList().name;
@@ -2568,6 +2602,26 @@
   ], localStorage.getItem('glass-todos-tag-filter') || 'any', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); renderTasks(); });
   searchInput.addEventListener('input', renderTasks);
   searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { searchInput.value = ''; renderTasks(); searchInput.blur(); e.stopPropagation(); } });
+
+  function setFiltersOpen(open) {
+    filtersToggleBtn.classList.toggle('open', open);
+    filtersToggleBtn.setAttribute('aria-expanded', String(open));
+    filtersPanel.classList.toggle('open', open);
+    localStorage.setItem('glass-todos-filters-open', open ? '1' : '0');
+  }
+  filtersToggleBtn.onclick = () => setFiltersOpen(!filtersPanel.classList.contains('open'));
+  setFiltersOpen(localStorage.getItem('glass-todos-filters-open') === '1');
+
+  function updateFiltersBadge() {
+    let n = 0;
+    if (filter !== 'all') n++;
+    if (dueFilter.value !== 'any') n++;
+    if (prioFilter.value !== 'any') n++;
+    if (tagFilter.value !== 'any') n++;
+    if (searchInput.value.trim()) n++;
+    filtersBadge.textContent = n;
+    filtersBadge.hidden = n === 0;
+  }
 
   sortBy = createGlassSelect('sortBy', [
     {value:'manual', label:'Manual'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
