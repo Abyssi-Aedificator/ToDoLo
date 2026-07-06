@@ -536,10 +536,10 @@
     color: var(--ink); font-size: 0.95rem; outline: none; margin-bottom: 4px;
   }
   #tTitle::placeholder { color: rgba(255,255,255,0.55); }
-  #tTitle:focus, #tDesc:focus, #tDue:focus, #tRecur:focus, #tSubInput:focus {
+  #tTitle:focus, #tDesc:focus, #tRecur:focus, #tSubInput:focus {
     background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6);
   }
-  #tDesc, #tDue, #tSubInput {
+  #tDesc, #tSubInput {
     width: 100%;
     padding: 11px 13px;
     border-radius: 11px;
@@ -605,8 +605,53 @@
   .gl-select-item.selected { background: rgba(var(--w),0.26); }
 
   #tRecur:disabled { opacity: 0.4; cursor: not-allowed; }
-  /* brighten the native date picker icon on the dark glass */
-  #tDue::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.8; cursor: pointer; }
+
+  /* ---- custom glass date-picker (calendar dropdown) ---- */
+  .gl-cal-icon { flex-shrink: 0; opacity: 0.75; }
+  .gl-select-label.placeholder { color: rgba(255,255,255,0.55); }
+  .gl-cal-menu { padding: 10px; width: 260px; max-height: none; }
+  .gl-cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .gl-cal-title { font-size: 0.88rem; font-weight: 600; }
+  .gl-cal-nav {
+    display: flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px; cursor: pointer;
+    border: 1px solid rgba(var(--w),0.25);
+    background: rgba(var(--w),0.1); color: var(--ink);
+    font-size: 1rem; line-height: 1; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .gl-cal-nav:hover { background: rgba(var(--w),0.22); }
+  .gl-cal-weekdays, .gl-cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+  }
+  .gl-cal-weekdays {
+    font-size: 0.68rem; opacity: 0.65; text-align: center;
+    margin-bottom: 4px;
+  }
+  .gl-cal-grid { gap: 2px; }
+  .gl-cal-day {
+    aspect-ratio: 1; border: none; border-radius: 8px; cursor: pointer;
+    background: transparent; color: var(--ink); font-size: 0.82rem;
+    font-family: inherit; transition: background 0.15s;
+  }
+  .gl-cal-day:hover { background: rgba(var(--w),0.18); }
+  .gl-cal-day.other { opacity: 0.35; }
+  .gl-cal-day.today { box-shadow: inset 0 0 0 1px rgba(var(--w),0.6); }
+  .gl-cal-day.selected { background: rgba(var(--w),0.32); font-weight: 700; }
+  .gl-cal-foot {
+    display: flex; justify-content: space-between; gap: 8px;
+    margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(var(--w),0.16);
+  }
+  .gl-cal-action {
+    flex: 1; padding: 7px 0; border-radius: 8px; cursor: pointer;
+    border: 1px solid rgba(var(--w),0.25); background: rgba(var(--w),0.1);
+    color: var(--ink); font-size: 0.78rem; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .gl-cal-action:hover { background: rgba(var(--w),0.22); }
 
   .field-grid {
     display: grid;
@@ -1132,7 +1177,26 @@
         <div class="field-grid">
           <div>
             <label class="field-label">Due date</label>
-            <input type="date" id="tDue">
+            <div class="gl-select gl-datepicker" id="tDue">
+              <button class="gl-select-trigger" type="button">
+                <svg class="gl-cal-icon" viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>
+                <span class="gl-select-label placeholder">yyyy-mm-dd</span>
+                <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="gl-select-menu gl-cal-menu">
+                <div class="gl-cal-head">
+                  <button class="gl-cal-nav" type="button" data-dir="-1" title="Previous month">‹</button>
+                  <span class="gl-cal-title"></span>
+                  <button class="gl-cal-nav" type="button" data-dir="1" title="Next month">›</button>
+                </div>
+                <div class="gl-cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+                <div class="gl-cal-grid"></div>
+                <div class="gl-cal-foot">
+                  <button class="gl-cal-action" type="button" data-action="today">Today</button>
+                  <button class="gl-cal-action" type="button" data-action="clear">Clear</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div>
             <label class="field-label">Recurrence</label>
@@ -1271,6 +1335,9 @@
           <div class="changelog-version">development <span class="current-badge">Current</span></div>
           <ul>
             <li>Custom glass-themed dropdowns: filter, sort, list, and recurrence selects now use tinted glass panels matching your theme colour</li>
+            <li>Due date now uses a custom glass-themed calendar picker instead of the browser's default one</li>
+            <li>Fixed dropdown menus staying too dark and losing their theme colour in light mode</li>
+            <li>Fixed open dropdowns letting clicks pass through to controls behind them</li>
             <li>Drag-to-reorder tasks in the main list (when sorted manually)</li>
             <li>Undo on task delete and "Clear completed", via a toast action</li>
           </ul>
@@ -1377,6 +1444,81 @@
     });
   }
 
+  function createGlassDatePicker(id, initialValue, onChange) {
+    const el = $(id);
+    const label = el.querySelector('.gl-select-label');
+    const titleEl = el.querySelector('.gl-cal-title');
+    const gridEl = el.querySelector('.gl-cal-grid');
+    let _value = initialValue || '';
+    let viewYear, viewMonth;
+
+    const pad = n => String(n).padStart(2, '0');
+    const fmt = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    function resetView() {
+      const d = _value ? new Date(_value + 'T00:00') : new Date();
+      viewYear = d.getFullYear();
+      viewMonth = d.getMonth();
+    }
+    function setLabel() {
+      label.textContent = _value || 'yyyy-mm-dd';
+      label.classList.toggle('placeholder', !_value);
+    }
+    function selectDate(d) {
+      _value = fmt(d);
+      setLabel();
+      renderGrid();
+      el.classList.remove('open');
+      onChange(_value);
+    }
+    function renderGrid() {
+      titleEl.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+      gridEl.innerHTML = '';
+      const startDow = new Date(viewYear, viewMonth, 1).getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const todayStr = fmt(new Date());
+      for (let i = 0; i < 42; i++) {
+        const cellDate = new Date(viewYear, viewMonth, i - startDow + 1);
+        const cStr = fmt(cellDate);
+        const other = i < startDow || i - startDow + 1 > daysInMonth;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'gl-cal-day' + (other ? ' other' : '') + (cStr === todayStr ? ' today' : '') + (cStr === _value ? ' selected' : '');
+        btn.textContent = cellDate.getDate();
+        btn.addEventListener('click', e => { e.stopPropagation(); selectDate(cellDate); });
+        gridEl.appendChild(btn);
+      }
+    }
+    setLabel();
+    el.querySelector('.gl-select-trigger').addEventListener('click', e => {
+      e.stopPropagation();
+      const opening = !el.classList.contains('open');
+      if (opening) { resetView(); renderGrid(); }
+      el.classList.toggle('open');
+    });
+    el.querySelectorAll('.gl-cal-nav').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        viewMonth += Number(btn.dataset.dir);
+        if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+        else if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+        renderGrid();
+      });
+    });
+    el.querySelector('[data-action="today"]').addEventListener('click', e => { e.stopPropagation(); selectDate(new Date()); });
+    el.querySelector('[data-action="clear"]').addEventListener('click', e => {
+      e.stopPropagation();
+      _value = '';
+      setLabel();
+      resetView();
+      renderGrid();
+      el.classList.remove('open');
+      onChange(_value);
+    });
+    return Object.defineProperties({}, {
+      value: { get: () => _value, set: v => { _value = v || ''; setLabel(); resetView(); renderGrid(); } }
+    });
+  }
+
   const listNav = $('listNav'), smartNav = $('smartNav'), addListBtn = $('addListBtn');
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
@@ -1390,8 +1532,8 @@
   const overlay = $('overlay'), modalName = $('modalName'), swatches = $('swatches');
   const modalCancel = $('modalCancel'), modalCreate = $('modalCreate');
   const detail = $('detail');
-  const tTitle = $('tTitle'), tDesc = $('tDesc'), tList = $('tList'), tDue = $('tDue');
-  let tRecur; const tPrio = $('tPrio'), tSubs = $('tSubs');
+  const tTitle = $('tTitle'), tDesc = $('tDesc'), tList = $('tList');
+  let tRecur, tDue; const tPrio = $('tPrio'), tSubs = $('tSubs');
   const tSubInput = $('tSubInput'), tSubAdd = $('tSubAdd');
   const tTags = $('tTags'), tTagInput = $('tTagInput');
   const tDelete = $('tDelete'), tClose = $('tClose');
@@ -2378,7 +2520,7 @@
     tRecur.disabled = !tDue.value;
   }
 
-  tDue.addEventListener('change', () => {
+  tDue = createGlassDatePicker('tDue', '', () => {
     if (editingTask) {
       editingTask.due = tDue.value;
       if (!tDue.value && editingTask.recur !== 'none') { editingTask.recur = 'none'; tRecur.value = 'none'; }
