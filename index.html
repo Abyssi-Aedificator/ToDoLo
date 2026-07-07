@@ -734,7 +734,7 @@
   .chip {
     display: inline-flex; align-items: center; gap: 4px;
     font-size: 0.72rem; padding: 2px 8px; border-radius: 8px;
-    background: rgba(var(--w),0.16); opacity: 0.9;
+    background: rgba(var(--a),0.16); opacity: 0.9;
   }
   .chip.overdue { background: rgba(255,80,80,0.35); }
   .chip.due-today { background: rgba(255,193,7,0.32); }
@@ -1368,13 +1368,13 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">1.1.2 <span class="current-badge">2026-07-07</span></div>
+          <div class="changelog-version">x.x.x <span class="current-badge">dev</span></div>
           <ul>
             <li>Light/dark mode can now follow your system preference — pick "System" in settings</li>
           </ul>
         </div>
         <div class="changelog-entry">
-          <div class="changelog-version">1.1.1 <span>2026-07-06</span></div>
+          <div class="changelog-version">1.1.1 <span class="current-badge">2026-07-06</span></div>
           <ul>
             <li>Filters &amp; sort are now tucked into a collapsible section with a badge showing how many filters are active</li>
             <li>Fixed sidebar and task-detail panel resize handles not responding to touch on tablets</li>
@@ -1465,7 +1465,7 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
-  const APP_VERSION = '1.1.2';
+  const APP_VERSION = 'x.x.x';
 
   const $ = id => document.getElementById(id);
 
