@@ -1036,7 +1036,9 @@
 <script>
   // apply the saved mode + colour before first paint to avoid a flash
   try {
-    var _m = localStorage.getItem('glass-todos-mode'); if (_m === 'light') document.documentElement.dataset.mode = 'light';
+    var _m = localStorage.getItem('glass-todos-mode');
+    if (_m === 'system' || !_m) { if (window.matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.mode = 'light'; }
+    else if (_m === 'light') document.documentElement.dataset.mode = 'light';
     var _c = localStorage.getItem('glass-todos-color'); if (_c && _c !== 'teal') document.documentElement.dataset.color = _c;
   } catch (e) {}
 </script>
@@ -1309,6 +1311,7 @@
             <div class="mode-toggle" id="modeToggle">
               <button class="mode-btn" data-mode="light">☀ Light</button>
               <button class="mode-btn" data-mode="dark">☾ Dark</button>
+              <button class="mode-btn" data-mode="system">🖥 System</button>
             </div>
           </div>
           <div class="settings-card">
@@ -1365,7 +1368,13 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">1.1.1 <span class="current-badge">2026-07-06</span></div>
+          <div class="changelog-version">1.1.2 <span class="current-badge">2026-07-07</span></div>
+          <ul>
+            <li>Light/dark mode can now follow your system preference — pick "System" in settings</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">1.1.1 <span>2026-07-06</span></div>
           <ul>
             <li>Filters &amp; sort are now tucked into a collapsible section with a badge showing how many filters are active</li>
             <li>Fixed sidebar and task-detail panel resize handles not responding to touch on tablets</li>
@@ -1456,7 +1465,7 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
-  const APP_VERSION = '1.1.1';
+  const APP_VERSION = '1.1.2';
 
   const $ = id => document.getElementById(id);
 
@@ -2437,12 +2446,23 @@
     { id: 'orange', name: 'Orange', dark: 'linear-gradient(135deg, #7c2d12, #ef7a18, #f5d020)', light: 'linear-gradient(135deg, #fce3c4, #fad29a, #fdeeb0)' },
     { id: 'green',  name: 'Green',  dark: 'linear-gradient(135deg, #0a2417, #14803d, #a3e635)', light: 'linear-gradient(135deg, #daf0c9, #bce5a8, #e8f5b0)' }
   ];
-  const currentMode = () => localStorage.getItem('glass-todos-mode') === 'light' ? 'light' : 'dark';
+  const savedMode = () => localStorage.getItem('glass-todos-mode') || 'system';
+  const currentMode = () => {
+    const s = savedMode();
+    if (s === 'light') return 'light';
+    if (s === 'dark') return 'dark';
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  };
   const currentColor = () => localStorage.getItem('glass-todos-color') || 'teal';
 
   function applyMode(m) {
     if (m === 'light') document.documentElement.dataset.mode = 'light';
-    else delete document.documentElement.dataset.mode;
+    else if (m === 'system') {
+      if (window.matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.mode = 'light';
+      else delete document.documentElement.dataset.mode;
+    } else {
+      delete document.documentElement.dataset.mode;
+    }
     localStorage.setItem('glass-todos-mode', m);
   }
   function applyColor(c) {
@@ -2451,7 +2471,7 @@
     localStorage.setItem('glass-todos-color', c);
   }
   function renderModeToggle() {
-    const m = currentMode();
+    const m = savedMode();
     document.querySelectorAll('#modeToggle .mode-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.mode === m);
       b.onclick = () => { applyMode(b.dataset.mode); renderModeToggle(); renderColors(); };
@@ -2472,6 +2492,9 @@
   }
   renderModeToggle();
   renderColors();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (savedMode() === 'system') { applyMode('system'); renderModeToggle(); renderColors(); }
+  });
 
   // settings tabs
   document.querySelectorAll('.settings-tab-btn').forEach(btn => {
