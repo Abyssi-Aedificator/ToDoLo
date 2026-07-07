@@ -54,7 +54,7 @@
     --w: 255, 255, 255;          /* glass tint channel */
     --ink: #ffffff;              /* text / icons */
     --panel-solid: rgba(20, 40, 50, 0.94);
-    --toast-bg: rgba(20, 40, 50, 0.72);
+    --toast-bg: rgba(var(--a), 0.75);
     --select-bg: #15323b;
     /* default colour = teal (dark) */
     --a: 44, 83, 100;
@@ -67,7 +67,7 @@
     --w: 38, 50, 71;
     --ink: #ffffff;
     --panel-solid: rgba(248, 250, 252, 0.94);
-    --toast-bg: rgba(38, 50, 71, 0.92);
+    --toast-bg: rgba(var(--a), 0.9);
     --select-bg: rgba(38,50,71,0.88);
     --a: 42, 73, 91;
     --bg-gradient: linear-gradient(135deg, #c9efe2 0%, #9fd8e8 50%, #d8f1d0 100%);
@@ -89,7 +89,7 @@
 
   /* in light mode, don't darken the page behind modals (keeps panels bright) */
   html[data-mode="light"] .overlay { background: rgba(70, 100, 140, 0.14); }
-  html[data-mode="light"] .modal { background: rgba(var(--w), 0.28); }
+  html[data-mode="light"] .modal { background: rgba(var(--a), 0.16); border-color: rgba(var(--a), 0.35); }
 
   body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -153,6 +153,12 @@
     cursor: col-resize;
     z-index: 5;
     background: transparent;
+    touch-action: none;
+  }
+  @media (pointer: coarse) {
+    .sidebar-resizer, .detail-resizer { width: 16px; }
+    .sidebar-resizer { right: -8px; }
+    .detail-resizer { left: -8px; }
   }
   .sidebar-resizer:hover, .sidebar-resizer.dragging {
     background: rgba(var(--w), 0.25);
@@ -305,10 +311,10 @@
     width: 340px; max-width: calc(100vw - 40px);
     padding: 26px;
     border-radius: 20px;
-    background: rgba(var(--w),0.16);
+    background: rgba(var(--a),0.32);
     backdrop-filter: blur(22px) saturate(160%);
     -webkit-backdrop-filter: blur(22px) saturate(160%);
-    border: 1px solid rgba(var(--w),0.3);
+    border: 1px solid rgba(var(--a),0.45);
     box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     color: var(--ink);
     animation: pop 0.2s ease;
@@ -492,6 +498,7 @@
     cursor: col-resize;
     z-index: 5;
     background: transparent;
+    touch-action: none;
   }
   .detail-resizer:hover, .detail-resizer.dragging {
     background: rgba(var(--w), 0.25);
@@ -790,6 +797,24 @@
   #addBtn:hover { background: rgba(var(--w),0.4); }
   #addBtn:active { transform: scale(0.92); }
 
+  .filters-toggle {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 9px 14px; margin-bottom: 12px;
+    border-radius: 12px; border: 1px solid rgba(var(--w),0.22);
+    background: rgba(var(--w),0.1); color: var(--ink);
+    font-size: 0.85rem; font-family: inherit; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .filters-toggle:hover { background: rgba(var(--w),0.18); }
+  .filters-toggle-chevron { margin-left: auto; flex-shrink: 0; opacity: 0.75; transition: transform 0.2s; }
+  .filters-toggle.open .filters-toggle-chevron { transform: rotate(180deg); }
+  .filters-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: rgba(var(--w),0.32); font-size: 0.7rem; font-weight: 700;
+  }
+  .filters-panel { display: none; }
+  .filters-panel.open { display: block; }
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; row-gap: 10px; }
   .filter {
     flex: 1 1 70px; padding: 7px; border-radius: 10px;
@@ -1064,6 +1089,13 @@
         <button id="addBtn" title="Add task"><svg class="ico" viewBox="0 0 24 24" width="22" height="22"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
 
+      <button class="filters-toggle" id="filtersToggleBtn" type="button" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span>Filters &amp; sort</span>
+        <span class="filters-badge" id="filtersBadge" hidden>0</span>
+        <svg class="gl-chevron filters-toggle-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="filters-panel" id="filtersPanel">
       <div class="filters" id="filterRow">
         <input type="search" id="searchInput" class="filter-search" placeholder="Search tasks…" maxlength="100">
         <button class="filter active" data-filter="all">All</button>
@@ -1135,6 +1167,7 @@
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
         </button>
       </div>
+      </div><!-- .filters-panel -->
 
       <ul id="list"></ul>
 
@@ -1332,6 +1365,14 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.1.1 <span class="current-badge">2026-07-06</span></div>
+          <ul>
+            <li>Filters &amp; sort are now tucked into a collapsible section with a badge showing how many filters are active</li>
+            <li>Fixed sidebar and task-detail panel resize handles not responding to touch on tablets</li>
+            <li>Fixed dialogs and toast notifications staying neutral grey instead of following your theme colour</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.1.0 <span class="current-badge">2026-07-05</span></div>
           <ul>
             <li>Custom glass-themed dropdowns: filter, sort, list, and recurrence selects now use tinted glass panels matching your theme colour</li>
@@ -1343,7 +1384,7 @@
           </ul>
         </div>
         <div class="changelog-entry">
-          <div class="changelog-version">1.0.0</div>
+          <div class="changelog-version">1.0.0 <span class="current-badge">2026-07-03</span></div>
           <ul>
             <li>Full release — stable, polished, and ready for everyday use</li>
           </ul>
@@ -1415,7 +1456,7 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
-  const APP_VERSION = '1.1.0';
+  const APP_VERSION = '1.1.1';
 
   const $ = id => document.getElementById(id);
 
@@ -1523,6 +1564,7 @@
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
+  const filtersToggleBtn = $('filtersToggleBtn'), filtersPanel = $('filtersPanel'), filtersBadge = $('filtersBadge');
   const filters = document.querySelectorAll('.filter');
   let dueFilter, prioFilter, tagFilter;
   const searchInput = $('searchInput');
@@ -1819,6 +1861,7 @@
   function renderTasks() {
     list.innerHTML = '';
     populateTagFilter();
+    updateFiltersBadge();
 
     const all = isAllView();
     listTitle.textContent = SMART_TITLES[state.activeId] || activeList().name;
@@ -2569,6 +2612,26 @@
   searchInput.addEventListener('input', renderTasks);
   searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { searchInput.value = ''; renderTasks(); searchInput.blur(); e.stopPropagation(); } });
 
+  function setFiltersOpen(open) {
+    filtersToggleBtn.classList.toggle('open', open);
+    filtersToggleBtn.setAttribute('aria-expanded', String(open));
+    filtersPanel.classList.toggle('open', open);
+    localStorage.setItem('glass-todos-filters-open', open ? '1' : '0');
+  }
+  filtersToggleBtn.onclick = () => setFiltersOpen(!filtersPanel.classList.contains('open'));
+  setFiltersOpen(localStorage.getItem('glass-todos-filters-open') === '1');
+
+  function updateFiltersBadge() {
+    let n = 0;
+    if (filter !== 'all') n++;
+    if (dueFilter.value !== 'any') n++;
+    if (prioFilter.value !== 'any') n++;
+    if (tagFilter.value !== 'any') n++;
+    if (searchInput.value.trim()) n++;
+    filtersBadge.textContent = n;
+    filtersBadge.hidden = n === 0;
+  }
+
   sortBy = createGlassSelect('sortBy', [
     {value:'manual', label:'Manual'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
     {value:'alpha', label:'Title (A–Z)'}, {value:'created', label:'Date created'}, {value:'recur', label:'Recurrence'},
@@ -2673,20 +2736,22 @@
       sidebar.style.width = w + 'px';
     }
     function onUp() {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
       resizer.classList.remove('dragging');
       shell.classList.remove('resizing');
       localStorage.setItem('glass-todos-sidebar-width', parseInt(sidebar.style.width, 10));
     }
-    resizer.addEventListener('mousedown', e => {
+    resizer.addEventListener('pointerdown', e => {
       e.preventDefault();
       startX = e.clientX;
       startWidth = sidebar.getBoundingClientRect().width;
       resizer.classList.add('dragging');
       shell.classList.add('resizing');
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
     });
   })();
 
@@ -2706,14 +2771,15 @@
       detail.style.width = w + 'px';
     }
     function onUp() {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onUp);
       resizer.classList.remove('dragging');
       shell.classList.remove('resizing');
       detail.classList.remove('resized');
       localStorage.setItem('glass-todos-detail-width', parseInt(detail.style.width, 10));
     }
-    resizer.addEventListener('mousedown', e => {
+    resizer.addEventListener('pointerdown', e => {
       if (!detail.classList.contains('open')) return;
       e.preventDefault();
       startX = e.clientX;
@@ -2721,8 +2787,9 @@
       resizer.classList.add('dragging');
       shell.classList.add('resizing');
       detail.classList.add('resized');
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+      document.addEventListener('pointercancel', onUp);
     });
   })();
 
