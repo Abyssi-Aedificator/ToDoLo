@@ -806,6 +806,8 @@
     transition: background 0.2s;
   }
   .filters-toggle:hover { background: rgba(var(--w),0.18); }
+  .filters-toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .filters-toggle-row .filters-toggle { margin-bottom: 0; flex: 1; }
   .filters-toggle-chevron { margin-left: auto; flex-shrink: 0; opacity: 0.75; transition: transform 0.2s; }
   .filters-toggle.open .filters-toggle-chevron { transform: rotate(180deg); }
   .filters-badge {
@@ -1091,12 +1093,17 @@
         <button id="addBtn" title="Add task"><svg class="ico" viewBox="0 0 24 24" width="22" height="22"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
 
-      <button class="filters-toggle" id="filtersToggleBtn" type="button" aria-expanded="false">
-        <svg class="ico" viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-        <span>Filters &amp; sort</span>
-        <span class="filters-badge" id="filtersBadge" hidden>0</span>
-        <svg class="gl-chevron filters-toggle-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <div class="filters-toggle-row">
+        <button class="filters-toggle" id="filtersToggleBtn" type="button" aria-expanded="false">
+          <svg class="ico" viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+          <span>Filters &amp; sort</span>
+          <span class="filters-badge" id="filtersBadge" hidden>0</span>
+          <svg class="gl-chevron filters-toggle-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="filter-reset" id="resetFiltersBtn" title="Reset all filters">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+        </button>
+      </div>
       <div class="filters-panel" id="filtersPanel">
       <div class="filters" id="filterRow">
         <input type="search" id="searchInput" class="filter-search" placeholder="Search tasks…" maxlength="100">
@@ -1368,9 +1375,11 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">x.x.x <span class="current-badge">dev</span></div>
+          <div class="changelog-version">1.1.2 <span class="current-badge">2026-07-07</span></div>
           <ul>
             <li>Light/dark mode can now follow your system preference — pick "System" in settings</li>
+            <li>Date chips in the task list now use your theme colour instead of a generic tint</li>
+            <li>Reset filters button placed conveniently on the right of the "Filters &amp; sort" toggle</li>
           </ul>
         </div>
         <div class="changelog-entry">
@@ -1465,7 +1474,7 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
-  const APP_VERSION = 'x.x.x';
+  const APP_VERSION = '1.1.2';
 
   const $ = id => document.getElementById(id);
 
@@ -2703,7 +2712,7 @@
     renderTasks();
   };
 
-  $('resetFilters').onclick = () => {
+  function resetAllFilters() {
     filter = 'all';
     filters.forEach(x => x.classList.toggle('active', x.dataset.filter === 'all'));
     localStorage.setItem('glass-todos-filter', 'all');
@@ -2715,7 +2724,9 @@
     localStorage.setItem('glass-todos-prio-filter', 'any');
     localStorage.setItem('glass-todos-tag-filter', 'any');
     renderTasks();
-  };
+  }
+  $('resetFilters').onclick = resetAllFilters;
+  $('resetFiltersBtn').onclick = resetAllFilters;
 
   listsSortBtn.innerHTML = ICON.sortAz;
   listsSortBtn.onclick = () => {
