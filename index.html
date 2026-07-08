@@ -322,7 +322,7 @@
   .modal h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 18px; }
   .field-label {
     display: block; font-size: 0.78rem; opacity: 0.85;
-    margin-bottom: 7px; margin-top: 4px;
+    margin-bottom: 8px; margin-top: 4px; font-weight: 500;
   }
   .sub-heading { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
   #modalName {
@@ -402,6 +402,7 @@
     transition: border-color 0.2s;
   }
   .settings-card:hover { border-color: rgba(var(--w),0.18); }
+  .settings-card:focus-within { border-color: rgba(var(--a),0.35); }
   .settings-card:last-child { margin-bottom: 0; }
   .settings-card .backup-row:last-child { margin-bottom: 0; }
   .settings-subhead {
@@ -1034,42 +1035,27 @@
 
   /* ---------- DROPBOX SYNC ---------- */
   .dbx-blurb { font-size: 0.8rem; opacity: 0.72; margin: 2px 0 12px; line-height: 1.45; }
-  .dbx-link { color: #8ec5ff; text-decoration: none; font-weight: 500; }
-  .dbx-link:hover { text-decoration: underline; }
+  .dbx-link { color: var(--ink); opacity: 0.7; text-decoration: none; font-weight: 500; transition: opacity 0.2s; }
+  .dbx-link:hover { opacity: 1; text-decoration: underline; }
   #dbxKey {
     width: 100%;
-    padding: 11px 14px;
+    padding: 12px 16px;
     border-radius: 12px;
-    border: 1px solid rgba(var(--w),0.3);
-    background: rgba(var(--w),0.15);
-    color: var(--ink); font-size: 0.9rem; outline: none;
-    transition: background 0.2s, border 0.2s;
+    border: 1px solid rgba(var(--w),0.2);
+    background: rgba(var(--w),0.1);
+    color: var(--ink); font-size: 0.9rem; outline: none; font-family: inherit;
+    transition: background 0.2s, border-color 0.2s;
   }
-  #dbxKey::placeholder { color: rgba(255,255,255,0.55); }
-  #dbxKey:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
+  #dbxKey::placeholder { color: rgba(255,255,255,0.45); }
+  #dbxKey:focus { background: rgba(var(--w),0.18); border-color: rgba(var(--w),0.4); }
   .dbx-status {
     font-size: 0.68rem; font-weight: 500; vertical-align: middle;
-    padding: 2px 9px; border-radius: 20px; margin-left: 6px;
-    background: rgba(170,179,197,0.18); color: var(--ink); opacity: 0.7;
+    padding: 2px 10px; border-radius: 20px; margin-left: 6px;
+    background: rgba(var(--w),0.12); color: var(--ink); opacity: 0.7;
   }
   .dbx-status.connected { background: rgba(62,207,142,0.2); color: #6ee7b7; }
-  .dbx-account-row { font-size: 0.78rem; opacity: 0.78; margin: 2px 0 12px; }
-  .dbx-account-row span + span::before { content: ' · '; opacity: 0.6; }
-  .dbx-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0 0 14px; user-select: none; }
-  .dbx-toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
-  .dbx-toggle-track {
-    flex-shrink: 0; width: 38px; height: 22px; border-radius: 22px;
-    background: rgba(var(--w),0.18); border: 1px solid rgba(var(--w),0.28);
-    transition: background 0.2s; position: relative;
-  }
-  .dbx-toggle-thumb {
-    position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
-    background: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.35); transition: transform 0.2s;
-  }
-  .dbx-toggle input:checked + .dbx-toggle-track { background: rgba(62,207,142,0.55); border-color: rgba(110,231,183,0.6); }
-  .dbx-toggle input:checked + .dbx-toggle-track .dbx-toggle-thumb { transform: translateX(16px); }
-  .dbx-toggle input:focus-visible + .dbx-toggle-track { box-shadow: 0 0 0 3px rgba(120,200,255,0.4); }
-  .dbx-toggle-label { font-size: 0.82rem; opacity: 0.85; line-height: 1.35; }
+  .dbx-account-row { font-size: 0.8rem; opacity: 0.75; margin: 4px 0 14px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .dbx-account-row span + span::before { content: '·'; opacity: 0.5; margin-right: 4px; }
 
   /* ---------- TOAST ---------- */
   .toast {
@@ -1443,11 +1429,11 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">x.x.x <span class="current-badge">dev</span></div>
+          <div class="changelog-version">1.1.3 <span class="current-badge">2026-07-07</span></div>
           <ul>
-            <li>Tasks can now be marked "In Progress" — toggle it from the detail panel or click the green chip on the task row to set it back to "To Do"</li>
-            <li>"In Progress" uses a skeuomorphic green gradient that stays cohesive with the glass theme</li>
-            <li>Status is synced live between the detail panel and the task row chip</li>
+            <li>Settings page redesigned with larger cards, bigger swatches, softer glass, and more spacing</li>
+            <li>Primary buttons now use your theme accent colour instead of a generic tint</li>
+            <li>Toggle switches, mode picker, tabs, and badges all polished for a cleaner look</li>
           </ul>
         </div>
         <div class="changelog-entry">
@@ -1550,7 +1536,7 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
-  const APP_VERSION = 'x.x.x';
+  const APP_VERSION = '1.1.3';
 
   const $ = id => document.getElementById(id);
 
