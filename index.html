@@ -267,6 +267,33 @@
   .smart-views .smart-item.active::before { height: 60%; }
   .smart-views .smart-item.active { background: rgba(var(--w),0.16); border-color: transparent; }
   .smart-views .smart-item .all-icon { flex-shrink: 0; }
+
+  .inprogress-section {
+    flex: 0 0 auto; overflow: visible;
+    background: rgba(var(--w),0.06);
+    border: 1px solid rgba(var(--w),0.12);
+    border-radius: 14px;
+    padding: 6px;
+    margin-bottom: 16px;
+  }
+  .inprogress-section .inprogress-item {
+    font-weight: 600;
+    margin-bottom: 2px;
+    border-radius: 9px;
+    position: relative;
+    padding-left: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .inprogress-section .inprogress-item:last-child { margin-bottom: 0; }
+  .inprogress-section .inprogress-item::before {
+    content: ''; position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 0; border-radius: 3px; background: var(--ink);
+    transition: height 0.15s;
+  }
+  .inprogress-section .inprogress-item.active::before { height: 60%; }
+  .inprogress-section .inprogress-item.active { background: rgba(var(--w),0.16); }
+  .inprogress-section .inprogress-item .inprogress-icon { flex-shrink: 0; }
+
   .lists-heading {
     display: flex; align-items: center; justify-content: space-between;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
@@ -1115,6 +1142,7 @@
         ToDoLo
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
+      <ul class="lists inprogress-section" id="inProgressNav"></ul>
       <div class="lists-heading">
         <span>Lists</span>
         <button class="lists-sort-btn" id="listsSortBtn" title="Sort alphabetically"></button>
@@ -1442,6 +1470,7 @@
           <div class="changelog-version">1.1.4 <span class="current-badge">2026-07-08</span></div>
           <ul>
             <li>Default list renamed from "Default" to "Today" — new visitors now start with a "Today" list instead of a generic "Default" list</li>
+            <li>"In Progress" sidebar section with its own glass container, count badge, and icon — sits between smart views and your lists</li>
           </ul>
         </div>
         <div class="changelog-entry">
@@ -1550,7 +1579,8 @@
     calGrid: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/><circle cx="7.5" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/><circle cx="7.5" cy="18" r="1"/><circle cx="12" cy="18" r="1"/></svg>',
     sortAz: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M3 6h7M3 12h5M3 18h3"/><path d="M14 6l4-4 4 4M18 2v16"/></svg>',
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
-    calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
+    calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>',
+    play: '<svg viewBox="0 0 24 24" width="16" height="16"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>'
   };
   const DEV = true;
   if (!DEV) document.getElementById('devBanner').remove();
@@ -1658,7 +1688,7 @@
     });
   }
 
-  const listNav = $('listNav'), smartNav = $('smartNav'), addListBtn = $('addListBtn');
+  const listNav = $('listNav'), smartNav = $('smartNav'), inProgressNav = $('inProgressNav'), addListBtn = $('addListBtn');
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
@@ -1747,13 +1777,14 @@
     { id: 'week', name: 'Next 7 Days', icon: 'calGrid', color: '#5b9bff' },
     { id: 'nodate', name: 'No Date', icon: 'calOff', color: '#a78bfa' }
   ];
-  const AGGREGATE_VIEWS = ['all', 'overdue', 'today', 'tomorrow', 'week', 'nodate'];
+  const AGGREGATE_VIEWS = ['all', 'overdue', 'today', 'tomorrow', 'week', 'nodate', 'in-progress'];
   const isAllView = () => AGGREGATE_VIEWS.includes(state.activeId);
   const activeList = () => state.lists.find(l => l.id === state.activeId) || state.lists[0];
   const ownerOf = task => state.lists.find(l => l.todos.includes(task));
 
   function matchesSmartView(t) {
-    if (state.activeId === 'nodate') return !t.due;
+    if (state.activeId === 'in-progress') return !t.done && t.status === 'in-progress';
+    if (state.activeId === 'nodate') return !t.done && !t.due;
     if (state.activeId !== 'overdue' && state.activeId !== 'today' && state.activeId !== 'tomorrow' && state.activeId !== 'week') return true;
     if (!t.due) return false;
     const days = daysFromToday(t.due);
@@ -1771,6 +1802,7 @@
     if (id === 'tomorrow') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 1).length;
     if (id === 'week') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) >= 0 && daysFromToday(t.due) <= 7).length;
     if (id === 'nodate') return allTodos.filter(t => !t.done && !t.due).length;
+    if (id === 'in-progress') return allTodos.filter(t => !t.done && t.status === 'in-progress').length;
     return null;
   }
 
@@ -1778,6 +1810,7 @@
   function renderNav() {
     listNav.innerHTML = '';
     smartNav.innerHTML = '';
+    inProgressNav.innerHTML = '';
 
     // smart views: All / Today / Tomorrow / Next 7 Days
     SMART_VIEWS.forEach(v => {
@@ -1801,6 +1834,29 @@
       li.onclick = () => { state.activeId = v.id; save(); renderAll(); closeDrawer(); };
       smartNav.appendChild(li);
     });
+
+    // in-progress view
+    {
+      const li = document.createElement('li');
+      li.className = 'inprogress-item' + (state.activeId === 'in-progress' ? ' active' : '');
+      const icon = document.createElement('span');
+      icon.className = 'inprogress-icon';
+      icon.style.color = '#22c55e';
+      icon.innerHTML = ICON.play;
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = 'In Progress';
+      li.append(icon, name);
+      const cnt = smartCount('in-progress');
+      if (cnt !== null && cnt > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = cnt;
+        li.appendChild(badge);
+      }
+      li.onclick = () => { state.activeId = 'in-progress'; save(); renderAll(); closeDrawer(); };
+      inProgressNav.appendChild(li);
+    }
 
     state.lists.forEach(l => {
       const li = document.createElement('li');
@@ -1922,7 +1978,7 @@
   }
 
   // ---- tasks ----
-  const SMART_TITLES = { all: 'All Tasks', overdue: 'Overdue', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days', nodate: 'No Date' };
+  const SMART_TITLES = { all: 'All Tasks', overdue: 'Overdue', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days', nodate: 'No Date', 'in-progress': 'In Progress' };
 
   function getShownTasks() {
     const all = isAllView();
@@ -2084,7 +2140,7 @@
       const c = document.createElement('span');
       c.className = 'chip in-progress';
       c.innerHTML = '▶ In Progress';
-      c.onclick = e => { e.stopPropagation(); t.status = 'todo'; save(); renderTasks(); if (editingTask && editingTask.id === t.id) renderStatus(); };
+      c.onclick = e => { e.stopPropagation(); t.status = 'todo'; save(); renderAll(); if (editingTask && editingTask.id === t.id) renderStatus(); };
       meta.appendChild(c); any = true;
     }
     if (t.recur && t.recur !== 'none') {
@@ -2660,7 +2716,7 @@
     state.lists.forEach(l => {
       l.todos.forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; });
     });
-    if (!state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
+    if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
     save(); renderAll();
     settingsOverlay.classList.remove('show');
   };
@@ -3051,7 +3107,7 @@
   function dbxApplyData(d) {
     state = d;
     state.lists.forEach(l => { (l.todos || []).forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; }); });
-    if (!state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
+    if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
     _lastUploadedState = JSON.stringify(state); // we now match Dropbox; don't re-upload it
     _skipAutoUpload = true;
     save(); renderAll();
