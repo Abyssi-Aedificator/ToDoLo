@@ -142,6 +142,7 @@
     border: 1px solid rgba(var(--w), 0.25);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
     color: var(--ink);
+    transition: background 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   /* ---------- SIDEBAR ---------- */
@@ -154,6 +155,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    transition: background 0.4s ease, border-color 0.3s ease;
   }
   .sidebar-resizer {
     position: absolute;
@@ -348,8 +350,8 @@
     padding: 26px;
     border-radius: 20px;
     background: rgba(var(--a),0.32);
-    backdrop-filter: blur(22px) saturate(160%);
-    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(32px) saturate(160%);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
     border: 1px solid rgba(var(--a),0.45);
     box-shadow: 0 12px 40px rgba(0,0,0,0.35);
     color: var(--ink);
@@ -563,7 +565,7 @@
     position: relative;
     background: rgba(var(--w),0.10);
     border-left: 1px solid rgba(var(--w),0.18);
-    transition: width 0.28s ease;
+    transition: width 0.28s ease, background 0.4s ease, border-color 0.3s ease;
   }
   .detail.open { width: 360px; }
   .detail.resized { transition: none; }
@@ -957,28 +959,37 @@
   .sort-row .filter-select { flex: 1 1 110px; }
   #sortDir.desc svg, #sortDir2.desc svg, #sortDir3.desc svg { transform: rotate(180deg); }
 
-  #list { list-style: none; flex: 1; overflow-y: auto; }
+  #list { list-style: none; flex: 1; overflow-y: auto; position: relative; }
+  #list::before {
+    content: ''; position: sticky; top: 0; left: 0; right: 0; display: block; height: 16px; margin-top: -16px;
+    background: linear-gradient(to bottom, rgba(var(--w),0.12) 0%, transparent 100%);
+    opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 3;
+  }
+  #list.scrolled::before { opacity: 1; }
   #list li {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 13px 14px; margin-bottom: 10px; border-radius: 14px;
     background: rgba(var(--w),0.12);
     border: 1px solid rgba(var(--w),0.18);
-    animation: pop 0.25s ease;
+    transition: opacity 0.28s ease, transform 0.28s ease, max-height 0.3s ease, margin-bottom 0.3s ease, padding 0.3s ease;
+    overflow: hidden;
   }
+  #list li.inserted { animation: pop 0.3s ease; }
+  #list li.removing { opacity: 0; transform: scale(0.96); max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; pointer-events: none; }
   #list li.empty { align-items: center; }
   #list li.group-sep {
     background: none; border: none; padding: 4px 2px; margin-bottom: 6px;
     display: flex; align-items: center; gap: 10px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
     color: var(--ink); opacity: 0.6; text-transform: uppercase;
-    animation: none;
+    position: sticky; top: 0; z-index: 2;
   }
   #list li.group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
   #list li.group-sep:not(:first-child) { margin-top: 4px; }
   #list li.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
   @keyframes pop {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
   }
   .check {
     width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%;
@@ -998,7 +1009,11 @@
   }
   .del:hover { color: #ff8a8a; transform: scale(1.2); }
 
-  .empty { text-align: center; opacity: 0.6; font-size: 0.9rem; padding: 20px 0; justify-content: center; }
+  .empty { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 28px 20px; justify-content: center; }
+  .empty-illustration { width: 80px; height: 60px; opacity: 0.5; margin-bottom: 2px; }
+  .empty-illustration svg { width: 100%; height: 100%; }
+  .empty-message { font-size: 0.9rem; }
+  .empty-hint { font-size: 0.78rem; opacity: 0.5; }
 
   .footer {
     display: flex; justify-content: space-between; align-items: center;
@@ -1118,6 +1133,53 @@
     transition: background 0.2s;
   }
   .toast-action:hover { background: rgba(var(--w),0.4); }
+
+  /* ---------- QUICK OPEN ---------- */
+  .quick-open-modal {
+    width: 520px; max-width: calc(100vw - 40px); max-height: min(70vh, 500px);
+    display: flex; flex-direction: column;
+    padding: 0;
+    border-radius: 16px;
+    background: rgba(var(--a),0.28);
+    backdrop-filter: blur(48px) saturate(160%);
+    -webkit-backdrop-filter: blur(48px) saturate(160%);
+    border: 1px solid rgba(var(--a),0.4);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    overflow: hidden;
+  }
+  .quick-open-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(var(--w),0.1);
+  }
+  .quick-open-head input {
+    flex: 1; border: none; background: transparent; outline: none;
+    color: var(--ink); font: inherit; font-size: 0.95rem;
+  }
+  .quick-open-head input::placeholder { color: var(--ink); opacity: 0.5; }
+  .quick-open-results { overflow-y: auto; padding: 6px 0; max-height: 400px; }
+  .quick-open-group-label {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 8px 16px 4px; opacity: 0.5;
+  }
+  .quick-open-result {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; cursor: pointer;
+    transition: background 0.1s;
+    border-left: 3px solid transparent;
+  }
+  .quick-open-result:hover, .quick-open-result.highlighted {
+    background: rgba(var(--w),0.12);
+    border-left-color: rgba(var(--a),0.5);
+  }
+  .quick-open-result .qo-text {
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .quick-open-result .qo-meta {
+    font-size: 0.72rem; opacity: 0.6; white-space: nowrap; flex-shrink: 0;
+  }
+  .quick-open-empty { padding: 20px 16px; text-align: center; opacity: 0.5; font-size: 0.9rem; }
+
 </style>
 <script>
   // apply the saved mode + colour before first paint to avoid a flash
@@ -1467,6 +1529,17 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.2.0 <span class="current-badge">2026-07-09</span></div>
+          <ul>
+            <li>Smooth animated transitions when adding, completing, or deleting tasks — tasks fade and slide in/out instead of popping</li>
+            <li>Contextual empty states with themed SVG illustrations — different artwork and messages for empty lists, smart views, search results, and filtered views</li>
+            <li>Sticky group headers (Overdue, Today, Tomorrow…) stay pinned while scrolling through that group; a subtle shadow appears at the top of the list when scrolled</li>
+            <li>Deeper glass hierarchy — modals and the Quick Open palette now have stronger blur for a more layered HUD feel; theme colour changes transition smoothly across the shell, sidebar, and detail panel</li>
+            <li>Natural Language Quick Add — type <code>#tags</code>, <code>!priority</code>, and due dates (tomorrow, next week, etc.) right in the task input</li>
+            <li>Quick Open palette — press <code>Cmd+K</code> / <code>Ctrl+K</code> to search every task, description, and tag, then jump straight to it</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.1.4 <span class="current-badge">2026-07-08</span></div>
           <ul>
             <li>Default list renamed from "Default" to "Today" — new visitors now start with a "Today" list instead of a generic "Default" list</li>
@@ -1562,6 +1635,17 @@
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
+  <!-- QUICK OPEN -->
+  <div class="overlay" id="quickOpenOverlay">
+    <div class="quick-open-modal">
+      <div class="quick-open-head">
+        <svg viewBox="0 0 24 24" width="18" height="18" style="flex-shrink:0;opacity:0.6"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="quickOpenInput" placeholder="Search tasks…" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="quick-open-results" id="quickOpenResults"></div>
+    </div>
+  </div>
+
 <script>
   const ICON = {
     check: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M5 12.5l4 4 10-10"/></svg>',
@@ -1584,7 +1668,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.1.4';
+  const APP_VERSION = '1.2.0';
 
   const $ = id => document.getElementById(id);
 
@@ -2013,6 +2097,8 @@
   }
 
   function renderTasks() {
+    const existingIds = new Set();
+    list.querySelectorAll('[data-task-id]').forEach(el => existingIds.add(el.dataset.taskId));
     list.innerHTML = '';
     populateTagFilter();
     updateFiltersBadge();
@@ -2021,15 +2107,28 @@
     listTitle.textContent = SMART_TITLES[state.activeId] || activeList().name;
 
     const shown = getShownTasks();
-    // dragging only makes sense when the visible order actually reflects manual order:
-    // a single list (not an aggregate/smart view) with no secondary/tertiary sort overriding ties
     const canDragManual = !all && sortBy.value === 'manual' && sortBy2.value === 'none' && sortBy3.value === 'none';
 
     if (shown.length === 0) {
       const li = document.createElement('li');
       li.className = 'empty';
-      li.textContent = (filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any' && tagFilter.value === 'any' && !searchInput.value.trim())
-        ? 'Nothing here yet — add a task!' : 'No tasks in this view.';
+      const isEmpty = filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any' && tagFilter.value === 'any' && !searchInput.value.trim();
+      const illo = document.createElement('div');
+      illo.className = 'empty-illustration';
+      if (isEmpty && !AGGREGATE_VIEWS.has(state.activeId)) {
+        illo.innerHTML = '<svg viewBox="0 0 80 60" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="30" r="18" opacity="0.5"/><path d="M34 27l4 4 8-8" opacity="0.6"/><path d="M22 48c0-8 8-14 18-14s18 6 18 14" opacity="0.4"/></svg>';
+        li.innerHTML = '<div class="empty-message">Nothing here yet</div><div class="empty-hint">Add a task using the field above</div>';
+      } else if (isEmpty && AGGREGATE_VIEWS.has(state.activeId)) {
+        illo.innerHTML = '<svg viewBox="0 0 80 60" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="8" width="56" height="44" rx="4" opacity="0.4"/><path d="M30 26h20M30 34h14" opacity="0.5"/><path d="M24 20h2M54 20h2" opacity="0.4"/></svg>';
+        li.innerHTML = '<div class="empty-message">All clear!</div><div class="empty-hint">No tasks match this view</div>';
+      } else if (searchInput.value.trim()) {
+        illo.innerHTML = '<svg viewBox="0 0 80 60" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="28" r="12" opacity="0.5"/><path d="M41 37l10 10" opacity="0.5"/></svg>';
+        li.innerHTML = '<div class="empty-message">No results found</div><div class="empty-hint">Try a different search term</div>';
+      } else {
+        illo.innerHTML = '<svg viewBox="0 0 80 60" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="28" r="8" opacity="0.4"/><path d="M28 46c0-8 12-12 12-12s12 4 12 12" opacity="0.3"/><path d="M52 18l4-4M56 18l-4-4" opacity="0.3"/></svg>';
+        li.innerHTML = '<div class="empty-message">No tasks here</div><div class="empty-hint">Adjust filters or add a new task</div>';
+      }
+      li.prepend(illo);
       list.appendChild(li);
     }
 
@@ -2045,12 +2144,12 @@
       }
 
       const li = document.createElement('li');
+      li.dataset.taskId = t.id;
       if (t.done) li.classList.add('done');
       if (editingTask && editingTask.id === t.id) li.classList.add('selected');
 
       if (canDragManual) {
         li.draggable = true;
-        li.dataset.taskId = t.id;
         li.addEventListener('dragstart', e => {
           li.classList.add('dragging');
           e.dataTransfer.effectAllowed = 'move';
@@ -2075,6 +2174,8 @@
           save(); renderTasks();
         });
       }
+
+      if (!existingIds.has(String(t.id))) li.classList.add('inserted');
 
       const check = document.createElement('div');
       check.className = 'check';
@@ -2108,6 +2209,7 @@
     const left = shown.filter(({ t }) => !t.done).length;
     count.textContent = `${left} item${left !== 1 ? 's' : ''} left`;
     clearDone.classList.toggle('visible', filter === 'done');
+    requestAnimationFrame(() => list.classList.toggle('scrolled', list.scrollTop > 4));
   }
 
   function buildMeta(t, owner) {
@@ -2301,19 +2403,24 @@
   }
 
   function toggleTask(t) {
-    const completing = !t.done; // true when this click marks the task done (or rolls a recurring one forward)
+    const completing = !t.done;
+    if (completing) {
+      const li = list.querySelector(`[data-task-id="${t.id}"]`);
+      if (li) li.classList.add('removing');
+    }
     if (!t.done && t.recur && t.recur !== 'none' && t.due) {
-      // recurring task: roll the due date forward and reset sub-tasks instead of completing
       t.due = nextDate(t.due, t.recur);
       t.subtasks.forEach(s => s.done = false);
       restoreSubtaskOrder(t);
     } else {
       t.done = !t.done;
     }
-    save(); renderAll();
-    if (editingTask && editingTask.id === t.id) renderSubs();
-    // close the detail panel on completion (normal done, or recurring roll-forward)
-    if (completing && editingTask && editingTask.id === t.id) closeTaskPanel();
+    const animDelay = completing ? 280 : 0;
+    setTimeout(() => {
+      save(); renderAll();
+      if (editingTask && editingTask.id === t.id) renderSubs();
+      if (completing && editingTask && editingTask.id === t.id) closeTaskPanel();
+    }, animDelay);
   }
 
   function nextDate(d, recur) {
@@ -2341,14 +2448,43 @@
     t.subtasks = restored.concat(extra);
   }
 
+  function dateStr(offset) {
+    const d = new Date(); d.setDate(d.getDate() + offset);
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+  }
+  function nextWeekday(abbr) {
+    const map = { sun:0, mon:1, tue:2, wed:3, thu:4, fri:5, sat:6 };
+    const target = map[abbr]; const today = new Date().getDay();
+    let diff = target - today; if (diff <= 0) diff += 7;
+    return dateStr(diff);
+  }
+  function parseNaturalInput(s) {
+    let text = s;
+    const tags = [];
+    text = text.replace(/#(\w+)/g, (_, t) => { tags.push(t.toLowerCase()); return ''; });
+    let priority = 'none';
+    text = text.replace(/!(high|med|low|none)\b/gi, (_, p) => { priority = p.toLowerCase(); return ''; });
+    let due = '';
+    text = text.replace(/\b(tomorrow)\b/i, () => { due = dateStr(1); return ''; });
+    text = text.replace(/\b(today)\b/i, () => { due = dateStr(0); return ''; });
+    text = text.replace(/\bnext week\b/i, () => { due = dateStr(7); return ''; });
+    text = text.replace(/\bnext (mon|tue|wed|thu|fri|sat|sun)\b/i, (_, d) => { due = nextWeekday(d.toLowerCase()); return ''; });
+    text = text.replace(/\bin (\d+) days?\b/i, (_, n) => { due = dateStr(Number(n)); return ''; });
+    text = text.replace(/\bdue (\d{4}-\d{2}-\d{2})\b/i, (_, d) => { due = d; return ''; });
+    text = text.replace(/\s+/g, ' ').trim();
+    return { text, tags, priority, due };
+  }
+
   function addTask() {
     const val = input.value.trim();
     if (!val) return;
-    // in the All view, new tasks land in the first list
+    const { text, tags, priority, due } = parseNaturalInput(val);
+    if (!text && !tags.length) return;
     const target = isAllView() ? state.lists[0] : activeList();
     const task = {
-      id: Date.now(), text: val, done: false,
-      desc: '', due: '', recur: 'none', priority: 'none', status: 'todo', subtasks: [], tags: []
+      id: Date.now(), text: text || val, done: false,
+      desc: '', due, recur: 'none', priority, status: 'todo', subtasks: [], tags
     };
     target.todos.unshift(task);
     input.value = '';
@@ -2558,16 +2694,20 @@
   function deleteTaskWithUndo(t, owner) {
     const idx = owner.todos.findIndex(x => x.id === t.id);
     if (idx === -1) return;
-    owner.todos.splice(idx, 1);
-    if (editingTask && editingTask.id === t.id) closeTaskPanel();
-    save(); renderAll();
-    toast(`Deleted "${t.text}"`, {
-      label: 'Undo',
-      onClick: () => {
-        owner.todos.splice(Math.min(idx, owner.todos.length), 0, t);
-        save(); renderAll();
-      }
-    });
+    const li = list.querySelector(`[data-task-id="${t.id}"]`);
+    if (li) li.classList.add('removing');
+    setTimeout(() => {
+      owner.todos.splice(idx, 1);
+      if (editingTask && editingTask.id === t.id) closeTaskPanel();
+      save(); renderAll();
+      toast(`Deleted "${t.text}"`, {
+        label: 'Undo',
+        onClick: () => {
+          owner.todos.splice(Math.min(idx, owner.todos.length), 0, t);
+          save(); renderAll();
+        }
+      });
+    }, 280);
   }
 
   function renderAll() {
@@ -2776,7 +2916,8 @@
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openQuickOpen(); return; }
+    if (e.key === 'Escape') { closeQuickOpen(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); }
   });
 
   filters.forEach(f => f.classList.toggle('active', f.dataset.filter === filter));
@@ -3223,6 +3364,119 @@
   updateDropboxUI();
   dropboxHandleRedirect();
   dropboxCheckForUpdates();
+
+  // ---- scroll shadow ----
+  list.addEventListener('scroll', () => {
+    list.classList.toggle('scrolled', list.scrollTop > 4);
+  });
+
+  // ---- Quick Open (Cmd/Ctrl+K) ----
+  const quickOpenOverlay = $('quickOpenOverlay');
+  const quickOpenInput = $('quickOpenInput');
+  const quickOpenResults = $('quickOpenResults');
+  let _qoHighlight = -1;
+
+  function openQuickOpen() {
+    quickOpenInput.value = '';
+    quickOpenResults.innerHTML = '';
+    _qoHighlight = -1;
+    quickOpenOverlay.classList.add('show');
+    setTimeout(() => quickOpenInput.focus(), 50);
+  }
+  function closeQuickOpen() {
+    quickOpenOverlay.classList.remove('show');
+  }
+
+  quickOpenInput.addEventListener('input', () => {
+    const q = quickOpenInput.value.trim().toLowerCase();
+    _qoHighlight = -1;
+    if (!q) { quickOpenResults.innerHTML = ''; return; }
+
+    const matches = [];
+    state.lists.forEach(list => {
+      list.todos.forEach(t => {
+        const inTitle = t.text.toLowerCase().includes(q);
+        const inDesc = (t.desc || '').toLowerCase().includes(q);
+        const inTags = (t.tags || []).some(tag => tag.includes(q));
+        if (inTitle || inDesc || inTags) {
+          matches.push({ t, owner: list });
+        }
+      });
+    });
+
+    matches.sort((a, b) => a.t.text.localeCompare(b.t.text));
+
+    const grouped = {};
+    matches.forEach(m => {
+      const name = m.owner.name;
+      if (!grouped[name]) grouped[name] = [];
+      grouped[name].push(m);
+    });
+
+    quickOpenResults.innerHTML = '';
+    let firstGroup = true;
+    Object.keys(grouped).forEach(name => {
+      if (!firstGroup) {
+        const sep = document.createElement('div');
+        sep.className = 'quick-open-group-label';
+        sep.textContent = name;
+        quickOpenResults.appendChild(sep);
+      }
+      firstGroup = false;
+      grouped[name].forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'quick-open-result';
+        const text = document.createElement('span');
+        text.className = 'qo-text';
+        text.textContent = m.t.text;
+        const meta = document.createElement('span');
+        meta.className = 'qo-meta';
+        const parts = [];
+        if (m.t.due) parts.push(fmtDate(m.t.due));
+        if (m.t.priority && m.t.priority !== 'none') parts.push(m.t.priority);
+        if (m.t.status === 'in-progress') parts.push('\u25B6');
+        meta.textContent = parts.join(' \u00B7 ');
+        div.append(text, meta);
+        div.onclick = () => { closeQuickOpen(); openTaskPanel(m.t, m.owner); };
+        quickOpenResults.appendChild(div);
+      });
+    });
+
+    if (!quickOpenResults.children.length) {
+      quickOpenResults.innerHTML = '<div class="quick-open-empty">No tasks found</div>';
+    } else {
+      _qoHighlight = 0;
+      quickOpenResults.children[0].classList.add('highlighted');
+    }
+  });
+
+  quickOpenInput.addEventListener('keydown', e => {
+    const items = () => quickOpenResults.querySelectorAll('.quick-open-result');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault(); const el = items();
+      if (!el.length) return;
+      if (_qoHighlight >= 0) el[_qoHighlight].classList.remove('highlighted');
+      _qoHighlight = Math.min(_qoHighlight + 1, el.length - 1);
+      el[_qoHighlight].classList.add('highlighted');
+      el[_qoHighlight].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault(); const el = items();
+      if (!el.length) return;
+      if (_qoHighlight >= 0) el[_qoHighlight].classList.remove('highlighted');
+      _qoHighlight = Math.max(_qoHighlight - 1, 0);
+      el[_qoHighlight].classList.add('highlighted');
+      el[_qoHighlight].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault(); const el = items();
+      if (el.length && _qoHighlight >= 0) el[_qoHighlight].click();
+    } else if (e.key === 'Escape') {
+      closeQuickOpen();
+    }
+  });
+
+  quickOpenOverlay.addEventListener('click', e => {
+    if (e.target === quickOpenOverlay) closeQuickOpen();
+  });
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
