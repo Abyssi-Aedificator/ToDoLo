@@ -119,6 +119,15 @@
     bottom: -100px; right: -80px;
   }
 
+  .dev-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    background: #dc2626; color: #fff;
+    font-size: 0.7rem; font-weight: 800; letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .dev-banner + .shell { margin-top: 22px; }
   .shell {
     position: relative;
     z-index: 1;
@@ -1094,6 +1103,7 @@
 </script>
 </head>
 <body>
+  <div class="dev-banner" id="devBanner">DEV</div>
   <div class="shell">
     <div class="drawer-backdrop" id="drawerBackdrop"></div>
     <!-- SIDEBAR -->
@@ -1429,6 +1439,12 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.1.4 <span class="current-badge">2026-07-08</span></div>
+          <ul>
+            <li>Default list renamed from "Default" to "Today" — new visitors now start with a "Today" list instead of a generic "Default" list</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.1.3 <span class="current-badge">2026-07-07</span></div>
           <ul>
             <li>Settings page redesigned with larger cards, bigger swatches, softer glass, and more spacing</li>
@@ -1536,7 +1552,9 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>'
   };
-  const APP_VERSION = '1.1.3';
+  const DEV = true;
+  if (!DEV) document.getElementById('devBanner').remove();
+  const APP_VERSION = '1.1.4';
 
   const $ = id => document.getElementById(id);
 
