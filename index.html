@@ -1562,6 +1562,13 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.3.1 <span class="current-badge">2026-07-10</span></div>
+          <ul>
+            <li>Right-click menu "Due Today" option — sets the task's due date to the current day; hidden if already due today</li>
+            <li>Completing a task now clears "In Progress" status — no longer shows the chip or counts toward the sidebar</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.3.0 <span class="current-badge">2026-07-10</span></div>
           <ul>
             <li>Right-click context menu on tasks — "Set In Progress" and "Skip" (for recurring tasks) actions directly on any task</li>
@@ -1686,6 +1693,10 @@
       Skip
       <span class="ctx-shortcut">advance recur</span>
     </button>
+    <button class="ctx-menu-item" id="ctxDueToday" role="menuitem">
+      <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><circle cx="12" cy="16" r="1"/></svg>
+      Due Today
+    </button>
   </div>
 
   <!-- QUICK OPEN -->
@@ -1721,7 +1732,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.3.1';
 
   const $ = id => document.getElementById(id);
 
@@ -2460,6 +2471,7 @@
     if (completing) {
       const li = list.querySelector(`[data-task-id="${t.id}"]`);
       if (li) li.classList.add('removing');
+      if (t.status === 'in-progress') t.status = 'todo';
     }
     if (!t.done && t.recur && t.recur !== 'none' && t.due) {
       t.due = nextDate(t.due, t.recur);
@@ -3558,13 +3570,17 @@
     if (!match) return;
     _ctxTask = match.t; _ctxOwner = match.owner;
 
+    const todayStr = new Date().toISOString().slice(0, 10);
     const setIp = $('ctxSetInProgress');
     const hasSetIp = _ctxTask.status === 'todo';
     setIp.style.display = hasSetIp ? '' : 'none';
     const skip = $('ctxSkip');
     const hasSkip = _ctxTask.recur && _ctxTask.recur !== 'none';
     skip.style.display = hasSkip ? '' : 'none';
-    if (!hasSetIp && !hasSkip) return;
+    const dueToday = $('ctxDueToday');
+    const hasDueToday = _ctxTask.due !== todayStr;
+    dueToday.style.display = hasDueToday ? '' : 'none';
+    if (!hasSetIp && !hasSkip && !hasDueToday) return;
 
     ctxMenu.style.left = '';
     ctxMenu.style.right = '';
@@ -3596,6 +3612,14 @@
     if (_ctxTask.status === 'in-progress') _ctxTask.status = 'todo';
     save(); renderAll();
     toast(`Skipped "${_ctxTask.text}" — next ${_ctxTask.recur} due`);
+    closeCtxMenu();
+  });
+
+  $('ctxDueToday').addEventListener('click', () => {
+    if (!_ctxTask) return;
+    _ctxTask.due = new Date().toISOString().slice(0, 10);
+    save(); renderAll();
+    toast(`"${_ctxTask.text}" — due today`);
     closeCtxMenu();
   });
 
