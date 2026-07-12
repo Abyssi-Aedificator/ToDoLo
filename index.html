@@ -1134,6 +1134,39 @@
   }
   .toast-action:hover { background: rgba(var(--w),0.4); }
 
+  /* ---------- CONTEXT MENU ---------- */
+  .ctx-menu {
+    position: fixed; z-index: 300; min-width: 180px; max-width: 260px;
+    padding: 6px; border-radius: 14px;
+    background: rgba(20,20,30,0.85);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(var(--w),0.25);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    opacity: 0; transform: scale(0.94) translateY(-4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+  }
+  .ctx-menu.open { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+  .ctx-menu-item {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 9px 12px; border-radius: 9px;
+    border: none; background: transparent; color: var(--ink);
+    font: inherit; font-size: 0.85rem; cursor: pointer;
+    text-align: left; transition: background 0.12s;
+  }
+  .ctx-menu-item:hover, .ctx-menu-item.highlighted { background: rgba(var(--w),0.15); }
+  .ctx-menu-item .ctx-ico { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+  .ctx-menu-item .ctx-shortcut {
+    margin-left: auto; font-size: 0.7rem; opacity: 0.4;
+    letter-spacing: 0.04em;
+  }
+  .ctx-menu-sep {
+    height: 1px; margin: 4px 8px;
+    background: rgba(var(--w),0.12); border: none;
+  }
+  .ctx-menu-item.danger { color: #ff8a8a; }
+
   /* ---------- QUICK OPEN ---------- */
   .quick-open-modal {
     width: 520px; max-width: calc(100vw - 40px); max-height: min(70vh, 500px);
@@ -1529,6 +1562,13 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.3.0 <span class="current-badge">2026-07-10</span></div>
+          <ul>
+            <li>Right-click context menu on tasks — "Set In Progress" and "Skip" (for recurring tasks) actions directly on any task</li>
+            <li>"Skip" on a recurring task advances the due date to its next occurrence and clears the "In Progress" status if set</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.2.0 <span class="current-badge">2026-07-09</span></div>
           <ul>
             <li>Smooth animated transitions when adding, completing, or deleting tasks — tasks fade and slide in/out instead of popping</li>
@@ -1635,6 +1675,19 @@
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
+  <!-- CONTEXT MENU -->
+  <div class="ctx-menu" id="ctxMenu" role="menu">
+    <button class="ctx-menu-item" id="ctxSetInProgress" role="menuitem">
+      <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6,4 20,12 6,20"/></svg>
+      Set In Progress
+    </button>
+    <button class="ctx-menu-item" id="ctxSkip" role="menuitem">
+      <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      Skip
+      <span class="ctx-shortcut">advance recur</span>
+    </button>
+  </div>
+
   <!-- QUICK OPEN -->
   <div class="overlay" id="quickOpenOverlay">
     <div class="quick-open-modal">
@@ -1668,7 +1721,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.3.0';
 
   const $ = id => document.getElementById(id);
 
@@ -3477,6 +3530,92 @@
   quickOpenOverlay.addEventListener('click', e => {
     if (e.target === quickOpenOverlay) closeQuickOpen();
   });
+
+  // ---- context menu ----
+  const ctxMenu = $('ctxMenu');
+  let _ctxTask = null, _ctxOwner = null;
+  let _ctxIgnoreClick = false;
+
+  function findTask(id) {
+    for (const l of state.lists) {
+      const t = l.todos.find(x => x.id === id);
+      if (t) return { t, owner: l };
+    }
+    return null;
+  }
+
+  function closeCtxMenu() {
+    ctxMenu.classList.remove('open');
+    _ctxTask = null; _ctxOwner = null;
+  }
+
+  list.addEventListener('contextmenu', e => {
+    const li = e.target.closest('[data-task-id]');
+    if (!li) return;
+    e.preventDefault();
+    const id = Number(li.dataset.taskId);
+    const match = findTask(id);
+    if (!match) return;
+    _ctxTask = match.t; _ctxOwner = match.owner;
+
+    const setIp = $('ctxSetInProgress');
+    const hasSetIp = _ctxTask.status === 'todo';
+    setIp.style.display = hasSetIp ? '' : 'none';
+    const skip = $('ctxSkip');
+    const hasSkip = _ctxTask.recur && _ctxTask.recur !== 'none';
+    skip.style.display = hasSkip ? '' : 'none';
+    if (!hasSetIp && !hasSkip) return;
+
+    ctxMenu.style.left = '';
+    ctxMenu.style.right = '';
+    ctxMenu.style.top = '';
+    ctxMenu.style.bottom = '';
+    ctxMenu.classList.add('open');
+    const r = ctxMenu.getBoundingClientRect();
+    let x = e.clientX, y = e.clientY;
+    const pad = 8;
+    if (x + r.width + pad > window.innerWidth) x = window.innerWidth - r.width - pad;
+    if (y + r.height + pad > window.innerHeight) y = window.innerHeight - r.height - pad;
+    x = Math.max(pad, x); y = Math.max(pad, y);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    _ctxIgnoreClick = true;
+    setTimeout(() => { _ctxIgnoreClick = false; }, 100);
+  });
+
+  $('ctxSetInProgress').addEventListener('click', () => {
+    if (!_ctxTask) return;
+    _ctxTask.status = 'in-progress';
+    save(); renderAll();
+    closeCtxMenu();
+  });
+
+  $('ctxSkip').addEventListener('click', () => {
+    if (!_ctxTask || !_ctxTask.recur || _ctxTask.recur === 'none' || !_ctxTask.due) return;
+    _ctxTask.due = nextDate(_ctxTask.due, _ctxTask.recur);
+    if (_ctxTask.status === 'in-progress') _ctxTask.status = 'todo';
+    save(); renderAll();
+    toast(`Skipped "${_ctxTask.text}" — next ${_ctxTask.recur} due`);
+    closeCtxMenu();
+  });
+
+  document.addEventListener('click', e => {
+    if (!ctxMenu.classList.contains('open')) return;
+    if (_ctxIgnoreClick) return;
+    if (!ctxMenu.contains(e.target)) closeCtxMenu();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && ctxMenu.classList.contains('open')) closeCtxMenu();
+  });
+
+  window.addEventListener('scroll', () => {
+    if (ctxMenu.classList.contains('open')) closeCtxMenu();
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (ctxMenu.classList.contains('open')) closeCtxMenu();
+  }, { passive: true });
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
