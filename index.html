@@ -1088,6 +1088,8 @@
   .dbx-blurb { font-size: 0.8rem; opacity: 0.72; margin: 2px 0 12px; line-height: 1.45; }
   .dbx-link { color: var(--ink); opacity: 0.7; text-decoration: none; font-weight: 500; transition: opacity 0.2s; }
   .dbx-link:hover { opacity: 1; text-decoration: underline; }
+  .dbx-hint { font-size: 0.78rem; display: block; margin-top: 8px; opacity: 0.85; }
+  .dbx-hint.error { color: #ff8a8a; opacity: 1; }
   #dbxKey {
     width: 100%;
     padding: 12px 16px;
@@ -1536,6 +1538,7 @@
               <div class="backup-row" style="margin-top:12px">
                 <button class="btn-primary" onclick="dropboxConnect()">Connect to Dropbox</button>
               </div>
+              <span id="dbxMessage" class="dbx-hint"></span>
             </div>
             <div id="dbxConnected" style="display:none">
               <p class="dbx-account-row"><span id="dbxAccount"></span><span id="dbxLastSync">never synced</span></p>
@@ -1561,6 +1564,12 @@
         <!-- CHANGELOG TAB -->
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
+        <div class="changelog-entry">
+          <div class="changelog-version">1.3.2 <span class="current-badge">2026-07-14</span></div>
+          <ul>
+            <li>Fixed Dropbox "Connect to Dropbox" button not responding — script was aborting early due to <code>AGGREGATE_VIEWS.has</code> (arrays don't have <code>.has()</code>); also hardened <code>dbx</code> state parsing against corrupted localStorage</li>
+          </ul>
+        </div>
         <div class="changelog-entry">
           <div class="changelog-version">1.3.1 <span class="current-badge">2026-07-10</span></div>
           <ul>
@@ -1732,7 +1741,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.3.1';
+  const APP_VERSION = '1.3.2';
 
   const $ = id => document.getElementById(id);
 
@@ -2179,10 +2188,10 @@
       const isEmpty = filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any' && tagFilter.value === 'any' && !searchInput.value.trim();
       const illo = document.createElement('div');
       illo.className = 'empty-illustration';
-      if (isEmpty && !AGGREGATE_VIEWS.has(state.activeId)) {
+      if (isEmpty && !AGGREGATE_VIEWS.includes(state.activeId)) {
         illo.innerHTML = '<svg viewBox="0 0 80 60" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="30" r="18" opacity="0.5"/><path d="M34 27l4 4 8-8" opacity="0.6"/><path d="M22 48c0-8 8-14 18-14s18 6 18 14" opacity="0.4"/></svg>';
         li.innerHTML = '<div class="empty-message">Nothing here yet</div><div class="empty-hint">Add a task using the field above</div>';
-      } else if (isEmpty && AGGREGATE_VIEWS.has(state.activeId)) {
+      } else if (isEmpty && AGGREGATE_VIEWS.includes(state.activeId)) {
         illo.innerHTML = '<svg viewBox="0 0 80 60" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="8" width="56" height="44" rx="4" opacity="0.4"/><path d="M30 26h20M30 34h14" opacity="0.5"/><path d="M24 20h2M54 20h2" opacity="0.4"/></svg>';
         li.innerHTML = '<div class="empty-message">All clear!</div><div class="empty-hint">No tasks match this view</div>';
       } else if (searchInput.value.trim()) {
@@ -2801,7 +2810,7 @@
   const settingsBtn = $('settingsBtn'), settingsOverlay = $('settingsOverlay'), settingsClose = $('settingsClose');
   settingsBtn.onclick = () => settingsOverlay.classList.add('show');
   $('syncBtn').onclick = () => { clearTimeout(_syncTimer); dropboxUpload(false); };
-  settingsClose.onclick = () => settingsOverlay.classList.remove('show');
+  settingsClose.onclick = () => { settingsOverlay.classList.remove('show'); dbxMsg(''); };
   settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
 
   // ---- theme system (mode + colour) ----
@@ -3214,7 +3223,9 @@
   /* ---------- Dropbox sync (client-side OAuth2 PKCE, no backend) ---------- */
   const DBX_KEY = 'todolo.dropbox';
   const DBX_PATH = '/todolo-backup.json';
-  let dbx = JSON.parse(localStorage.getItem(DBX_KEY) || 'null') ||
+  let dbx;
+  try { dbx = JSON.parse(localStorage.getItem(DBX_KEY) || 'null'); } catch (e) { dbx = null; }
+  if (!dbx || typeof dbx.appKey === 'undefined') dbx =
     { appKey: '', accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false, autoUpload: false };
   const dbxSave = () => localStorage.setItem(DBX_KEY, JSON.stringify(dbx));
   const dbxRedirectUri = () => location.origin + location.pathname;
@@ -3244,10 +3255,19 @@
     return b64url(digest);
   }
 
+  function dbxMsg(text, isError) {
+    const el = $('dbxMessage');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.toggle('error', !!isError);
+  }
   async function dropboxConnect() {
-    const key = $('dbxKey').value.trim();
-    if (!key) { toast('Enter your Dropbox App key first'); return; }
-    if (!isSecureContext) { toast('⚠ Dropbox sync needs HTTPS (or localhost)'); return; }
+    const keyEl = $('dbxKey');
+    dbxMsg('');
+    if (!keyEl) { dbxMsg('Could not find Dropbox settings. Try reopening Settings.', true); return; }
+    const key = keyEl.value.trim();
+    if (!key) { dbxMsg('Enter your Dropbox App key first', true); return; }
+    if (!isSecureContext) { dbxMsg('⚠ Dropbox sync needs HTTPS (or localhost)', true); return; }
     dbx.appKey = key; dbxSave();
     const verifier = randomString(64);
     sessionStorage.setItem('todolo.dbx.verifier', verifier);
@@ -3429,7 +3449,6 @@
   updateDropboxUI();
   dropboxHandleRedirect();
   dropboxCheckForUpdates();
-
   // ---- scroll shadow ----
   list.addEventListener('scroll', () => {
     list.classList.toggle('scrolled', list.scrollTop > 4);
