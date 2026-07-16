@@ -1600,6 +1600,14 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.4.1 <span class="current-badge">2026-07-15</span></div>
+          <ul>
+            <li>Fixed crash on corrupted task data — <code>JSON.parse</code> on state load now wrapped in <code>try/catch</code> so a broken localStorage entry no longer kills the entire app</li>
+            <li>Fixed tag filter dropdown label not updating when clicking a tag chip on a task</li>
+            <li>New default list name is now "Today" instead of "Default" for first-time visitors</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.4.0 <span class="current-badge">2026-07-15</span></div>
           <ul>
             <li>New "Paused" status — set a task aside without losing its place. A dedicated "Paused" sidebar section (right below In Progress) lists and counts paused tasks</li>
@@ -1786,9 +1794,9 @@
     play: '<svg viewBox="0 0 24 24" width="16" height="16"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>',
     pause: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/></svg>'
   };
-  const DEV = true;
+  const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.4.1';
 
   const $ = id => document.getElementById(id);
 
@@ -1954,9 +1962,10 @@
   }
 
   // ---- state ----
-  let state = JSON.parse(localStorage.getItem('glass-todos-v2') || 'null');
+  let state;
+  try { state = JSON.parse(localStorage.getItem('glass-todos-v2') || 'null'); } catch (e) { state = null; }
   if (!state) {
-    state = { lists: [{ id: 1, name: 'Default', color: COLORS[0], todos: [] }], activeId: 1 };
+    state = { lists: [{ id: 1, name: 'Today', color: COLORS[0], todos: [] }], activeId: 1 };
   }
   // back-fill colours for lists saved before this feature existed
   state.lists.forEach((l, i) => {
@@ -2432,6 +2441,8 @@
       c.onclick = e => {
         e.stopPropagation();
         tagFilter.value = tag;
+        const tfLabel = tagFilter.querySelector('.gl-select-label');
+        if (tfLabel) tfLabel.textContent = '#' + tag;
         localStorage.setItem('glass-todos-tag-filter', tag);
         renderTasks();
       };
