@@ -278,6 +278,23 @@
     padding: 6px;
     margin-bottom: 16px;
   }
+  .status-group-section {
+    flex: 0 0 auto; overflow: visible;
+    background: rgba(var(--w),0.06);
+    border: 1px solid rgba(var(--w),0.12);
+    border-radius: 14px;
+    padding: 8px 10px 11px;
+    margin-bottom: 16px;
+  }
+  .status-group-head {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    opacity: 0.5; padding: 2px 4px 8px;
+  }
+  .status-group-section .inprogress-section {
+    background: transparent; border: none; border-radius: 0;
+    padding: 0; margin-bottom: 0;
+  }
+  .status-group-section .inprogress-section + .inprogress-section { margin-top: 4px; }
   .inprogress-section .inprogress-item {
     font-weight: 600;
     margin-bottom: 2px;
@@ -765,6 +782,13 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 3px rgba(0,0,0,0.15);
   }
   .chip.in-progress:hover { filter: brightness(1.2); }
+  .chip.paused {
+    cursor: pointer;
+    background: linear-gradient(180deg, rgba(245,158,11,0.55) 0%, rgba(217,119,6,0.55) 100%);
+    color: #fff; border: 1px solid rgba(251,191,36,0.45);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .chip.paused:hover { filter: brightness(1.2); }
   .status-group { display: flex; gap: 6px; }
   .status-group button {
     flex: 1; padding: 8px; border-radius: 10px;
@@ -780,6 +804,12 @@
     text-shadow: 0 1px 1px rgba(0,0,0,0.3);
   }
   .status-group button.on[data-status="todo"] { background: rgba(var(--w),0.35); }
+  .status-group button.on[data-status="paused"] {
+    background: linear-gradient(180deg, rgba(245,158,11,0.55) 0%, rgba(217,119,6,0.55) 100%);
+    border-color: rgba(251,191,36,0.45); color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.15);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  }
 
   .subtasks { list-style: none; margin: 6px 0 10px; }
   .subtasks li {
@@ -1239,7 +1269,11 @@
         ToDoLo
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
-      <ul class="lists inprogress-section" id="inProgressNav"></ul>
+      <div class="status-group-section">
+        <div class="status-group-head">Focus</div>
+        <ul class="lists inprogress-section" id="inProgressNav"></ul>
+        <ul class="lists inprogress-section" id="pausedNav"></ul>
+      </div>
       <div class="lists-heading">
         <span>Lists</span>
         <button class="lists-sort-btn" id="listsSortBtn" title="Sort alphabetically"></button>
@@ -1447,6 +1481,7 @@
         <div class="status-group" id="tStatus">
           <button type="button" data-status="todo">To Do</button>
           <button type="button" data-status="in-progress">In Progress</button>
+          <button type="button" data-status="paused">Paused</button>
         </div>
 
         <label class="field-label">Tags</label>
@@ -1564,6 +1599,21 @@
         <!-- CHANGELOG TAB -->
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
+        <div class="changelog-entry">
+          <div class="changelog-version">1.4.1 <span class="current-badge">2026-07-15</span></div>
+          <ul>
+            <li>Fixed crash on corrupted task data — <code>JSON.parse</code> on state load now wrapped in <code>try/catch</code> so a broken localStorage entry no longer kills the entire app</li>
+            <li>Fixed tag filter dropdown label not updating when clicking a tag chip on a task</li>
+            <li>New default list name is now "Today" instead of "Default" for first-time visitors</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">1.4.0 <span class="current-badge">2026-07-15</span></div>
+          <ul>
+            <li>New "Paused" status — set a task aside without losing its place. A dedicated "Paused" sidebar section (right below In Progress) lists and counts paused tasks</li>
+            <li>Toggle Paused from the right-click menu or the task detail panel; click the "⏸ Paused" chip to send a task back to To Do. Completing a paused task clears the status, like In Progress</li>
+          </ul>
+        </div>
         <div class="changelog-entry">
           <div class="changelog-version">1.3.2 <span class="current-badge">2026-07-14</span></div>
           <ul>
@@ -1697,6 +1747,10 @@
       <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6,4 20,12 6,20"/></svg>
       Set In Progress
     </button>
+    <button class="ctx-menu-item" id="ctxPause" role="menuitem">
+      <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/></svg>
+      Pause
+    </button>
     <button class="ctx-menu-item" id="ctxSkip" role="menuitem">
       <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
       Skip
@@ -1737,11 +1791,12 @@
     sortAz: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M3 6h7M3 12h5M3 18h3"/><path d="M14 6l4-4 4 4M18 2v16"/></svg>',
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>',
-    play: '<svg viewBox="0 0 24 24" width="16" height="16"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>'
+    play: '<svg viewBox="0 0 24 24" width="16" height="16"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/></svg>'
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.3.2';
+  const APP_VERSION = '1.4.1';
 
   const $ = id => document.getElementById(id);
 
@@ -1845,7 +1900,7 @@
     });
   }
 
-  const listNav = $('listNav'), smartNav = $('smartNav'), inProgressNav = $('inProgressNav'), addListBtn = $('addListBtn');
+  const listNav = $('listNav'), smartNav = $('smartNav'), inProgressNav = $('inProgressNav'), pausedNav = $('pausedNav'), addListBtn = $('addListBtn');
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
@@ -1907,9 +1962,10 @@
   }
 
   // ---- state ----
-  let state = JSON.parse(localStorage.getItem('glass-todos-v2') || 'null');
+  let state;
+  try { state = JSON.parse(localStorage.getItem('glass-todos-v2') || 'null'); } catch (e) { state = null; }
   if (!state) {
-    state = { lists: [{ id: 1, name: 'Default', color: COLORS[0], todos: [] }], activeId: 1 };
+    state = { lists: [{ id: 1, name: 'Today', color: COLORS[0], todos: [] }], activeId: 1 };
   }
   // back-fill colours for lists saved before this feature existed
   state.lists.forEach((l, i) => {
@@ -1920,6 +1976,7 @@
       if (t.recur === undefined) t.recur = 'none';
       if (t.priority === undefined) t.priority = 'none';
       if (!Array.isArray(t.subtasks)) t.subtasks = [];
+      if (t.status !== 'in-progress' && t.status !== 'paused') t.status = 'todo';
       if (!Array.isArray(t.tags)) t.tags = [];
     });
   });
@@ -1934,13 +1991,14 @@
     { id: 'week', name: 'Next 7 Days', icon: 'calGrid', color: '#5b9bff' },
     { id: 'nodate', name: 'No Date', icon: 'calOff', color: '#a78bfa' }
   ];
-  const AGGREGATE_VIEWS = ['all', 'overdue', 'today', 'tomorrow', 'week', 'nodate', 'in-progress'];
+  const AGGREGATE_VIEWS = ['all', 'overdue', 'today', 'tomorrow', 'week', 'nodate', 'in-progress', 'paused'];
   const isAllView = () => AGGREGATE_VIEWS.includes(state.activeId);
   const activeList = () => state.lists.find(l => l.id === state.activeId) || state.lists[0];
   const ownerOf = task => state.lists.find(l => l.todos.includes(task));
 
   function matchesSmartView(t) {
     if (state.activeId === 'in-progress') return !t.done && t.status === 'in-progress';
+    if (state.activeId === 'paused') return !t.done && t.status === 'paused';
     if (state.activeId === 'nodate') return !t.done && !t.due;
     if (state.activeId !== 'overdue' && state.activeId !== 'today' && state.activeId !== 'tomorrow' && state.activeId !== 'week') return true;
     if (!t.due) return false;
@@ -1960,6 +2018,7 @@
     if (id === 'week') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) >= 0 && daysFromToday(t.due) <= 7).length;
     if (id === 'nodate') return allTodos.filter(t => !t.done && !t.due).length;
     if (id === 'in-progress') return allTodos.filter(t => !t.done && t.status === 'in-progress').length;
+    if (id === 'paused') return allTodos.filter(t => !t.done && t.status === 'paused').length;
     return null;
   }
 
@@ -1968,6 +2027,7 @@
     listNav.innerHTML = '';
     smartNav.innerHTML = '';
     inProgressNav.innerHTML = '';
+    pausedNav.innerHTML = '';
 
     // smart views: All / Today / Tomorrow / Next 7 Days
     SMART_VIEWS.forEach(v => {
@@ -2013,6 +2073,29 @@
       }
       li.onclick = () => { state.activeId = 'in-progress'; save(); renderAll(); closeDrawer(); };
       inProgressNav.appendChild(li);
+    }
+
+    // paused view
+    {
+      const li = document.createElement('li');
+      li.className = 'inprogress-item' + (state.activeId === 'paused' ? ' active' : '');
+      const icon = document.createElement('span');
+      icon.className = 'inprogress-icon';
+      icon.style.color = '#f59e0b';
+      icon.innerHTML = ICON.pause;
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = 'Paused';
+      li.append(icon, name);
+      const cnt = smartCount('paused');
+      if (cnt !== null && cnt > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = cnt;
+        li.appendChild(badge);
+      }
+      li.onclick = () => { state.activeId = 'paused'; save(); renderAll(); closeDrawer(); };
+      pausedNav.appendChild(li);
     }
 
     state.lists.forEach(l => {
@@ -2135,7 +2218,7 @@
   }
 
   // ---- tasks ----
-  const SMART_TITLES = { all: 'All Tasks', overdue: 'Overdue', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days', nodate: 'No Date', 'in-progress': 'In Progress' };
+  const SMART_TITLES = { all: 'All Tasks', overdue: 'Overdue', today: 'Today', tomorrow: 'Tomorrow', week: 'Next 7 Days', nodate: 'No Date', 'in-progress': 'In Progress', 'paused': 'Paused' };
 
   function getShownTasks() {
     const all = isAllView();
@@ -2318,6 +2401,13 @@
       c.onclick = e => { e.stopPropagation(); t.status = 'todo'; save(); renderAll(); if (editingTask && editingTask.id === t.id) renderStatus(); };
       meta.appendChild(c); any = true;
     }
+    if (t.status === 'paused') {
+      const c = document.createElement('span');
+      c.className = 'chip paused';
+      c.innerHTML = '⏸ Paused';
+      c.onclick = e => { e.stopPropagation(); t.status = 'todo'; save(); renderAll(); if (editingTask && editingTask.id === t.id) renderStatus(); };
+      meta.appendChild(c); any = true;
+    }
     if (t.recur && t.recur !== 'none') {
       const c = document.createElement('span');
       c.className = 'chip';
@@ -2351,6 +2441,8 @@
       c.onclick = e => {
         e.stopPropagation();
         tagFilter.value = tag;
+        const tfLabel = tagFilter.querySelector('.gl-select-label');
+        if (tfLabel) tfLabel.textContent = '#' + tag;
         localStorage.setItem('glass-todos-tag-filter', tag);
         renderTasks();
       };
@@ -2480,7 +2572,7 @@
     if (completing) {
       const li = list.querySelector(`[data-task-id="${t.id}"]`);
       if (li) li.classList.add('removing');
-      if (t.status === 'in-progress') t.status = 'todo';
+      if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo';
     }
     if (!t.done && t.recur && t.recur !== 'none' && t.due) {
       t.due = nextDate(t.due, t.recur);
@@ -2928,7 +3020,7 @@
     if (!await confirmDialog('Restoring this backup will replace all your current lists and tasks. Continue?')) return;
     state = data;
     state.lists.forEach(l => {
-      l.todos.forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; });
+      l.todos.forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; if (t.status !== 'in-progress' && t.status !== 'paused') t.status = 'todo'; });
     });
     if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
     save(); renderAll();
@@ -3332,7 +3424,7 @@
   }
   function dbxApplyData(d) {
     state = d;
-    state.lists.forEach(l => { (l.todos || []).forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; }); });
+    state.lists.forEach(l => { (l.todos || []).forEach(t => { if (!Array.isArray(t.subtasks)) t.subtasks = []; if (!Array.isArray(t.tags)) t.tags = []; if (t.status !== 'in-progress' && t.status !== 'paused') t.status = 'todo'; }); });
     if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
     _lastUploadedState = JSON.stringify(state); // we now match Dropbox; don't re-upload it
     _skipAutoUpload = true;
@@ -3519,6 +3611,7 @@
         if (m.t.due) parts.push(fmtDate(m.t.due));
         if (m.t.priority && m.t.priority !== 'none') parts.push(m.t.priority);
         if (m.t.status === 'in-progress') parts.push('\u25B6');
+        if (m.t.status === 'paused') parts.push('\u23F8');
         meta.textContent = parts.join(' \u00B7 ');
         div.append(text, meta);
         div.onclick = () => { closeQuickOpen(); openTaskPanel(m.t, m.owner); };
@@ -3591,15 +3684,18 @@
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const setIp = $('ctxSetInProgress');
-    const hasSetIp = _ctxTask.status === 'todo';
+    const hasSetIp = _ctxTask.status !== 'in-progress';
     setIp.style.display = hasSetIp ? '' : 'none';
+    const pause = $('ctxPause');
+    const hasPause = _ctxTask.status !== 'paused';
+    pause.style.display = hasPause ? '' : 'none';
     const skip = $('ctxSkip');
     const hasSkip = _ctxTask.recur && _ctxTask.recur !== 'none';
     skip.style.display = hasSkip ? '' : 'none';
     const dueToday = $('ctxDueToday');
     const hasDueToday = _ctxTask.due !== todayStr;
     dueToday.style.display = hasDueToday ? '' : 'none';
-    if (!hasSetIp && !hasSkip && !hasDueToday) return;
+    if (!hasSetIp && !hasPause && !hasSkip && !hasDueToday) return;
 
     ctxMenu.style.left = '';
     ctxMenu.style.right = '';
@@ -3625,10 +3721,17 @@
     closeCtxMenu();
   });
 
+  $('ctxPause').addEventListener('click', () => {
+    if (!_ctxTask) return;
+    _ctxTask.status = 'paused';
+    save(); renderAll();
+    closeCtxMenu();
+  });
+
   $('ctxSkip').addEventListener('click', () => {
     if (!_ctxTask || !_ctxTask.recur || _ctxTask.recur === 'none' || !_ctxTask.due) return;
     _ctxTask.due = nextDate(_ctxTask.due, _ctxTask.recur);
-    if (_ctxTask.status === 'in-progress') _ctxTask.status = 'todo';
+    if (_ctxTask.status === 'in-progress' || _ctxTask.status === 'paused') _ctxTask.status = 'todo';
     save(); renderAll();
     toast(`Skipped "${_ctxTask.text}" — next ${_ctxTask.recur} due`);
     closeCtxMenu();
