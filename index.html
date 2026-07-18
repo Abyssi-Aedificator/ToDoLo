@@ -251,11 +251,11 @@
     border: 1px solid rgba(var(--w),0.12);
     border-radius: 14px;
     padding: 6px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
   .smart-views .smart-item {
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     border-radius: 9px;
     position: relative;
     padding-left: 16px;
@@ -284,7 +284,7 @@
     border: 1px solid rgba(var(--w),0.12);
     border-radius: 14px;
     padding: 8px 10px 11px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
   }
   .status-group-head {
     font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
@@ -294,10 +294,10 @@
     background: transparent; border: none; border-radius: 0;
     padding: 0; margin-bottom: 0;
   }
-  .status-group-section .inprogress-section + .inprogress-section { margin-top: 4px; }
+  .status-group-section .inprogress-section + .inprogress-section { margin-top: 1px; }
   .inprogress-section .inprogress-item {
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     border-radius: 9px;
     position: relative;
     padding-left: 16px;
@@ -349,6 +349,8 @@
   .new-list-btn:active { transform: scale(0.97); }
   #syncBtn.syncing { border-style: solid; border-color: rgba(110,231,183,0.55); background: rgba(62,207,142,0.18); }
   .sync-ico { transform-origin: 50% 50%; }
+  .sidebar-btn-row { display: flex; gap: 8px; margin-top: 14px; }
+  .sidebar-btn-row .new-list-btn { flex: 1; margin-top: 0; }
   #syncBtn.syncing .sync-ico { animation: spin 0.9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -627,7 +629,7 @@
   }
   .icon-btn:hover { background: rgba(var(--w),0.22); }
   .detail-actions {
-    display: flex; justify-content: flex-end; gap: 10px;
+    display: flex; gap: 10px;
     margin-top: auto; padding-top: 16px;
   }
 
@@ -1284,14 +1286,16 @@
         <svg class="ico" viewBox="0 0 24 24" width="18" height="18"><path d="M12 5v14M5 12h14"/></svg>
         New list
       </button>
-      <button class="new-list-btn" id="syncBtn" style="display:none">
-        <svg class="ico sync-ico" viewBox="0 0 24 24" width="18" height="18"><path d="M17 2l3 3-3 3M7 22l-3-3 3-3"/><path d="M20 5H9a5 5 0 0 0-5 5M4 19h11a5 5 0 0 0 5-5"/></svg>
-        <span id="syncBtnLabel">Sync now</span>
-      </button>
-      <button class="new-list-btn" id="settingsBtn">
-        <svg class="ico" viewBox="0 0 24 24" width="18" height="18"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V20a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.56-1.03 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0A1.7 1.7 0 0 0 11.05 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1.03 1.56h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.56 1.03H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.56 1.03Z"/></svg>
-        Settings
-      </button>
+      <div class="sidebar-btn-row">
+        <button class="new-list-btn" id="syncBtn" style="display:none">
+          <svg class="ico sync-ico" viewBox="0 0 24 24" width="18" height="18"><path d="M17 2l3 3-3 3M7 22l-3-3 3-3"/><path d="M20 5H9a5 5 0 0 0-5 5M4 19h11a5 5 0 0 0 5-5"/></svg>
+          <span id="syncBtnLabel">Sync now</span>
+        </button>
+        <button class="new-list-btn" id="settingsBtn">
+          <svg class="ico" viewBox="0 0 24 24" width="18" height="18"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V20a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.56-1.03 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h0A1.7 1.7 0 0 0 11.05 4.1V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1.03 1.56h0a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.56 1.03H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.56 1.03Z"/></svg>
+          Settings
+        </button>
+      </div>
     </aside>
 
     <!-- MAIN -->
@@ -1499,6 +1503,8 @@
         </div>
 
         <div class="detail-actions">
+          <button class="btn-primary" id="tComplete">Mark complete</button>
+          <span style="flex:1"></span>
           <button class="btn-ghost danger" id="tDelete">Delete task</button>
         </div>
       </div>
@@ -1599,6 +1605,14 @@
         <!-- CHANGELOG TAB -->
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
+        <div class="changelog-entry">
+          <div class="changelog-version">1.4.2 <span class="current-badge">2026-07-15</span></div>
+          <ul>
+            <li>Tighter sidebar spacing — reduced gaps between smart views, Focus section (In Progress / Paused), and their items for a more compact left panel</li>
+            <li>Sync now and Settings buttons are now side by side on the last row when Dropbox is connected</li>
+            <li>Right detail panel now has a "Mark complete" button (with "Mark incomplete" for already-done tasks), making it usable from the panel without returning to the list</li>
+          </ul>
+        </div>
         <div class="changelog-entry">
           <div class="changelog-version">1.4.1 <span class="current-badge">2026-07-15</span></div>
           <ul>
@@ -1796,7 +1810,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.4.1';
+  const APP_VERSION = '1.4.2';
 
   const $ = id => document.getElementById(id);
 
@@ -2675,6 +2689,7 @@
     renderStatus();
     renderTags();
     renderSubs();
+    tComplete.textContent = editingTask.done ? 'Mark incomplete' : 'Mark complete';
     detail.classList.add('open', 'showing-task');
     applyDetailWidth();
     renderTasks(); // refresh selected-row highlight
@@ -3048,6 +3063,7 @@
 
   // task panel events — every field auto-saves
   tClose.onclick = closeTaskPanel;
+  tComplete.onclick = () => { if (editingTask) toggleTask(editingTask); };
   tDelete.onclick = deleteTask;
   tTitle.addEventListener('input', () => { if (editingTask) { editingTask.text = tTitle.value; commit(); } });
   tDesc.addEventListener('blur', () => { if (editingTask) { editingTask.desc = tDesc.value.trim(); commit(); } });
