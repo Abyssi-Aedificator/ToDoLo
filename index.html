@@ -791,6 +791,12 @@
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 3px rgba(0,0,0,0.15);
   }
   .chip.paused:hover { filter: brightness(1.2); }
+  .chip.wontdo {
+    cursor: default;
+    background: linear-gradient(180deg, rgba(160,160,170,0.45) 0%, rgba(130,130,140,0.45) 100%);
+    color: #fff; border: 1px solid rgba(180,180,190,0.40);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.12);
+  }
   .status-group { display: flex; gap: 6px; }
   .status-group button {
     flex: 1; padding: 8px; border-radius: 10px;
@@ -1070,7 +1076,7 @@
       transition: transform 0.28s ease;
       border-right: 1px solid rgba(var(--w),0.18);
       border-bottom: none;
-      background: var(--panel-solid);
+      background: rgba(var(--w), 0.10);
       backdrop-filter: blur(20px) saturate(160%);
       -webkit-backdrop-filter: blur(20px) saturate(160%);
       box-shadow: 8px 0 32px rgba(0,0,0,0.35);
@@ -1106,7 +1112,7 @@
       width: 0; border-left: none;
       backdrop-filter: blur(20px) saturate(160%);
       -webkit-backdrop-filter: blur(20px) saturate(160%);
-      background: var(--panel-solid);
+      background: rgba(var(--w), 0.10);
     }
     .detail.open { width: 100% !important; }
     .detail-empty, .detail-body { min-width: 0; }
@@ -1606,6 +1612,14 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.4.3 <span class="current-badge">2026-07-19</span></div>
+          <ul>
+            <li>Fixed sidebar and task-detail panel not showing the theme colour on mobile — the nearly-opaque <code>--panel-solid</code> background was hiding the gradient; both now use a translucent glass tint like desktop, so the chosen colour theme shows through</li>
+            <li>Added "Won't Do" right-click option — marks the task as completed and adds a gray "Won't Do" badge so you can distinguish rejected tasks from completed ones</li>
+            <li>"No Date" view now hides In Progress and Paused tasks — they have their own Focus sections in the sidebar, so the No Date list stays clean for unorganized tasks</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.4.2 <span class="current-badge">2026-07-15</span></div>
           <ul>
             <li>Tighter sidebar spacing — reduced gaps between smart views, Focus section (In Progress / Paused), and their items for a more compact left panel</li>
@@ -1774,6 +1788,10 @@
       <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><circle cx="12" cy="16" r="1"/></svg>
       Due Today
     </button>
+    <button class="ctx-menu-item" id="ctxWontDo" role="menuitem">
+      <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="8" y1="8" x2="16" y2="16"/></svg>
+      Won&#39;t Do
+    </button>
   </div>
 
   <!-- QUICK OPEN -->
@@ -1810,7 +1828,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.4.2';
+  const APP_VERSION = '1.4.3';
 
   const $ = id => document.getElementById(id);
 
@@ -1992,6 +2010,7 @@
       if (!Array.isArray(t.subtasks)) t.subtasks = [];
       if (t.status !== 'in-progress' && t.status !== 'paused') t.status = 'todo';
       if (!Array.isArray(t.tags)) t.tags = [];
+      if (t.wontdo === undefined) t.wontdo = false;
     });
   });
   let filter = localStorage.getItem('glass-todos-filter') || 'all';
@@ -2013,7 +2032,7 @@
   function matchesSmartView(t) {
     if (state.activeId === 'in-progress') return !t.done && t.status === 'in-progress';
     if (state.activeId === 'paused') return !t.done && t.status === 'paused';
-    if (state.activeId === 'nodate') return !t.done && !t.due;
+    if (state.activeId === 'nodate') return !t.done && !t.due && t.status !== 'in-progress' && t.status !== 'paused';
     if (state.activeId !== 'overdue' && state.activeId !== 'today' && state.activeId !== 'tomorrow' && state.activeId !== 'week') return true;
     if (!t.due) return false;
     const days = daysFromToday(t.due);
@@ -2030,7 +2049,7 @@
     if (id === 'today') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 0).length;
     if (id === 'tomorrow') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) === 1).length;
     if (id === 'week') return allTodos.filter(t => !t.done && t.due && daysFromToday(t.due) >= 0 && daysFromToday(t.due) <= 7).length;
-    if (id === 'nodate') return allTodos.filter(t => !t.done && !t.due).length;
+    if (id === 'nodate') return allTodos.filter(t => !t.done && !t.due && t.status !== 'in-progress' && t.status !== 'paused').length;
     if (id === 'in-progress') return allTodos.filter(t => !t.done && t.status === 'in-progress').length;
     if (id === 'paused') return allTodos.filter(t => !t.done && t.status === 'paused').length;
     return null;
@@ -2422,6 +2441,12 @@
       c.onclick = e => { e.stopPropagation(); t.status = 'todo'; save(); renderAll(); if (editingTask && editingTask.id === t.id) renderStatus(); };
       meta.appendChild(c); any = true;
     }
+    if (t.wontdo) {
+      const c = document.createElement('span');
+      c.className = 'chip wontdo';
+      c.innerHTML = '&#10007; Won\'t Do';
+      meta.appendChild(c); any = true;
+    }
     if (t.recur && t.recur !== 'none') {
       const c = document.createElement('span');
       c.className = 'chip';
@@ -2594,6 +2619,7 @@
       restoreSubtaskOrder(t);
     } else {
       t.done = !t.done;
+      if (!t.done) t.wontdo = false;
     }
     const animDelay = completing ? 280 : 0;
     setTimeout(() => {
@@ -3711,7 +3737,10 @@
     const dueToday = $('ctxDueToday');
     const hasDueToday = _ctxTask.due !== todayStr;
     dueToday.style.display = hasDueToday ? '' : 'none';
-    if (!hasSetIp && !hasPause && !hasSkip && !hasDueToday) return;
+    const wontdo = $('ctxWontDo');
+    const hasWontDo = !_ctxTask.done;
+    wontdo.style.display = hasWontDo ? '' : 'none';
+    if (!hasSetIp && !hasPause && !hasSkip && !hasDueToday && !hasWontDo) return;
 
     ctxMenu.style.left = '';
     ctxMenu.style.right = '';
@@ -3758,6 +3787,15 @@
     _ctxTask.due = new Date().toISOString().slice(0, 10);
     save(); renderAll();
     toast(`"${_ctxTask.text}" — due today`);
+    closeCtxMenu();
+  });
+
+  $('ctxWontDo').addEventListener('click', () => {
+    if (!_ctxTask) return;
+    _ctxTask.done = true;
+    _ctxTask.wontdo = true;
+    if (_ctxTask.status === 'in-progress' || _ctxTask.status === 'paused') _ctxTask.status = 'todo';
+    save(); renderAll();
     closeCtxMenu();
   });
 
