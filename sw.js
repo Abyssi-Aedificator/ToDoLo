@@ -1,4 +1,4 @@
-const CACHE = 'todolo-v5';
+const CACHE = 'todolo-v8';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
@@ -17,7 +17,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+        e.waitUntil(caches.open(CACHE).then(c => c.put(e.request, res.clone())));
         return res;
       })
       .catch(() => caches.match(e.request))

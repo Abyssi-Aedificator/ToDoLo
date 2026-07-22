@@ -89,7 +89,7 @@
 
   /* in light mode, don't darken the page behind modals (keeps panels bright) */
   html[data-mode="light"] .overlay { background: rgba(70, 100, 140, 0.14); }
-  html[data-mode="light"] .modal { background: rgba(var(--a), 0.16); border-color: rgba(var(--a), 0.35); }
+  html[data-mode="light"] .modal:not(.settings-modal):not(.quick-open-modal) { background: rgba(var(--a), 0.16); border-color: rgba(var(--a), 0.35); }
 
   body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -607,8 +607,15 @@
     flex-direction: column;
     height: 100%;
     padding: 26px 24px;
-    overflow-y: auto;
+    overflow: visible;
     min-width: 360px;
+  }
+  .detail-body-inner {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
   }
   .detail.showing-task .detail-body { display: flex; }
   .detail.showing-task .detail-empty { display: none; }
@@ -1418,6 +1425,7 @@
       </div>
 
       <div class="detail-body" id="detailBody">
+        <div class="detail-body-inner">
         <div class="detail-head">
           <h2>Task details</h2>
           <button class="icon-btn" id="tClose" title="Close"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1508,6 +1516,7 @@
           <button class="btn-primary" id="tComplete">Mark complete</button>
           <span style="flex:1"></span>
           <button class="btn-ghost danger" id="tDelete">Delete task</button>
+        </div>
         </div>
       </div>
     </aside>
@@ -1608,7 +1617,55 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">1.4.5 <span class="current-badge">In progress</span></div>
+          <div class="changelog-version">1.4.6 <span class="current-badge">2026-07-22</span></div>
+          <ul>
+            <li>Fixed crash when clicking a tag chip on a task to filter by that tag</li>
+            <li>Fixed detail panel not refreshing tags and subtasks after Dropbox sync or file import</li>
+            <li>Fixed zero-count badges showing on smart views with no tasks</li>
+            <li>Fixed potential XSS in sort group headers when list name or task text contains HTML</li>
+            <li>Fixed "Clear completed" leaving the detail panel open for deleted tasks — edits to the orphaned task were silently lost</li>
+            <li>Fixed file import and Dropbox download leaving the detail panel open for tasks from the old state — stale <code>editingTask</code> references could inject orphaned tasks back into the new state</li>
+            <li>Fixed <code>deleteTaskWithUndo</code> using a stale index after a 280ms animation delay — concurrent deletes could splice the wrong task; undo restored at the wrong position</li>
+            <li>Fixed XSS in task meta chips — list owner name and tag names were injected via <code>innerHTML</code>; switched to <code>textContent</code> / DOM APIs</li>
+            <li>Fixed light-mode <code>.modal</code> CSS specificity overriding settings and quick-open modal backgrounds — added <code>:not()</code> exclusion</li>
+            <li>Fixed glass-select dropdown menus in the detail panel being clipped by <code>.detail-body</code> overflow — added inner scroll wrapper so the outer container stays unclipped</li>
+            <li>Added explicit <code>$()</code> declarations for <code>tStatus</code> and <code>tComplete</code> — previously relied on implicit browser globals</li>
+            <li>Fixed Overdue/Today/Tomorrow/Next 7 Days smart views showing in-progress and paused tasks while their badge counts excluded them — both now agree</li>
+            <li>Fixed monthly recurrence skipping the end of months — e.g. a task due Jan 31 now correctly advances to Feb 28 (not Mar 3)</li>
+            <li>Fixed empty group separator appearing in Title (A–Z) sort when a task has empty text</li>
+            <li>Fixed multiple glass-select dropdowns staying open simultaneously — clicking a trigger now closes other open dropdowns first</li>
+            <li>Fixed Dropbox sync silently failing with an expired token when no refresh token is available — now correctly reports the session as expired</li>
+            <li>Fixed unhandled promise rejection from Dropbox auto-sync checks when offline — refresh errors are now caught</li>
+            <li>Fixed PKCE verifier left in <code>sessionStorage</code> after Dropbox OAuth — now cleaned up immediately after use</li>
+            <li>Fixed date picker, complete button, and recurrence dropdown not updating after context menu actions ("Due Today", "Skip", "Won't Do") while detail panel is open</li>
+            <li>Fixed context menu showing non-functional "Set In Progress", "Pause", "Skip", and "Due Today" for completed tasks</li>
+            <li>Fixed "Skip" shown for recurring tasks without a due date — now hidden when no due date is set</li>
+            <li>Fixed "Clear completed" undo losing tasks permanently if their list was deleted during the 5-second undo window</li>
+            <li>Fixed XSS in priority and recurrence meta chips — switched from <code>innerHTML</code> to DOM APIs</li>
+            <li>Fixed <code>deleteTaskWithUndo</code> undo losing tasks permanently if their list was deleted during the toast window</li>
+            <li>Fixed task description edits being lost when closing the detail panel via Escape or close button — description now saves before panel close</li>
+            <li>Fixed ghost editing after deleting a list while its task detail panel is open — panel now closes first</li>
+            <li>Fixed task description being lost when closing the detail panel via Escape — description now persists to localStorage before panel close</li>
+            <li>Fixed recurrence chip showing raw <code>&lt;svg&gt;</code> markup instead of the repeat icon after XSS fix</li>
+            <li>Fixed Escape key not dismissing confirm and version overlays</li>
+            <li>Added click-outside-to-close for the confirm dialog</li>
+            <li>Fixed potential ID collisions when creating multiple tasks or subtasks in the same millisecond</li>
+            <li>Optimised title field input — no longer triggers full sidebar and task list rebuild on every keystroke</li>
+            <li>Reduced redundant renders when toggling task completion with the detail panel open</li>
+            <li>Fixed overlapping confirm dialogs leaving the first Promise hanging forever</li>
+            <li>Fixed task title becoming the raw input string when natural language parsing strips all content (e.g. <code>!high #tag due tomorrow</code> now creates a blank title)</li>
+            <li>Fixed service worker cache write not being awaited — now uses <code>waitUntil()</code> for reliable offline caching</li>
+            <li>Fixed confirm dialog dismissal via Escape or click-outside leaving the caller hanging forever — now properly resolves the Promise</li>
+            <li>Fixed task title being lost when closing the detail panel while the debounced title save is pending — title now saves immediately on panel close</li>
+            <li>Debounced Quick Open search input (150ms) to match the main search input</li>
+            <li>Hoisted search query computation out of per-task filter — query is now read once per render instead of once per task</li>
+            <li>Cached today's date in <code>daysFromToday()</code> to avoid redundant <code>Date</code> object allocations per task</li>
+            <li>Fixed context menu "Due Today" visibility and action using UTC date instead of local date — tasks could appear wrong on the boundary between days</li>
+            <li>Fixed "Date created" sort group headers using UTC date instead of local date — groups could be off by one day</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <div class="changelog-version">1.4.5 <span class="current-badge">2026-07-22</span></div>
           <ul>
             <li>Fixed task detail and sidebar panels being too transparent on mobile — switched to the solid panel background (<code>--panel-solid</code>) so list content behind doesn't bleed through</li>
             <li>Optimised sidebar smart-view counts — all 8 counts now computed in a single pass instead of flattening the full task list 8 times</li>
@@ -1853,7 +1910,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.4.5';
+  const APP_VERSION = '1.4.6';
 
   const $ = id => document.getElementById(id);
 
@@ -1874,7 +1931,7 @@
     }
     function setLabel() { const m = _opts.find(o => o.value === _value); label.textContent = m ? m.label : ''; }
     setLabel(); render();
-    el.querySelector('.gl-select-trigger').addEventListener('click', e => { e.stopPropagation(); if (_disabled) return; el.classList.toggle('open'); });
+    el.querySelector('.gl-select-trigger').addEventListener('click', e => { e.stopPropagation(); if (_disabled) return; document.querySelectorAll('.gl-select.open').forEach(o => { if (o !== el) o.classList.remove('open'); }); el.classList.toggle('open'); });
     return Object.defineProperties({}, {
       value: { get: () => _value, set: v => { _value = v; setLabel(); render(); } },
       disabled: { get: () => _disabled, set: v => { _disabled = v; el.querySelector('.gl-select-trigger').disabled = v; } },
@@ -1976,6 +2033,7 @@
   const tSubInput = $('tSubInput'), tSubAdd = $('tSubAdd');
   const tTags = $('tTags'), tTagInput = $('tTagInput');
   const tDelete = $('tDelete'), tClose = $('tClose');
+  const tStatus = $('tStatus'), tComplete = $('tComplete');
   const tListMenu = $('tListMenu'), tListDot = $('tListDot'), tListLabel = $('tListLabel');
   const drawerBackdrop = $('drawerBackdrop'), menuBtn = $('menuBtn');
 
@@ -2005,19 +2063,23 @@
   // ---- themed confirm dialog (replaces native confirm()) ----
   const confirmOverlay = $('confirmOverlay'), confirmMessage = $('confirmMessage');
   const confirmOk = $('confirmOk'), confirmCancel = $('confirmCancel');
+  let confirmCleanup = null;
   function confirmDialog(message) {
+    if (confirmOverlay.classList.contains('show')) return Promise.resolve(false);
     return new Promise(resolve => {
       confirmMessage.textContent = message;
       confirmOverlay.classList.add('show');
-      const cleanup = result => {
+      confirmCleanup = result => {
         confirmOverlay.classList.remove('show');
         confirmOk.onclick = null; confirmCancel.onclick = null;
+        confirmCleanup = null;
         resolve(result);
       };
-      confirmOk.onclick = () => cleanup(true);
-      confirmCancel.onclick = () => cleanup(false);
+      confirmOk.onclick = () => confirmCleanup(true);
+      confirmCancel.onclick = () => confirmCleanup(false);
     });
   }
+  confirmOverlay.addEventListener('click', e => { if (e.target === confirmOverlay && confirmCleanup) confirmCleanup(false); });
 
   // ---- state ----
   let state;
@@ -2028,6 +2090,11 @@
   // back-fill colours for lists saved before this feature existed
   backfillState();
   let filter = localStorage.getItem('glass-todos-filter') || 'all';
+  let nextId = Date.now();
+  const _initToday = new Date(); _initToday.setHours(0, 0, 0, 0);
+  let _todayDt = new Date(_initToday);
+
+  function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
   const save = () => { localStorage.setItem('glass-todos-v2', JSON.stringify(state)); if (typeof scheduleAutoUpload === 'function') scheduleAutoUpload(); };
 
@@ -2066,6 +2133,7 @@
     if (state.activeId === 'nodate') return !t.done && !t.due && t.status !== 'in-progress' && t.status !== 'paused';
     if (state.activeId !== 'overdue' && state.activeId !== 'today' && state.activeId !== 'tomorrow' && state.activeId !== 'week') return true;
     if (!t.due) return false;
+    if (t.status === 'in-progress' || t.status === 'paused') return false;
     const days = daysFromToday(t.due);
     if (state.activeId === 'overdue') return !t.done && days < 0;
     if (state.activeId === 'today') return !t.done && days === 0;
@@ -2116,7 +2184,7 @@
       name.textContent = v.name;
       li.append(icon, name);
       const cnt = counts[v.id];
-      if (cnt !== null) {
+      if (cnt > 0) {
         const badge = document.createElement('span');
         badge.className = 'badge';
         badge.textContent = cnt;
@@ -2270,7 +2338,7 @@
       const l = state.lists.find(x => x.id === editingId);
       if (l) { l.name = val; l.color = pickedColor; }
     } else {
-      const id = Date.now();
+      const id = nextId++;
       state.lists.push({ id, name: val, color: pickedColor, todos: [] });
       state.activeId = id;
     }
@@ -2282,6 +2350,7 @@
     const list = state.lists.find(l => l.id === id);
     if (!list) return;
     if (!await confirmDialog(`Delete the list "${list.name}" and all its tasks?`)) return;
+    if (editingTask && editingTaskList && editingTaskList.id === id) closeTaskPanel();
     if (state.lists.length === 1) {
       // don't delete the last list; just clear it
       state.lists[0].todos = [];
@@ -2297,6 +2366,7 @@
 
   function getShownTasks() {
     const all = isAllView();
+    const q = searchInput.value.trim().toLowerCase();
     // build a flat list of { task, owner } across the current view
     const entries = [];
     (all ? state.lists : [activeList()]).forEach(l => {
@@ -2304,7 +2374,7 @@
     });
     return entries.filter(({ t }) =>
       (filter === 'all' ? true : filter === 'done' ? t.done : !t.done) &&
-      matchesDueFilter(t) && matchesPrioFilter(t) && matchesTagFilter(t) && matchesSearch(t) && matchesSmartView(t)
+      matchesDueFilter(t) && matchesPrioFilter(t) && matchesTagFilter(t) && matchesSearch(t, q) && matchesSmartView(t)
     ).sort((a, b) => {
       if (a.t.done !== b.t.done) return a.t.done ? 1 : -1;
       return sortCompare(a.t, b.t, a.owner, b.owner);
@@ -2369,7 +2439,9 @@
       if (group !== null && group !== prevGroup) {
         const sep = document.createElement('li');
         sep.className = 'group-sep';
-        sep.innerHTML = `<span>${group}</span>`;
+        const span = document.createElement('span');
+        span.textContent = group;
+        sep.appendChild(span);
         list.appendChild(sep);
         prevGroup = group;
       }
@@ -2451,13 +2523,21 @@
     if (owner) {
       const c = document.createElement('span');
       c.className = 'chip';
-      c.innerHTML = `<span class="prio-dot" style="background:${owner.color}"></span>${owner.name}`;
+      const dot = document.createElement('span');
+      dot.className = 'prio-dot';
+      dot.style.background = owner.color;
+      const nm = document.createElement('span');
+      nm.textContent = owner.name;
+      c.append(dot, nm);
       meta.appendChild(c); any = true;
     }
     if (t.priority && t.priority !== 'none') {
       const c = document.createElement('span');
       c.className = 'chip';
-      c.innerHTML = `<span class="prio-dot ${t.priority}"></span>${{low:'Low',med:'Medium',high:'High'}[t.priority]}`;
+      const dot = document.createElement('span');
+      dot.className = 'prio-dot ' + t.priority;
+      c.appendChild(dot);
+      c.appendChild(document.createTextNode({low:'Low',med:'Medium',high:'High'}[t.priority] || t.priority));
       meta.appendChild(c); any = true;
     }
     if (t.due) {
@@ -2492,7 +2572,10 @@
     if (t.recur && t.recur !== 'none') {
       const c = document.createElement('span');
       c.className = 'chip';
-      c.innerHTML = ICON.repeat + t.recur.charAt(0).toUpperCase() + t.recur.slice(1);
+      const iconSpan = document.createElement('span');
+      iconSpan.innerHTML = ICON.repeat;
+      c.appendChild(iconSpan);
+      c.appendChild(document.createTextNode(t.recur.charAt(0).toUpperCase() + t.recur.slice(1)));
       meta.appendChild(c); any = true;
     }
     if (t.subtasks && t.subtasks.length) {
@@ -2522,8 +2605,6 @@
       c.onclick = e => {
         e.stopPropagation();
         tagFilter.value = tag;
-        const tfLabel = tagFilter.querySelector('.gl-select-label');
-        if (tfLabel) tfLabel.textContent = '#' + tag;
         localStorage.setItem('glass-todos-tag-filter', tag);
         renderTasks();
       };
@@ -2539,8 +2620,9 @@
 
   function daysFromToday(d) {
     const today = new Date(); today.setHours(0, 0, 0, 0);
+    if (today.getTime() !== _todayDt.getTime()) _todayDt = new Date(today);
     const due = new Date(d + 'T00:00');
-    return Math.round((due - today) / 86400000);
+    return Math.round((due - _todayDt) / 86400000);
   }
 
   function matchesDueFilter(t) {
@@ -2562,8 +2644,8 @@
     return (t.priority || 'none') === v;
   }
 
-  function matchesSearch(t) {
-    const q = searchInput.value.trim().toLowerCase();
+  function matchesSearch(t, q) {
+    if (!q) q = searchInput.value.trim().toLowerCase();
     if (!q) return true;
     return t.text.toLowerCase().includes(q)
       || (t.desc || '').toLowerCase().includes(q)
@@ -2621,11 +2703,11 @@
   function groupLabel(t, owner) {
     const mode = sortBy.value;
     if (mode === 'due') return t.due ? monthYearLabel(t.due) : 'No due date';
-    if (mode === 'created') return monthYearLabel(new Date(t.id).toISOString().slice(0, 10));
+    if (mode === 'created') { const d = new Date(t.id); return monthYearLabel(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')); }
     if (mode === 'priority') return PRIO_LABEL[t.priority || 'none'];
     if (mode === 'recur') return RECUR_LABEL[t.recur || 'none'];
     if (mode === 'list') return owner ? owner.name : null;
-    if (mode === 'alpha') return t.text.charAt(0).toUpperCase();
+    if (mode === 'alpha') return t.text.charAt(0).toUpperCase() || null;
     return null;
   }
 
@@ -2665,9 +2747,8 @@
     }
     const animDelay = completing ? 280 : 0;
     setTimeout(() => {
-      save(); renderAll();
-      if (editingTask && editingTask.id === t.id) renderSubs();
-      if (completing && editingTask && editingTask.id === t.id) closeTaskPanel();
+      if (completing && editingTask && editingTask.id === t.id) { closeTaskPanel(); save(); renderAll(); }
+      else { save(); renderAll(); if (editingTask && editingTask.id === t.id) renderSubs(); }
     }, animDelay);
   }
 
@@ -2675,7 +2756,7 @@
     const dt = new Date(d + 'T00:00');
     if (recur === 'daily') dt.setDate(dt.getDate() + 1);
     else if (recur === 'weekly') dt.setDate(dt.getDate() + 7);
-    else if (recur === 'monthly') dt.setMonth(dt.getMonth() + 1);
+    else if (recur === 'monthly') { const origDay = dt.getDate(); dt.setMonth(dt.getMonth() + 1); if (dt.getDate() !== origDay) dt.setDate(0); }
     const p = n => String(n).padStart(2, '0');
     return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`;
   }
@@ -2731,7 +2812,7 @@
     if (!text && !tags.length) return;
     const target = isAllView() ? state.lists[0] : activeList();
     const task = {
-      id: Date.now(), text: text || val, done: false,
+      id: nextId++, text: text || '', done: false,
       desc: '', due, recur: 'none', priority, status: 'todo', subtasks: [], tags
     };
     target.todos.unshift(task);
@@ -2784,10 +2865,15 @@
   }
 
   function closeTaskPanel() {
+    if (editingTask) {
+      editingTask.text = tTitle.value;
+      if (tDesc) editingTask.desc = tDesc.value.trim();
+    }
     tList.classList.remove('open');
     detail.classList.remove('open', 'showing-task');
     detail.style.width = '';
     editingTask = null;
+    save();
     renderTasks();
   }
   function applyDetailWidth() {
@@ -2814,11 +2900,14 @@
       chip.style.background = col;
       chip.style.borderColor = col;
       chip.style.color = '#fff';
-      chip.innerHTML = `#${tag}<button type="button" class="tag-x" title="Remove">×</button>`;
-      chip.querySelector('.tag-x').onclick = () => {
+      chip.textContent = '#' + tag;
+      const xb = document.createElement('button');
+      xb.type = 'button'; xb.className = 'tag-x'; xb.title = 'Remove'; xb.textContent = '×';
+      xb.onclick = () => {
         editingTask.tags = editingTask.tags.filter(x => x !== tag);
         renderTags(); commit();
       };
+      chip.appendChild(xb);
       tTags.appendChild(chip);
     });
   }
@@ -2902,7 +2991,7 @@
   function addSub() {
     const v = tSubInput.value.trim();
     if (!v || !editingTask) return;
-    editingTask.subtasks.push({ id: Date.now(), text: v, done: false });
+    editingTask.subtasks.push({ id: nextId++, text: v, done: false });
     tSubInput.value = '';
     renderSubs(); commit(); tSubInput.focus();
   }
@@ -2948,14 +3037,20 @@
     if (idx === -1) return;
     const li = list.querySelector(`[data-task-id="${t.id}"]`);
     if (li) li.classList.add('removing');
+    const ownerId = owner.id;
     setTimeout(() => {
-      owner.todos.splice(idx, 1);
+      const curList = state.lists.find(l => l.id === ownerId);
+      if (!curList) { save(); renderAll(); return; }
+      const curIdx = curList.todos.findIndex(x => x.id === t.id);
+      if (curIdx === -1) { save(); renderAll(); return; }
+      curList.todos.splice(curIdx, 1);
       if (editingTask && editingTask.id === t.id) closeTaskPanel();
       save(); renderAll();
       toast(`Deleted "${t.text}"`, {
         label: 'Undo',
         onClick: () => {
-          owner.todos.splice(Math.min(idx, owner.todos.length), 0, t);
+          const list = state.lists.find(l => l.id === ownerId);
+          if (list) list.todos.splice(Math.min(curIdx, list.todos.length), 0, t);
           save(); renderAll();
         }
       });
@@ -2969,6 +3064,11 @@
       populateListSelect(editingTaskList.id);
       renderStatus();
       renderPrio();
+      renderTags();
+      renderSubs();
+      tDue.value = editingTask.due || '';
+      tComplete.textContent = editingTask.done ? 'Mark incomplete' : 'Mark complete';
+      syncRecurAvailability();
     }
   }
 
@@ -3086,7 +3186,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const stamp = new Date().toISOString().slice(0, 10);
+    const stamp = dateStr(0);
     a.download = `todolo-backup-${stamp}.json`;
     a.click();
     URL.revokeObjectURL(url);
@@ -3108,6 +3208,7 @@
       return;
     }
     if (!await confirmDialog('Restoring this backup will replace all your current lists and tasks. Continue?')) return;
+    closeTaskPanel();
     state = data;
     backfillState();
     if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
@@ -3118,16 +3219,18 @@
     const removed = [];
     (isAllView() ? state.lists : [activeList()]).forEach(l => {
       for (let i = l.todos.length - 1; i >= 0; i--) {
-        if (l.todos[i].done) { removed.push({ list: l, index: i, task: l.todos[i] }); l.todos.splice(i, 1); }
+        if (l.todos[i].done) { removed.push({ listId: l.id, index: i, task: l.todos[i] }); l.todos.splice(i, 1); }
       }
     });
     if (!removed.length) return;
+    if (editingTask && removed.some(r => r.task === editingTask)) closeTaskPanel();
     save(); renderAll();
     toast(`Cleared ${removed.length} completed task${removed.length !== 1 ? 's' : ''}`, {
       label: 'Undo',
       onClick: () => {
-        removed.slice().reverse().forEach(({ list, index, task }) => {
-          list.todos.splice(Math.min(index, list.todos.length), 0, task);
+        removed.slice().reverse().forEach(({ listId, index, task }) => {
+          const list = state.lists.find(l => l.id === listId);
+          if (list) list.todos.splice(Math.min(index, list.todos.length), 0, task);
         });
         save(); renderAll();
       }
@@ -3138,7 +3241,8 @@
   tClose.onclick = closeTaskPanel;
   tComplete.onclick = () => { if (editingTask) toggleTask(editingTask); };
   tDelete.onclick = deleteTask;
-  tTitle.addEventListener('input', () => { if (editingTask) { editingTask.text = tTitle.value; commit(); } });
+  tTitle.addEventListener('input', debounce(() => { if (editingTask) { editingTask.text = tTitle.value; save(); } }, 150));
+  tTitle.addEventListener('blur', () => { if (editingTask) { editingTask.text = tTitle.value; save(); renderTasks(); } });
   tDesc.addEventListener('blur', () => { if (editingTask) { editingTask.desc = tDesc.value.trim(); commit(); } });
   function syncRecurAvailability() {
     tRecur.disabled = !tDue.value;
@@ -3172,7 +3276,7 @@
 
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openQuickOpen(); return; }
-    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); }
+    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); }
   });
 
   filters.forEach(f => f.classList.toggle('active', f.dataset.filter === filter));
@@ -3466,6 +3570,7 @@
     history.replaceState(null, '', location.pathname + location.hash); // strip ?code= from the URL
     settingsOverlay.classList.add('show');
     const verifier = sessionStorage.getItem('todolo.dbx.verifier');
+    sessionStorage.removeItem('todolo.dbx.verifier');
     if (!verifier || !dbx.appKey) return;
     try {
       const res = await fetch('https://api.dropboxapi.com/oauth2/token', {
@@ -3485,7 +3590,7 @@
 
   async function dropboxRefreshIfNeeded() {
     if (dbx.accessToken && Date.now() < dbx.expiresAt - 30000) return true;
-    if (!dbx.refreshToken || !dbx.appKey) return !!dbx.accessToken;
+    if (!dbx.refreshToken || !dbx.appKey) return false;
     const res = await fetch('https://api.dropboxapi.com/oauth2/token', {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: dbx.refreshToken, client_id: dbx.appKey })
@@ -3512,6 +3617,7 @@
     return d;
   }
   function dbxApplyData(d) {
+    closeTaskPanel();
     state = d;
     backfillState();
     if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
@@ -3581,8 +3687,8 @@
   // Offer to pull in the remote file if it's newer than our last local sync.
   async function dropboxCheckForUpdates() {
     if (!dbx.accessToken) return;
-    if (!await dropboxRefreshIfNeeded()) return;
     try {
+      if (!await dropboxRefreshIfNeeded()) return;
       const res = await fetch('https://api.dropboxapi.com/2/files/get_metadata', {
         method: 'POST', headers: { 'Authorization': 'Bearer ' + dbx.accessToken, 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: DBX_PATH })
@@ -3652,7 +3758,7 @@
     quickOpenOverlay.classList.remove('show');
   }
 
-  quickOpenInput.addEventListener('input', () => {
+  quickOpenInput.addEventListener('input', debounce(() => {
     const q = quickOpenInput.value.trim().toLowerCase();
     _qoHighlight = -1;
     if (!q) { quickOpenResults.innerHTML = ''; return; }
@@ -3714,7 +3820,7 @@
       _qoHighlight = 0;
       quickOpenResults.children[0].classList.add('highlighted');
     }
-  });
+  }, 150));
 
   quickOpenInput.addEventListener('keydown', e => {
     const items = () => quickOpenResults.querySelectorAll('.quick-open-result');
@@ -3772,18 +3878,18 @@
     if (!match) return;
     _ctxTask = match.t; _ctxOwner = match.owner;
 
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayStr = dateStr(0);
     const setIp = $('ctxSetInProgress');
-    const hasSetIp = _ctxTask.status !== 'in-progress';
+    const hasSetIp = _ctxTask.status !== 'in-progress' && !_ctxTask.done;
     setIp.style.display = hasSetIp ? '' : 'none';
     const pause = $('ctxPause');
-    const hasPause = _ctxTask.status !== 'paused';
+    const hasPause = _ctxTask.status !== 'paused' && !_ctxTask.done;
     pause.style.display = hasPause ? '' : 'none';
     const skip = $('ctxSkip');
-    const hasSkip = _ctxTask.recur && _ctxTask.recur !== 'none';
+    const hasSkip = _ctxTask.recur && _ctxTask.recur !== 'none' && !_ctxTask.done && !!_ctxTask.due;
     skip.style.display = hasSkip ? '' : 'none';
     const dueToday = $('ctxDueToday');
-    const hasDueToday = _ctxTask.due !== todayStr;
+    const hasDueToday = _ctxTask.due !== todayStr && !_ctxTask.done;
     dueToday.style.display = hasDueToday ? '' : 'none';
     const wontdo = $('ctxWontDo');
     const hasWontDo = !_ctxTask.done;
@@ -3832,7 +3938,7 @@
 
   $('ctxDueToday').addEventListener('click', () => {
     if (!_ctxTask || _ctxTask.done) return;
-    _ctxTask.due = new Date().toISOString().slice(0, 10);
+    _ctxTask.due = dateStr(0);
     save(); renderAll();
     toast(`"${_ctxTask.text}" — due today`);
     closeCtxMenu();
