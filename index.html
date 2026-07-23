@@ -1617,6 +1617,13 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.5.0 <span class="current-badge">Unreleased</span></div>
+          <ul>
+            <li>When changing a task to In Progress or Paused, you're now asked whether to remove its due date</li>
+            <li>Confirmation dialogs now have descriptive titles and context-specific buttons</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.4.6 <span class="current-badge">2026-07-22</span></div>
           <ul>
             <li>Fixed crash when clicking a tag chip on a task to filter by that tag</li>
@@ -1815,7 +1822,7 @@
   <!-- CONFIRM MODAL -->
   <div class="overlay" id="confirmOverlay">
     <div class="modal confirm-modal">
-      <h2>Are you sure?</h2>
+      <h2 id="confirmTitle">Are you sure?</h2>
       <p id="confirmMessage"></p>
       <div class="modal-actions">
         <button class="btn-ghost" id="confirmCancel">Cancel</button>
@@ -1908,9 +1915,9 @@
     play: '<svg viewBox="0 0 24 24" width="16" height="16"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>',
     pause: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/></svg>'
   };
-  const DEV = false;
+  const DEV = true;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.4.6';
+  const APP_VERSION = '1.5.0';
 
   const $ = id => document.getElementById(id);
 
@@ -2063,11 +2070,15 @@
   // ---- themed confirm dialog (replaces native confirm()) ----
   const confirmOverlay = $('confirmOverlay'), confirmMessage = $('confirmMessage');
   const confirmOk = $('confirmOk'), confirmCancel = $('confirmCancel');
+  const confirmTitle = $('confirmTitle');
   let confirmCleanup = null;
-  function confirmDialog(message) {
+  function confirmDialog(message, title = 'Are you sure?', okLabel = 'Delete', cancelLabel = 'Cancel') {
     if (confirmOverlay.classList.contains('show')) return Promise.resolve(false);
     return new Promise(resolve => {
+      confirmTitle.textContent = title;
       confirmMessage.textContent = message;
+      confirmOk.textContent = okLabel;
+      confirmCancel.textContent = cancelLabel;
       confirmOverlay.classList.add('show');
       confirmCleanup = result => {
         confirmOverlay.classList.remove('show');
@@ -2349,7 +2360,7 @@
   async function removeList(id) {
     const list = state.lists.find(l => l.id === id);
     if (!list) return;
-    if (!await confirmDialog(`Delete the list "${list.name}" and all its tasks?`)) return;
+    if (!await confirmDialog(`Delete the list "${list.name}" and all its tasks?`, 'Delete list', 'Delete')) return;
     if (editingTask && editingTaskList && editingTaskList.id === id) closeTaskPanel();
     if (state.lists.length === 1) {
       // don't delete the last list; just clear it
@@ -2979,7 +2990,7 @@
       const dl = document.createElement('button');
       dl.className = 'sdel'; dl.innerHTML = ICON.trash;
       dl.onclick = async () => {
-        if (!await confirmDialog(`Delete the sub-task "${s.text}"?`)) return;
+        if (!await confirmDialog(`Delete the sub-task "${s.text}"?`, 'Delete subtask', 'Delete')) return;
         const sidx = editingTask.subtasks.findIndex(x => x.id === s.id);
         if (sidx !== -1) editingTask.subtasks.splice(sidx, 1);
         renderSubs(); commit();
@@ -3006,8 +3017,18 @@
     const s = editingTask ? editingTask.status : 'todo';
     [...tStatus.children].forEach(b => b.classList.toggle('on', b.dataset.status === s));
   }
-  function setStatus(s) {
+  async function setStatus(s) {
     if (!editingTask) return;
+    if ((s === 'in-progress' || s === 'paused') && editingTask.due) {
+      const sLabel = s === 'in-progress' ? 'In Progress' : 'Paused';
+      const msg = `Do you want to remove the due date when setting this task to ${sLabel}?`;
+      if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
+        editingTask.due = '';
+        if (editingTask.recur !== 'none') { editingTask.recur = 'none'; tRecur.value = 'none'; }
+        syncRecurAvailability();
+        tDue.value = '';
+      }
+    }
     editingTask.status = s;
     renderStatus(); commit();
   }
@@ -3207,7 +3228,7 @@
       alert('That file doesn\'t look like a ToDoLo backup.');
       return;
     }
-    if (!await confirmDialog('Restoring this backup will replace all your current lists and tasks. Continue?')) return;
+    if (!await confirmDialog('Restoring this backup will replace all your current lists and tasks. Continue?', 'Restore backup', 'Restore')) return;
     closeTaskPanel();
     state = data;
     backfillState();
@@ -3659,7 +3680,7 @@
       if (res.status === 409) { toast('No backup in Dropbox yet — upload one first'); return; }
       if (!res.ok) throw new Error('download failed (' + res.status + ')');
       const d = dbxParseBackup(await res.text());
-      if (!skipConfirm && !await confirmDialog('Download from Dropbox? It will replace all your current lists and tasks.')) return;
+      if (!skipConfirm && !await confirmDialog('Download from Dropbox? It will replace all your current lists and tasks.', 'Download from Dropbox', 'Download')) return;
       dbxApplyData(d);
       dbx.lastSync = new Date().toLocaleString(); dbx.lastSyncAt = Date.now(); dbxSave(); updateDropboxUI();
       toast('Synced from Dropbox');
@@ -3667,7 +3688,7 @@
   }
 
   async function dropboxDisconnect() {
-    if (!await confirmDialog('Disconnect Dropbox? You can reconnect any time with your App key.')) return;
+    if (!await confirmDialog('Disconnect Dropbox? You can reconnect any time with your App key.', 'Disconnect Dropbox', 'Disconnect')) return;
     dbx = { appKey: dbx.appKey, accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false, autoUpload: false };
     dbxSave(); updateDropboxUI(); toast('Dropbox disconnected');
   }
@@ -3913,18 +3934,34 @@
     setTimeout(() => { _ctxIgnoreClick = false; }, 100);
   });
 
-  $('ctxSetInProgress').addEventListener('click', () => {
+  $('ctxSetInProgress').addEventListener('click', async () => {
     if (!_ctxTask || _ctxTask.done) return;
-    _ctxTask.status = 'in-progress';
-    save(); renderAll();
+    const task = _ctxTask;
     closeCtxMenu();
+    if (task.due) {
+      const msg = `Do you want to remove the due date when setting this task to In Progress?`;
+      if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
+        task.due = '';
+        if (task.recur !== 'none') task.recur = 'none';
+      }
+    }
+    task.status = 'in-progress';
+    save(); renderAll();
   });
 
-  $('ctxPause').addEventListener('click', () => {
+  $('ctxPause').addEventListener('click', async () => {
     if (!_ctxTask || _ctxTask.done) return;
-    _ctxTask.status = 'paused';
-    save(); renderAll();
+    const task = _ctxTask;
     closeCtxMenu();
+    if (task.due) {
+      const msg = `Do you want to remove the due date when setting this task to Paused?`;
+      if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
+        task.due = '';
+        if (task.recur !== 'none') task.recur = 'none';
+      }
+    }
+    task.status = 'paused';
+    save(); renderAll();
   });
 
   $('ctxSkip').addEventListener('click', () => {
