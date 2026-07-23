@@ -56,6 +56,7 @@
     --panel-solid: rgba(20, 40, 50, 0.94);
     --toast-bg: rgba(var(--a), 0.75);
     --select-bg: #15323b;
+    color-scheme: dark;
     /* default colour = teal (dark) */
     --a: 44, 83, 100;
     --bg-gradient: linear-gradient(135deg, #0f2027 0%, #2c5364 50%, #00b4a0 100%);
@@ -70,6 +71,7 @@
     --toast-bg: rgba(var(--a), 0.9);
     --select-bg: rgba(38,50,71,0.88);
     --a: 42, 73, 91;
+    color-scheme: light;
     --bg-gradient: linear-gradient(135deg, #c9efe2 0%, #9fd8e8 50%, #d8f1d0 100%);
   }
 
@@ -656,7 +658,7 @@
     color: var(--ink); font-size: 0.9rem; outline: none;
     font-family: inherit;
   }
-  #tDesc { resize: vertical; margin-bottom: 4px; }
+  #tDesc { resize: vertical; margin-bottom: 4px; flex-shrink: 0; min-height: 90px; }
   #tDesc::placeholder, #tSubInput::placeholder { color: rgba(255,255,255,0.55); }
   /* ---- custom glass list-selector ---- */
   .gl-select { position: relative; z-index: 10; }
@@ -768,6 +770,20 @@
     margin-top: 4px; margin-bottom: 6px;
   }
 
+  .recur-end-row { margin-bottom: 10px; }
+  .recur-end-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+  .recur-end-fields .gl-select { flex: 1; min-width: 130px; }
+  .recur-end-or { font-size: 0.8rem; opacity: 0.5; padding-bottom: 6px; }
+  .recur-count-wrap { display: flex; align-items: flex-end; gap: 6px; }
+  .recur-count-input {
+    width: 60px; padding: 9px 8px; border-radius: 10px;
+    border: 1px solid rgba(var(--w),0.3); background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.85rem; text-align: center;
+    font-family: inherit; outline: none;
+  }
+  .recur-count-input:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
+  .field-label-sm { font-size: 0.75rem; opacity: 0.6; margin-bottom: 4px; }
+
   .prio-group { display: flex; gap: 6px; }
   .prio-group button {
     flex: 1; padding: 9px 0; border-radius: 9px; cursor: pointer;
@@ -841,6 +857,59 @@
   .subtasks .sdel:hover { color: #ff8a8a; }
   .sub-add { display: flex; gap: 8px; margin-bottom: 20px; }
   #tSubAdd { display: flex; align-items: center; justify-content: center; padding: 0 14px; }
+
+  /* logbook (detail panel) */
+  .logbook { margin-bottom: 8px; }
+  .log-entry {
+    padding: 10px 12px; margin-bottom: 6px; border-radius: 10px;
+    background: rgba(var(--w),0.1); position: relative;
+  }
+  .log-entry-text { font-size: 0.88rem; white-space: pre-wrap; word-break: break-word; }
+  .log-entry-text[contenteditable="true"] { outline: none; background: rgba(var(--w),0.15); border-radius: 6px; padding: 4px 6px; margin: -4px -6px; }
+  .log-entry-date { font-size: 0.72rem; opacity: 0.5; margin-top: 4px; }
+  .log-entry-edited::after { content: ' (edited)'; opacity: 0.5; }
+  .log-entry-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+  .log-entry:hover .log-entry-actions { opacity: 1; }
+  .log-entry-actions button { background: none; border: none; color: var(--ink); opacity: 0.6; cursor: pointer; padding: 2px; display: flex; }
+  .log-entry-actions button:hover { opacity: 1; }
+  .logbook-add { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+  .logbook-add textarea {
+    width: 100%; resize: vertical; min-height: 48px;
+    padding: 11px 13px; border-radius: 11px;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.9rem; outline: none;
+    font-family: inherit;
+  }
+  .logbook-add textarea:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
+  .logbook-add textarea::placeholder { color: rgba(255,255,255,0.55); }
+  .logbook-add .btn-ghost { align-self: flex-end; }
+
+  /* links (detail panel) */
+  .links-list { margin-bottom: 8px; }
+  .link-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin-bottom: 6px;
+    border-radius: 10px; background: rgba(var(--w),0.1);
+  }
+  .link-item a { flex: 1; font-size: 0.85rem; color: var(--ink); text-decoration: underline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link-item .link-label { font-size: 0.78rem; opacity: 0.6; flex-shrink: 0; }
+  .link-item-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+  .link-item:hover .link-item-actions { opacity: 1; }
+  .link-item-actions button { background: none; border: none; color: var(--ink); opacity: 0.6; cursor: pointer; padding: 2px; display: flex; }
+  .link-item-actions button:hover { opacity: 1; }
+  .link-add { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .link-add input {
+    padding: 11px 13px; border-radius: 11px;
+    border: 1px solid rgba(var(--w),0.3);
+    background: rgba(var(--w),0.15);
+    color: var(--ink); font-size: 0.9rem; outline: none;
+    font-family: inherit;
+  }
+  .link-add input:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
+  .link-add input::placeholder { color: rgba(255,255,255,0.55); }
+  .link-add input[type="url"] { flex: 2; min-width: 150px; }
+  .link-add input[type="text"] { flex: 1; min-width: 100px; }
+  .link-add .btn-ghost { flex-shrink: 0; }
 
   /* tag editor (detail panel) */
   .tag-edit { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
@@ -916,6 +985,31 @@
     word-break: break-word;
   }
   .subtitle { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; opacity: 0.8; margin-bottom: 22px; }
+
+  .view-toggle { display: flex; gap: 4px; margin-bottom: 14px; }
+  .view-btn { padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(var(--w),0.2); background: transparent; color: var(--ink); cursor: pointer; opacity: 0.5; transition: all 0.15s; display: flex; align-items: center; }
+  .view-btn.active { opacity: 1; background: rgba(var(--w),0.18); border-color: rgba(var(--w),0.35); }
+  .view-btn:hover { opacity: 1; }
+
+  .cal-view { display: none; }
+  .cal-view.show { display: block; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-header h3 { font-size: 1rem; font-weight: 600; }
+  .cal-nav { display: flex; gap: 6px; }
+  .cal-nav button { padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(var(--w),0.2); background: transparent; color: var(--ink); cursor: pointer; font-size: 0.85rem; }
+  .cal-nav button:hover { background: rgba(var(--w),0.15); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-label { text-align: center; font-size: 0.72rem; font-weight: 600; opacity: 0.5; padding: 4px 0; }
+  .cal-day { min-height: 80px; padding: 6px; border-radius: 10px; background: rgba(var(--w),0.06); border: 1px solid rgba(var(--w),0.1); cursor: pointer; transition: background 0.15s; overflow: hidden; }
+  .cal-day:hover { background: rgba(var(--w),0.12); }
+  .cal-day.today { border-color: rgba(var(--a),0.6); background: rgba(var(--a),0.1); }
+  .cal-day.other-month { opacity: 0.35; }
+  .cal-day-num { font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; }
+  .cal-day-tasks { display: flex; flex-direction: column; gap: 2px; }
+  .cal-task { font-size: 0.68rem; padding: 2px 4px; border-radius: 4px; background: rgba(var(--a),0.25); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .cal-task:hover { background: rgba(var(--a),0.4); }
+  .cal-task.done { opacity: 0.4; text-decoration: line-through; }
+  .cal-more { font-size: 0.65rem; opacity: 0.6; cursor: pointer; }
 
   .input-row { display: flex; gap: 10px; margin-bottom: 22px; }
   #taskInput {
@@ -1028,6 +1122,14 @@
   #list li.group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
   #list li.group-sep:not(:first-child) { margin-top: 4px; }
   #list li.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
+  #list li.focused { outline: 2px solid rgba(var(--a),0.6); outline-offset: -2px; }
+  .batch-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; margin-bottom: 10px; border-radius: 12px; background: rgba(var(--a),0.2); border: 1px solid rgba(var(--a),0.35); font-size: 0.85rem; }
+  .batch-bar #batchCount { font-weight: 600; margin-right: auto; }
+  .batch-bar button { font-size: 0.8rem; padding: 5px 10px; }
+  #list li .select-cb { width: 18px; height: 18px; flex-shrink: 0; border-radius: 4px; border: 2px solid rgba(var(--w),0.5); cursor: pointer; display: none; align-items: center; justify-content: center; margin-top: 2px; }
+  #list.select-mode li .select-cb { display: flex; }
+  #list li .select-cb.checked { background: rgba(var(--a),0.8); border-color: rgba(var(--a),1); }
+  #list li .select-cb.checked::after { content: ''; width: 8px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translateY(-1px); }
   @keyframes pop {
     from { opacity: 0; transform: translateY(-6px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -1209,6 +1311,7 @@
     background: rgba(var(--w),0.12); border: none;
   }
   .ctx-menu-item.danger { color: #ff8a8a; }
+  .ctx-divider { height: 1px; background: rgba(var(--w),0.15); margin: 4px 8px; }
 
   /* ---------- QUICK OPEN ---------- */
   .quick-open-modal {
@@ -1313,6 +1416,14 @@
         <svg class="ico" viewBox="0 0 24 24" width="22" height="22"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
       <h1 id="listTitle">My Tasks</h1>
+      <div class="view-toggle" id="viewToggle">
+        <button class="view-btn active" data-view="list" title="List view">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <button class="view-btn" data-view="calendar" title="Calendar view">
+          <svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/><circle cx="7.5" cy="14" r="1"/><circle cx="12" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/></svg>
+        </button>
+      </div>
       <div class="subtitle">
         <svg class="ico" viewBox="0 0 24 24" width="14" height="14"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3Z" fill="currentColor" stroke="none"/></svg>
         Stay glassy, stay productive
@@ -1333,6 +1444,13 @@
         <button class="filter-reset" id="resetFiltersBtn" title="Reset all filters">
           <svg viewBox="0 0 24 24" width="14" height="14"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
         </button>
+        <div class="gl-select gl-select-sm" id="presetSelect">
+          <button class="gl-select-trigger" type="button">
+            <span class="gl-select-label">Presets</span>
+            <svg class="gl-chevron" viewBox="0 0 24 24" width="14" height="14"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="gl-select-menu" id="presetMenu"></div>
+        </div>
       </div>
       <div class="filters-panel" id="filtersPanel">
       <div class="filters" id="filterRow">
@@ -1408,7 +1526,27 @@
       </div>
       </div><!-- .filters-panel -->
 
+      <div class="batch-bar" id="batchBar" style="display:none">
+        <span id="batchCount">0 selected</span>
+        <button class="btn-ghost" id="batchSelectAll">Select all</button>
+        <button class="btn-ghost" id="batchComplete">Complete</button>
+        <button class="btn-ghost" id="batchDelete">Delete</button>
+        <button class="btn-ghost" id="batchExit">Cancel</button>
+      </div>
+
       <ul id="list"></ul>
+
+      <div class="cal-view" id="calView">
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button id="calPrev">‹</button>
+            <button id="calToday">Today</button>
+            <button id="calNext">›</button>
+          </div>
+          <h3 id="calTitle"></h3>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
 
       <div class="footer" id="footerRow">
         <span id="count">0 items left</span>
@@ -1435,7 +1573,17 @@
         <input type="text" id="tTitle" placeholder="What needs doing?" maxlength="200">
 
         <label class="field-label">Description</label>
-        <textarea id="tDesc" placeholder="Add some details…" rows="3"></textarea>
+        <textarea id="tDesc" placeholder="Add some details…" rows="5"></textarea>
+
+        <div class="field-label sub-heading">
+          <span>Links</span>
+        </div>
+        <div class="links-list" id="tLinks"></div>
+        <div class="link-add">
+          <input type="url" id="tLinkUrl" placeholder="https://example.com" maxlength="500">
+          <input type="text" id="tLinkLabel" placeholder="Label (optional)" maxlength="50">
+          <button class="btn-ghost" id="tLinkAdd">Add</button>
+        </div>
 
         <label class="field-label">List</label>
         <div class="gl-select" id="tList">
@@ -1483,6 +1631,38 @@
           </div>
         </div>
 
+        <div class="recur-end-row" id="recurEndRow" style="display:none">
+          <label class="field-label">Repeat until</label>
+          <div class="recur-end-fields">
+            <div class="gl-select" id="tRecurEnd">
+              <button class="gl-select-trigger" type="button">
+                <svg class="gl-cal-icon" viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>
+                <span class="gl-select-label placeholder">yyyy-mm-dd</span>
+                <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <div class="gl-select-menu gl-cal-menu">
+                <div class="gl-cal-head">
+                  <button class="gl-cal-nav" type="button" data-dir="-1" title="Previous month">‹</button>
+                  <span class="gl-cal-title"></span>
+                  <button class="gl-cal-nav" type="button" data-dir="1" title="Next month">›</button>
+                </div>
+                <div class="gl-cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+                <div class="gl-cal-grid"></div>
+                <div class="gl-cal-foot">
+                  <button class="gl-cal-action" type="button" data-action="today">Today</button>
+                  <button class="gl-cal-action" type="button" data-action="clear">Clear</button>
+                </div>
+              </div>
+            </div>
+            <span class="recur-end-or">or</span>
+            <div class="recur-count-wrap">
+              <label class="field-label-sm">repeat</label>
+              <input type="number" id="tRecurCount" min="1" max="999" placeholder="∞" class="recur-count-input">
+              <label class="field-label-sm">times</label>
+            </div>
+          </div>
+        </div>
+
         <label class="field-label">Priority</label>
         <div class="prio-group" id="tPrio">
           <button type="button" data-prio="none">None</button>
@@ -1510,6 +1690,15 @@
         <div class="sub-add">
           <input type="text" id="tSubInput" placeholder="Add a sub-task…" maxlength="200">
           <button class="btn-ghost" id="tSubAdd"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+
+        <div class="field-label sub-heading">
+          <span>Logbook</span>
+        </div>
+        <div class="logbook" id="tLogbook"></div>
+        <div class="logbook-add">
+          <textarea id="tLogInput" placeholder="Add a log entry…" rows="2" maxlength="500"></textarea>
+          <button class="btn-ghost" id="tLogAdd">Add</button>
         </div>
 
         <div class="detail-actions">
@@ -1572,6 +1761,16 @@
         <!-- SYNC & BACKUP TAB -->
         <div class="settings-panel" data-panel="sync">
           <div class="settings-card">
+            <h3 class="settings-subhead">Notifications</h3>
+            <p class="settings-hint">Get notified about overdue tasks when the app is open.</p>
+            <label class="dbx-toggle">
+              <input type="checkbox" id="notifToggle">
+              <span class="dbx-toggle-track"><span class="dbx-toggle-thumb"></span></span>
+              <span class="dbx-toggle-label">Show browser notifications for overdue tasks</span>
+            </label>
+          </div>
+
+          <div class="settings-card">
             <h3 class="settings-subhead">Backup</h3>
             <p class="settings-hint">Save all your lists and tasks to a file on this device, or load one back in.</p>
             <div class="backup-row">
@@ -1617,8 +1816,18 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">1.5.0 <span class="current-badge">Unreleased</span></div>
+          <div class="changelog-version">1.5.0 <span class="current-badge">2026-07-23</span></div>
           <ul>
+            <li>Multi-select &amp; batch actions — select multiple tasks and complete or delete them in bulk</li>
+            <li>Due-date notifications with browser push alerts and an overdue badge in the tab title</li>
+            <li>Calendar view — see your tasks on a month grid, click a day to jump to it</li>
+            <li>Undo history (Ctrl+Z) — undo the last completed task, deleted list, skipped or paused action</li>
+            <li>Saved filter presets — save your current filter/sort combo and recall it from a dropdown</li>
+            <li>Recurring end date — set a date or count at which a recurring task stops repeating</li>
+            <li>Task links — attach URLs to tasks and open them from the detail panel or task row</li>
+            <li>Task logbook — keep a dated journal of notes, edits, and completions per task</li>
+            <li>Keyboard navigation — use Arrow keys to move through the task list, Enter to open, Delete to remove</li>
+            <li>Mobile long-press context menu — hold a task on touch devices to quick-action it</li>
             <li>When changing a task to In Progress or Paused, you're now asked whether to remove its due date</li>
             <li>Confirmation dialogs now have descriptive titles and context-specific buttons</li>
           </ul>
@@ -1881,6 +2090,11 @@
       <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="8" y1="8" x2="16" y2="16"/></svg>
       Won&#39;t Do
     </button>
+    <div class="ctx-divider"></div>
+    <button class="ctx-menu-item" id="ctxSelect" role="menuitem">
+      <svg class="ctx-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 12.5l3 3 7-7"/></svg>
+      Select
+    </button>
   </div>
 
   <!-- QUICK OPEN -->
@@ -1913,9 +2127,12 @@
     alertTriangle: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5 21 19H3L12 3.5Z"/><path d="M12 10v4"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor" stroke="none"/></svg>',
     calOff: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/><path d="M5 4l14 16"/></svg>',
     play: '<svg viewBox="0 0 24 24" width="16" height="16"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg>',
-    pause: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/></svg>'
+    pause: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="7" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.5" y="5" width="3.5" height="14" rx="1" fill="currentColor" stroke="none"/></svg>',
+    link: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    logbook: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
+    checkSquare: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg>'
   };
-  const DEV = true;
+  const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
   const APP_VERSION = '1.5.0';
 
@@ -1936,7 +2153,7 @@
         menu.appendChild(btn);
       });
     }
-    function setLabel() { const m = _opts.find(o => o.value === _value); label.textContent = m ? m.label : ''; }
+    function setLabel() { const m = _opts.find(o => o.value === _value); label.textContent = m ? m.label : (_value || ''); }
     setLabel(); render();
     el.querySelector('.gl-select-trigger').addEventListener('click', e => { e.stopPropagation(); if (_disabled) return; document.querySelectorAll('.gl-select.open').forEach(o => { if (o !== el) o.classList.remove('open'); }); el.classList.toggle('open'); });
     return Object.defineProperties({}, {
@@ -2041,6 +2258,8 @@
   const tTags = $('tTags'), tTagInput = $('tTagInput');
   const tDelete = $('tDelete'), tClose = $('tClose');
   const tStatus = $('tStatus'), tComplete = $('tComplete');
+  const tLogbook = $('tLogbook'), tLogInput = $('tLogInput'), tLogAdd = $('tLogAdd');
+  const tLinks = $('tLinks'), tLinkUrl = $('tLinkUrl'), tLinkLabel = $('tLinkLabel'), tLinkAdd = $('tLinkAdd');
   const tListMenu = $('tListMenu'), tListDot = $('tListDot'), tListLabel = $('tListLabel');
   const drawerBackdrop = $('drawerBackdrop'), menuBtn = $('menuBtn');
 
@@ -2101,6 +2320,17 @@
   // back-fill colours for lists saved before this feature existed
   backfillState();
   let filter = localStorage.getItem('glass-todos-filter') || 'all';
+  let focusedIdx = -1;
+  const undoStack = [];
+  function pushUndo(description, undoFn) { undoStack.push({ description, undo: undoFn }); if (undoStack.length > 10) undoStack.shift(); }
+  function performUndo() { if (!undoStack.length) { toast('Nothing to undo'); return; } const entry = undoStack.pop(); entry.undo(); toast('Undone: ' + entry.description); }
+  let selectMode = false;
+  const selectedIds = new Set();
+  let filterPresets = [];
+  try { filterPresets = JSON.parse(localStorage.getItem('glass-todos-presets') || '[]'); } catch(e) { filterPresets = []; }
+  function savePresets() { localStorage.setItem('glass-todos-presets', JSON.stringify(filterPresets)); }
+  let viewMode = localStorage.getItem('glass-todos-view') || 'list';
+  let calYear, calMonth;
   let nextId = Date.now();
   const _initToday = new Date(); _initToday.setHours(0, 0, 0, 0);
   let _todayDt = new Date(_initToday);
@@ -2118,6 +2348,11 @@
     if (t.status !== 'in-progress' && t.status !== 'paused') t.status = 'todo';
     if (!Array.isArray(t.tags)) t.tags = [];
     if (t.wontdo === undefined) t.wontdo = false;
+    if (!Array.isArray(t.links)) t.links = [];
+    if (!Array.isArray(t.logbook)) t.logbook = [];
+    if (t.recurEnd === undefined) t.recurEnd = '';
+    if (t.recurCount === undefined) t.recurCount = null;
+    if (t.completionCount === undefined) t.completionCount = 0;
   }
   function backfillState() {
     state.lists.forEach((l, i) => {
@@ -2362,14 +2597,21 @@
     if (!list) return;
     if (!await confirmDialog(`Delete the list "${list.name}" and all its tasks?`, 'Delete list', 'Delete')) return;
     if (editingTask && editingTaskList && editingTaskList.id === id) closeTaskPanel();
+    const savedList = JSON.parse(JSON.stringify(list));
+    const listIndex = state.lists.indexOf(list);
+    const wasActive = state.activeId === id;
     if (state.lists.length === 1) {
-      // don't delete the last list; just clear it
       state.lists[0].todos = [];
     } else {
       state.lists = state.lists.filter(l => l.id !== id);
       if (state.activeId === id) state.activeId = state.lists[0].id;
     }
     save(); renderAll();
+    pushUndo('delete list "' + savedList.name + '"', () => {
+      state.lists.splice(Math.min(listIndex, state.lists.length), 0, savedList);
+      if (wasActive) state.activeId = savedList.id;
+      save(); renderAll();
+    });
   }
 
   // ---- tasks ----
@@ -2491,6 +2733,10 @@
 
       if (!existingIds.has(String(t.id))) li.classList.add('inserted');
 
+      const selCb = document.createElement('div');
+      selCb.className = 'select-cb' + (selectedIds.has(t.id) ? ' checked' : '');
+      selCb.onclick = e => { e.stopPropagation(); toggleSelect(t.id); };
+
       const check = document.createElement('div');
       check.className = 'check';
       check.innerHTML = t.done ? ICON.check : '';
@@ -2516,7 +2762,7 @@
         deleteTaskWithUndo(t, owner);
       };
 
-      li.append(check, main, del);
+      li.append(selCb, check, main, del);
       list.appendChild(li);
     });
 
@@ -2604,6 +2850,24 @@
       c.title = t.desc;
       meta.appendChild(c); any = true;
     }
+    if (t.links && t.links.length) {
+      const c = document.createElement('span');
+      c.className = 'chip';
+      const iconSpan = document.createElement('span');
+      iconSpan.innerHTML = ICON.link;
+      c.appendChild(iconSpan);
+      c.appendChild(document.createTextNode(t.links.length + (t.links.length === 1 ? ' link' : ' links')));
+      meta.appendChild(c); any = true;
+    }
+    if (t.logbook && t.logbook.length) {
+      const c = document.createElement('span');
+      c.className = 'chip';
+      const iconSpan = document.createElement('span');
+      iconSpan.innerHTML = ICON.logbook;
+      c.appendChild(iconSpan);
+      c.appendChild(document.createTextNode(t.logbook.length + (t.logbook.length === 1 ? ' entry' : ' entries')));
+      meta.appendChild(c); any = true;
+    }
     (t.tags || []).forEach(tag => {
       const c = document.createElement('span');
       c.className = 'chip tag-chip';
@@ -2641,6 +2905,7 @@
     if (v === 'any') return true;
     if (v === 'none') return !t.due;
     if (!t.due) return false;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return t.due === v;
     const days = daysFromToday(t.due);
     if (v === 'overdue') return days < 0;
     if (v === 'today') return days === 0;
@@ -2743,19 +3008,35 @@
 
   function toggleTask(t) {
     const completing = !t.done;
+    const wasDone = t.done;
+    const oldDue = t.due;
+    const oldCC = t.completionCount || 0;
     if (completing) {
       const li = list.querySelector(`[data-task-id="${t.id}"]`);
       if (li) li.classList.add('removing');
       if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo';
     }
     if (!t.done && t.recur && t.recur !== 'none' && t.due) {
-      t.due = nextDate(t.due, t.recur);
-      t.subtasks.forEach(s => s.done = false);
-      restoreSubtaskOrder(t);
+      const next = nextDate(t.due, t.recur);
+      let shouldStop = false;
+      if (t.recurEnd && next > t.recurEnd) shouldStop = true;
+      if (t.recurCount !== null && t.recurCount !== undefined) {
+        t.completionCount = (t.completionCount || 0) + 1;
+        if (t.completionCount >= t.recurCount) shouldStop = true;
+      }
+      if (shouldStop) {
+        t.done = true;
+      } else {
+        t.due = next;
+        t.subtasks.forEach(s => s.done = false);
+        restoreSubtaskOrder(t);
+      }
     } else {
       t.done = !t.done;
       if (!t.done) t.wontdo = false;
     }
+    const label = completing ? 'complete' : 'uncomplete';
+    pushUndo(label + ' "' + t.text + '"', () => { t.done = wasDone; t.due = oldDue; t.completionCount = oldCC; save(); renderAll(); });
     const animDelay = completing ? 280 : 0;
     setTimeout(() => {
       if (completing && editingTask && editingTask.id === t.id) { closeTaskPanel(); save(); renderAll(); }
@@ -2824,7 +3105,7 @@
     const target = isAllView() ? state.lists[0] : activeList();
     const task = {
       id: nextId++, text: text || '', done: false,
-      desc: '', due, recur: 'none', priority, status: 'todo', subtasks: [], tags
+      desc: '', due, recur: 'none', recurEnd: '', recurCount: null, completionCount: 0, priority, status: 'todo', subtasks: [], tags, links: [], logbook: []
     };
     target.todos.unshift(task);
     input.value = '';
@@ -2842,6 +3123,8 @@
     tDesc.value = t.desc || '';
     tDue.value = t.due || '';
     tRecur.value = t.recur || 'none';
+    tRecurEnd.value = t.recurEnd || '';
+    tRecurCount.value = t.recurCount || '';
     syncRecurAvailability();
 
     populateListSelect(editingTaskList.id);
@@ -2849,6 +3132,8 @@
     renderStatus();
     renderTags();
     renderSubs();
+    renderLogbook();
+    renderLinks();
     tComplete.textContent = editingTask.done ? 'Mark incomplete' : 'Mark complete';
     detail.classList.add('open', 'showing-task');
     applyDetailWidth();
@@ -3007,6 +3292,141 @@
     renderSubs(); commit(); tSubInput.focus();
   }
 
+  // ---- logbook ----
+  function renderLogbook() {
+    tLogbook.innerHTML = '';
+    if (!editingTask) return;
+    const entries = editingTask.logbook.slice().reverse();
+    entries.forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      const text = document.createElement('div');
+      text.className = 'log-entry-text' + (entry.editedAt ? ' log-entry-edited' : '');
+      text.textContent = entry.text;
+      const date = document.createElement('div');
+      date.className = 'log-entry-date';
+      date.textContent = formatRelativeDate(entry.date);
+      const actions = document.createElement('div');
+      actions.className = 'log-entry-actions';
+      const editBtn = document.createElement('button');
+      editBtn.innerHTML = ICON.pencil;
+      editBtn.title = 'Edit';
+      editBtn.onclick = () => {
+        text.contentEditable = 'true';
+        text.focus();
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+      };
+      text.addEventListener('blur', () => {
+        text.contentEditable = 'false';
+        const newVal = text.textContent.trim();
+        if (newVal && newVal !== entry.text) {
+          entry.text = newVal;
+          entry.editedAt = new Date().toISOString();
+          commit();
+        } else if (!newVal) {
+          entry.text = entry.text;
+          text.textContent = entry.text;
+        }
+      });
+      text.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); text.blur(); }
+        if (e.key === 'Escape') { text.textContent = entry.text; text.blur(); }
+      });
+      const delBtn = document.createElement('button');
+      delBtn.innerHTML = ICON.trash;
+      delBtn.title = 'Delete';
+      delBtn.onclick = () => {
+        const idx = editingTask.logbook.findIndex(x => x.id === entry.id);
+        if (idx !== -1) editingTask.logbook.splice(idx, 1);
+        renderLogbook(); commit();
+      };
+      actions.append(editBtn, delBtn);
+      div.append(text, date, actions);
+      tLogbook.appendChild(div);
+    });
+  }
+
+  function addLogEntry() {
+    const v = tLogInput.value.trim();
+    if (!v || !editingTask) return;
+    editingTask.logbook.push({ id: nextId++, text: v, date: new Date().toISOString(), editedAt: '' });
+    tLogInput.value = '';
+    renderLogbook(); commit();
+  }
+
+  tLogAdd.onclick = addLogEntry;
+  tLogInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addLogEntry(); } });
+
+  function formatRelativeDate(isoStr) {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    const now = new Date();
+    const diffMs = now - d;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHr = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffSec < 60) return 'Just now';
+    if (diffMin < 60) return diffMin + 'm ago';
+    if (diffHr < 24) return diffHr + 'h ago';
+    if (diffDay === 1) return 'Yesterday';
+    if (diffDay < 7) return diffDay + 'd ago';
+    return d.toLocaleDateString();
+  }
+
+  // ---- links ----
+  function renderLinks() {
+    tLinks.innerHTML = '';
+    if (!editingTask) return;
+    editingTask.links.forEach(link => {
+      const div = document.createElement('div');
+      div.className = 'link-item';
+      const a = document.createElement('a');
+      a.href = link.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = link.url;
+      a.title = link.url;
+      const actions = document.createElement('div');
+      actions.className = 'link-item-actions';
+      const delBtn = document.createElement('button');
+      delBtn.innerHTML = ICON.trash;
+      delBtn.title = 'Delete';
+      delBtn.onclick = () => {
+        const idx = editingTask.links.findIndex(x => x.id === link.id);
+        if (idx !== -1) editingTask.links.splice(idx, 1);
+        renderLinks(); commit();
+      };
+      actions.appendChild(delBtn);
+      if (link.label) {
+        const lbl = document.createElement('span');
+        lbl.className = 'link-label';
+        lbl.textContent = link.label;
+        div.append(lbl, a, actions);
+      } else {
+        div.append(a, actions);
+      }
+      tLinks.appendChild(div);
+    });
+  }
+
+  function addLink() {
+    const url = tLinkUrl.value.trim();
+    if (!url || !editingTask) return;
+    try { new URL(url); } catch { toast('Invalid URL'); return; }
+    const label = tLinkLabel.value.trim();
+    editingTask.links.push({ id: nextId++, url, label });
+    tLinkUrl.value = '';
+    tLinkLabel.value = '';
+    renderLinks(); commit();
+  }
+
+  tLinkAdd.onclick = addLink;
+  tLinkUrl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } });
+
   function setPriority(p) {
     if (!editingTask) return;
     editingTask.priority = p;
@@ -3087,6 +3507,8 @@
       renderPrio();
       renderTags();
       renderSubs();
+      renderLogbook();
+      renderLinks();
       tDue.value = editingTask.due || '';
       tComplete.textContent = editingTask.done ? 'Mark incomplete' : 'Mark complete';
       syncRecurAvailability();
@@ -3115,6 +3537,17 @@
   $('syncBtn').onclick = () => { clearTimeout(_syncTimer); dropboxUpload(false); };
   settingsClose.onclick = () => { settingsOverlay.classList.remove('show'); dbxMsg(''); };
   settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
+
+  const notifToggle = $('notifToggle');
+  notifToggle.checked = localStorage.getItem('glass-todos-notifications') === 'on';
+  notifToggle.addEventListener('change', async () => {
+    if (notifToggle.checked && 'Notification' in window && Notification.permission !== 'granted') {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { notifToggle.checked = false; toast('Notification permission denied'); return; }
+    }
+    localStorage.setItem('glass-todos-notifications', notifToggle.checked ? 'on' : 'off');
+    if (notifToggle.checked) { checkDueNotifications(); setInterval(checkDueNotifications, 5 * 60 * 1000); }
+  });
 
   // ---- theme system (mode + colour) ----
   // chip preview gradients mirror the CSS; [dark, light] per colour
@@ -3246,6 +3679,13 @@
     if (!removed.length) return;
     if (editingTask && removed.some(r => r.task === editingTask)) closeTaskPanel();
     save(); renderAll();
+    pushUndo('clear completed (' + removed.length + ')', () => {
+      removed.slice().reverse().forEach(({ listId, index, task }) => {
+        const l = state.lists.find(x => x.id === listId);
+        if (l) l.todos.splice(Math.min(index, l.todos.length), 0, task);
+      });
+      save(); renderAll();
+    });
     toast(`Cleared ${removed.length} completed task${removed.length !== 1 ? 's' : ''}`, {
       label: 'Undo',
       onClick: () => {
@@ -3267,6 +3707,9 @@
   tDesc.addEventListener('blur', () => { if (editingTask) { editingTask.desc = tDesc.value.trim(); commit(); } });
   function syncRecurAvailability() {
     tRecur.disabled = !tDue.value;
+    const recurEndRow = $('recurEndRow');
+    const hasRecur = tRecur.value !== 'none' && tDue.value;
+    recurEndRow.style.display = hasRecur ? '' : 'none';
   }
 
   tDue = createGlassDatePicker('tDue', '', () => {
@@ -3279,7 +3722,31 @@
   });
   tRecur = createGlassSelect('tRecur', [
     {value:'none', label:'None'}, {value:'daily', label:'Daily'}, {value:'weekly', label:'Weekly'}, {value:'monthly', label:'Monthly'}
-  ], 'none', () => { if (editingTask) { editingTask.recur = tRecur.value; commit(); } });
+  ], 'none', () => {
+    if (editingTask) {
+      editingTask.recur = tRecur.value;
+      if (tRecur.value === 'none') { editingTask.recurEnd = ''; editingTask.recurCount = null; tRecurEnd.value = ''; $('tRecurCount').value = ''; }
+      syncRecurAvailability();
+      commit();
+    }
+  });
+
+  let tRecurEnd;
+  const tRecurCount = $('tRecurCount');
+  tRecurEnd = createGlassDatePicker('tRecurEnd', '', () => {
+    if (editingTask) {
+      editingTask.recurEnd = tRecurEnd.value;
+      if (tRecurEnd.value) { editingTask.recurCount = null; tRecurCount.value = ''; }
+      commit();
+    }
+  });
+  tRecurCount.addEventListener('change', () => {
+    if (!editingTask) return;
+    const v = tRecurCount.value ? parseInt(tRecurCount.value) : null;
+    editingTask.recurCount = v;
+    if (v) { editingTask.recurEnd = ''; tRecurEnd.value = ''; }
+    commit();
+  });
   tList.querySelector('.gl-select-trigger').addEventListener('click', () => tList.classList.toggle('open'));
   document.addEventListener('click', e => { if (!document.querySelector('.gl-select.open')) return; document.querySelectorAll('.gl-select.open').forEach(el => { if (!el.contains(e.target)) el.classList.remove('open'); }); });
   tSubAdd.onclick = addSub;
@@ -3297,8 +3764,31 @@
 
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openQuickOpen(); return; }
-    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+      e.preventDefault(); performUndo(); return;
+    }
+    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    const items = list.querySelectorAll('li[data-task-id]');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); focusedIdx = Math.min(focusedIdx + 1, items.length - 1); updateFocused(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); focusedIdx = Math.max(focusedIdx - 1, 0); updateFocused(); }
+    else if (e.key === 'Enter' && focusedIdx >= 0) { e.preventDefault(); const li = items[focusedIdx]; const id = Number(li.dataset.taskId); const t = findTaskById(id); if (t) { const owner = ownerOf(t); openTaskPanel(t, owner); } }
+    else if (e.key === ' ' && focusedIdx >= 0) { e.preventDefault(); const li = items[focusedIdx]; const id = Number(li.dataset.taskId); const t = findTaskById(id); if (t) toggleTask(t); }
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && focusedIdx >= 0) { e.preventDefault(); const li = items[focusedIdx]; const id = Number(li.dataset.taskId); const t = findTaskById(id); if (t) deleteTaskWithUndo(t, ownerOf(t)); }
   });
+
+  function updateFocused() {
+    const items = list.querySelectorAll('li[data-task-id]');
+    items.forEach((li, i) => li.classList.toggle('focused', i === focusedIdx));
+    if (focusedIdx >= 0 && items[focusedIdx]) items[focusedIdx].scrollIntoView({ block: 'nearest' });
+  }
+
+  function findTaskById(id) {
+    for (const l of state.lists) { const t = l.todos.find(x => x.id === id); if (t) return t; }
+    return null;
+  }
 
   filters.forEach(f => f.classList.toggle('active', f.dataset.filter === filter));
 
@@ -3407,6 +3897,75 @@
   }
   $('resetFilters').onclick = resetAllFilters;
   $('resetFiltersBtn').onclick = resetAllFilters;
+
+  const presetSelect = $('presetSelect'), presetMenu = $('presetMenu');
+  function renderPresets() {
+    presetMenu.innerHTML = '';
+    const saveItem = document.createElement('button');
+    saveItem.className = 'gl-select-item';
+    saveItem.textContent = '+ Save current…';
+    saveItem.onclick = e => { e.stopPropagation(); presetSelect.classList.remove('open'); promptSavePreset(); };
+    presetMenu.appendChild(saveItem);
+    filterPresets.forEach((p, i) => {
+      const item = document.createElement('button');
+      item.className = 'gl-select-item';
+      item.textContent = p.name;
+      item.onclick = e => { e.stopPropagation(); presetSelect.classList.remove('open'); loadPreset(p); };
+      presetMenu.appendChild(item);
+    });
+    if (filterPresets.length) {
+      const del = document.createElement('button');
+      del.className = 'gl-select-item';
+      del.textContent = 'Manage presets…';
+      del.style.opacity = '0.5';
+      del.onclick = e => { e.stopPropagation(); presetSelect.classList.remove('open'); managePresets(); };
+      presetMenu.appendChild(del);
+    }
+    presetSelect.querySelector('.gl-select-label').textContent = 'Presets';
+  }
+  function promptSavePreset() {
+    const name = prompt('Preset name:');
+    if (!name || !name.trim()) return;
+    const preset = {
+      name: name.trim(),
+      filter, due: dueFilter.value, prio: prioFilter.value, tag: tagFilter.value,
+      sort: sortBy.value, sort2: sortBy2.value, sort3: sortBy3.value,
+      dir: sortDir.classList.contains('desc'), dir2: sortDir2.classList.contains('desc'), dir3: sortDir3.classList.contains('desc')
+    };
+    filterPresets.push(preset); savePresets(); renderPresets();
+    toast('Preset "' + name.trim() + '" saved');
+  }
+  function loadPreset(p) {
+    filter = p.filter || 'all';
+    filters.forEach(x => x.classList.toggle('active', x.dataset.filter === filter));
+    localStorage.setItem('glass-todos-filter', filter);
+    dueFilter.value = p.due || 'any'; prioFilter.value = p.prio || 'any'; tagFilter.value = p.tag || 'any';
+    localStorage.setItem('glass-todos-due-filter', dueFilter.value);
+    localStorage.setItem('glass-todos-prio-filter', prioFilter.value);
+    localStorage.setItem('glass-todos-tag-filter', tagFilter.value);
+    if (p.sort) { sortBy.value = p.sort; localStorage.setItem('glass-todos-sort-by', p.sort); }
+    if (p.sort2) { sortBy2.value = p.sort2; localStorage.setItem('glass-todos-sort-by-2', p.sort2); }
+    if (p.sort3) { sortBy3.value = p.sort3; localStorage.setItem('glass-todos-sort-by-3', p.sort3); }
+    if (p.dir !== undefined) { sortDir.classList.toggle('desc', p.dir); localStorage.setItem('glass-todos-sort-dir', p.dir ? 'desc' : 'asc'); }
+    if (p.dir2 !== undefined) { sortDir2.classList.toggle('desc', p.dir2); localStorage.setItem('glass-todos-sort-dir-2', p.dir2 ? 'desc' : 'asc'); }
+    if (p.dir3 !== undefined) { sortDir3.classList.toggle('desc', p.dir3); localStorage.setItem('glass-todos-sort-dir-3', p.dir3 ? 'desc' : 'asc'); }
+    renderTasks();
+    toast('Loaded preset "' + p.name + '"');
+  }
+  async function managePresets() {
+    if (!filterPresets.length) return;
+    const msg = filterPresets.map((p, i) => (i + 1) + '. ' + p.name).join('\n');
+    const choice = prompt('Presets:\n' + msg + '\n\nEnter number to delete, or Cancel:');
+    if (!choice) return;
+    const idx = parseInt(choice) - 1;
+    if (idx >= 0 && idx < filterPresets.length) {
+      const name = filterPresets[idx].name;
+      filterPresets.splice(idx, 1); savePresets(); renderPresets();
+      toast('Deleted preset "' + name + '"');
+    }
+  }
+  renderPresets();
+  presetSelect.querySelector('.gl-select-trigger').addEventListener('click', e => { e.stopPropagation(); presetSelect.classList.toggle('open'); });
 
   listsSortBtn.innerHTML = ICON.sortAz;
   listsSortBtn.onclick = () => {
@@ -3934,6 +4493,42 @@
     setTimeout(() => { _ctxIgnoreClick = false; }, 100);
   });
 
+  let _longPressTimer = null;
+  list.addEventListener('touchstart', e => {
+    const li = e.target.closest('[data-task-id]');
+    if (!li) return;
+    const touch = e.touches[0];
+    _longPressTimer = setTimeout(() => {
+      _longPressTimer = null;
+      if (navigator.vibrate) navigator.vibrate(30);
+      const id = Number(li.dataset.taskId);
+      const match = findTask(id);
+      if (!match) return;
+      _ctxTask = match.t; _ctxOwner = match.owner;
+      const todayStr = dateStr(0);
+      $('ctxSetInProgress').style.display = (_ctxTask.status !== 'in-progress' && !_ctxTask.done) ? '' : 'none';
+      $('ctxPause').style.display = (_ctxTask.status !== 'paused' && !_ctxTask.done) ? '' : 'none';
+      $('ctxSkip').style.display = (_ctxTask.recur && _ctxTask.recur !== 'none' && !_ctxTask.done && !!_ctxTask.due) ? '' : 'none';
+      $('ctxDueToday').style.display = (_ctxTask.due !== todayStr && !_ctxTask.done) ? '' : 'none';
+      $('ctxWontDo').style.display = !_ctxTask.done ? '' : 'none';
+      ctxMenu.style.left = touch.clientX + 'px';
+      ctxMenu.style.top = touch.clientY + 'px';
+      ctxMenu.style.right = '';
+      ctxMenu.style.bottom = '';
+      ctxMenu.classList.add('open');
+      const r = ctxMenu.getBoundingClientRect();
+      let x = touch.clientX, y = touch.clientY;
+      if (x + r.width + 8 > window.innerWidth) x = window.innerWidth - r.width - 8;
+      if (y + r.height + 8 > window.innerHeight) y = window.innerHeight - r.height - 8;
+      ctxMenu.style.left = Math.max(8, x) + 'px';
+      ctxMenu.style.top = Math.max(8, y) + 'px';
+      _ctxIgnoreClick = true;
+      setTimeout(() => { _ctxIgnoreClick = false; }, 100);
+    }, 500);
+  }, { passive: true });
+  list.addEventListener('touchend', () => { if (_longPressTimer) { clearTimeout(_longPressTimer); _longPressTimer = null; } }, { passive: true });
+  list.addEventListener('touchmove', () => { if (_longPressTimer) { clearTimeout(_longPressTimer); _longPressTimer = null; } }, { passive: true });
+
   $('ctxSetInProgress').addEventListener('click', async () => {
     if (!_ctxTask || _ctxTask.done) return;
     const task = _ctxTask;
@@ -3975,20 +4570,68 @@
 
   $('ctxDueToday').addEventListener('click', () => {
     if (!_ctxTask || _ctxTask.done) return;
+    const oldDue = _ctxTask.due;
     _ctxTask.due = dateStr(0);
     save(); renderAll();
+    pushUndo('due today "' + _ctxTask.text + '"', () => { _ctxTask.due = oldDue; save(); renderAll(); });
     toast(`"${_ctxTask.text}" — due today`);
     closeCtxMenu();
   });
 
   $('ctxWontDo').addEventListener('click', () => {
     if (!_ctxTask) return;
+    const wasDone = _ctxTask.done, wasWontDo = _ctxTask.wontdo, wasStatus = _ctxTask.status;
     _ctxTask.done = true;
     _ctxTask.wontdo = true;
     if (_ctxTask.status === 'in-progress' || _ctxTask.status === 'paused') _ctxTask.status = 'todo';
     save(); renderAll();
+    pushUndo('won\'t do "' + _ctxTask.text + '"', () => { _ctxTask.done = wasDone; _ctxTask.wontdo = wasWontDo; _ctxTask.status = wasStatus; save(); renderAll(); });
     closeCtxMenu();
   });
+
+  $('ctxSelect').addEventListener('click', () => {
+    if (!_ctxTask) return;
+    const id = _ctxTask.id;
+    closeCtxMenu();
+    selectMode = true;
+    selectedIds.clear();
+    selectedIds.add(id);
+    updateBatchBar();
+    renderTasks();
+  });
+
+  function updateBatchBar() {
+    const bar = $('batchBar');
+    if (!selectMode || !selectedIds.size) { bar.style.display = 'none'; list.classList.remove('select-mode'); return; }
+    bar.style.display = 'flex';
+    list.classList.add('select-mode');
+    $('batchCount').textContent = selectedIds.size + ' selected';
+  }
+
+  function toggleSelect(id) {
+    if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+    if (!selectedIds.size) { selectMode = false; }
+    updateBatchBar(); renderTasks();
+  }
+
+  function exitSelectMode() { selectMode = false; selectedIds.clear(); updateBatchBar(); renderTasks(); }
+
+  $('batchExit').onclick = exitSelectMode;
+  $('batchSelectAll').onclick = () => {
+    const tasks = $('list').querySelectorAll('li[data-task-id]');
+    tasks.forEach(li => selectedIds.add(Number(li.dataset.taskId)));
+    updateBatchBar(); renderTasks();
+  };
+  $('batchComplete').onclick = () => {
+    selectedIds.forEach(id => { const t = findTaskById(id); if (t && !t.done) { t.done = true; if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo'; } });
+    exitSelectMode(); save(); renderAll();
+  };
+  $('batchDelete').onclick = () => {
+    const tasks = [];
+    selectedIds.forEach(id => { const t = findTaskById(id); if (t) { const owner = ownerOf(t); if (owner) tasks.push({ t, owner }); } });
+    tasks.forEach(({ t, owner }) => { const idx = owner.todos.findIndex(x => x.id === t.id); if (idx !== -1) owner.todos.splice(idx, 1); });
+    exitSelectMode(); save(); renderAll();
+  };
 
   document.addEventListener('click', e => {
     if (!ctxMenu.classList.contains('open')) return;
@@ -4004,6 +4647,139 @@
   window.addEventListener('resize', () => {
     if (ctxMenu.classList.contains('open')) closeCtxMenu();
   }, { passive: true });
+
+  // ---- notifications & tab title badge ----
+  function updateTabTitle() {
+    let overdue = 0;
+    const today = dateStr(0);
+    state.lists.forEach(l => l.todos.forEach(t => {
+      if (!t.done && !t.wontdo && t.due && t.due < today && t.status !== 'in-progress' && t.status !== 'paused') overdue++;
+    }));
+    document.title = overdue > 0 ? '(' + overdue + ') ToDoLo' : 'ToDoLo';
+  }
+
+  function checkDueNotifications() {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (localStorage.getItem('glass-todos-notifications') !== 'on') return;
+    const today = dateStr(0);
+    const overdue = [];
+    state.lists.forEach(l => l.todos.forEach(t => {
+      if (!t.done && !t.wontdo && t.due && t.due < today && t.status !== 'in-progress' && t.status !== 'paused') overdue.push(t);
+    }));
+    if (overdue.length) {
+      new Notification('ToDoLo', { body: overdue.length + ' overdue task' + (overdue.length !== 1 ? 's' : '') + ': ' + overdue.slice(0, 3).map(t => t.text).join(', ') + (overdue.length > 3 ? '…' : ''), icon: 'icon.svg' });
+    }
+  }
+
+  (function patchRenderAll() {
+    const real = renderAll;
+    renderAll = function() { real(); updateTabTitle(); if (viewMode === 'calendar') renderCalendar(); };
+  })();
+
+  if (localStorage.getItem('glass-todos-notifications') === 'on' && 'Notification' in window && Notification.permission === 'granted') {
+    setInterval(checkDueNotifications, 5 * 60 * 1000);
+    checkDueNotifications();
+  }
+  updateTabTitle();
+
+  // ---- calendar view ----
+  const calView = $('calView'), calGrid = $('calGrid'), calTitle = $('calTitle');
+  const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  function initCal() {
+    const now = new Date();
+    calYear = now.getFullYear(); calMonth = now.getMonth();
+  }
+  initCal();
+
+  function renderCalendar() {
+    calGrid.innerHTML = '';
+    calTitle.textContent = MONTH_NAMES[calMonth] + ' ' + calYear;
+    DAY_LABELS.forEach(d => { const el = document.createElement('div'); el.className = 'cal-day-label'; el.textContent = d; calGrid.appendChild(el); });
+    const first = new Date(calYear, calMonth, 1);
+    const startDay = first.getDay();
+    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+    const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
+    const todayStr = dateStr(0);
+    const allTasks = [];
+    state.lists.forEach(l => l.todos.forEach(t => { if (t.due) allTasks.push({ t, owner: l }); }));
+    for (let i = 0; i < startDay; i++) {
+      const d = prevMonthDays - startDay + 1 + i;
+      const m = calMonth === 0 ? 11 : calMonth - 1;
+      const y = calMonth === 0 ? calYear - 1 : calYear;
+      const ds = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      calGrid.appendChild(makeCalDay(ds, d, true, todayStr, allTasks));
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = calYear + '-' + String(calMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      calGrid.appendChild(makeCalDay(ds, d, false, todayStr, allTasks));
+    }
+    const totalCells = startDay + daysInMonth;
+    const remaining = (7 - (totalCells % 7)) % 7;
+    for (let d = 1; d <= remaining; d++) {
+      const m = calMonth === 11 ? 0 : calMonth + 1;
+      const y = calMonth === 11 ? calYear + 1 : calYear;
+      const ds = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      calGrid.appendChild(makeCalDay(ds, d, true, todayStr, allTasks));
+    }
+  }
+
+  function makeCalDay(dateStr_, dayNum, otherMonth, todayStr, allTasks) {
+    const div = document.createElement('div');
+    div.className = 'cal-day';
+    if (otherMonth) div.classList.add('other-month');
+    if (dateStr_ === todayStr) div.classList.add('today');
+    const num = document.createElement('div');
+    num.className = 'cal-day-num';
+    num.textContent = dayNum;
+    div.appendChild(num);
+    const tasks = allTasks.filter(x => x.t.due === dateStr_);
+    if (tasks.length) {
+      const container = document.createElement('div');
+      container.className = 'cal-day-tasks';
+      const maxShow = 3;
+      tasks.slice(0, maxShow).forEach(({ t, owner }) => {
+        const chip = document.createElement('div');
+        chip.className = 'cal-task' + (t.done ? ' done' : '');
+        chip.textContent = t.text;
+        chip.onclick = e => { e.stopPropagation(); openTaskPanel(t, owner); };
+        container.appendChild(chip);
+      });
+      if (tasks.length > maxShow) {
+        const more = document.createElement('div');
+        more.className = 'cal-more';
+        more.textContent = '+' + (tasks.length - maxShow) + ' more';
+        more.onclick = e => { e.stopPropagation(); dueFilter.value = 'any'; tagFilter.value = 'any'; prioFilter.value = 'any'; searchInput.value = ''; localStorage.setItem('glass-todos-due-filter', 'any'); localStorage.setItem('glass-todos-prio-filter', 'any'); localStorage.setItem('glass-todos-tag-filter', 'any'); filter = 'all'; localStorage.setItem('glass-todos-filter', 'all'); filters.forEach(x => x.classList.toggle('active', x.dataset.filter === 'all')); viewMode = 'list'; localStorage.setItem('glass-todos-view', 'list'); updateViewMode(); sortBy.value = 'due'; localStorage.setItem('glass-todos-sort-by', 'due'); renderTasks(); };
+        container.appendChild(more);
+      }
+      div.appendChild(container);
+    }
+    div.onclick = () => { dueFilter.value = dateStr_; localStorage.setItem('glass-todos-due-filter', dateStr_); viewMode = 'list'; localStorage.setItem('glass-todos-view', 'list'); updateViewMode(); renderTasks(); };
+    return div;
+  }
+
+  $('calPrev').onclick = () => { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); };
+  $('calNext').onclick = () => { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); };
+  $('calToday').onclick = () => { initCal(); renderCalendar(); };
+
+  function updateViewMode() {
+    const isCal = viewMode === 'calendar';
+    list.style.display = isCal ? 'none' : '';
+    calView.classList.toggle('show', isCal);
+    $('footerRow').style.display = isCal ? 'none' : '';
+    $('batchBar').style.display = 'none';
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === viewMode));
+    if (isCal) renderCalendar();
+  }
+
+  document.querySelectorAll('.view-btn').forEach(b => b.addEventListener('click', () => {
+    viewMode = b.dataset.view;
+    localStorage.setItem('glass-todos-view', viewMode);
+    updateViewMode();
+    if (viewMode !== 'calendar') renderTasks();
+  }));
+
+  updateViewMode();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
