@@ -1297,6 +1297,23 @@
   }
   .kbd-group { display: inline-flex; gap: 4px; }
 
+  /* ---------- STATISTICS ---------- */
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card { text-align: center; padding: 14px 8px; border-radius: 12px; background: rgba(var(--w),0.06); border: 1px solid rgba(var(--w),0.1); }
+  .stat-num { font-size: 1.6rem; font-weight: 700; }
+  .stat-label { font-size: 0.73rem; opacity: 0.6; margin-top: 2px; }
+  .stat-section { margin-bottom: 18px; }
+  .stat-bar-track { height: 8px; border-radius: 4px; background: rgba(var(--w),0.08); overflow: hidden; margin: 6px 0; }
+  .stat-bar-fill { height: 100%; border-radius: 4px; background: rgba(var(--a),0.7); transition: width 0.4s ease; }
+  .stat-bar-label { font-size: 0.8rem; font-weight: 600; opacity: 0.8; }
+  .stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .stat-row-label { min-width: 100px; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; }
+  .stat-row-num { font-size: 0.8rem; font-weight: 600; min-width: 40px; text-align: right; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .stat-heatmap { display: flex; gap: 3px; flex-wrap: wrap; }
+  .stat-heat-cell { width: 28px; height: 28px; border-radius: 4px; }
+  @media (max-width: 720px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
+
   /* ---------- CONTEXT MENU ---------- */
   .ctx-menu {
     position: fixed; z-index: 300; min-width: 180px; max-width: 260px;
@@ -1755,6 +1772,7 @@
         <button class="settings-tab-btn active" data-tab="theme">Theme</button>
         <button class="settings-tab-btn" data-tab="sync">Sync &amp; Backup</button>
         <button class="settings-tab-btn" data-tab="changelog">Changelog</button>
+        <button class="settings-tab-btn" data-tab="statistics">Statistics</button>
       </div>
 
       <div class="settings-scroll">
@@ -1830,12 +1848,16 @@
           </div>
         </div>
 
+        <!-- STATISTICS TAB -->
+        <div class="settings-panel" data-panel="statistics" id="statsPanel"></div>
+
         <!-- CHANGELOG TAB -->
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
           <div class="changelog-version">1.6.0 <span class="current-badge">Unreleased</span></div>
           <ul>
+            <li>Statistics panel in Settings — completion rates, priority breakdown, per-list progress, and 14-day activity heatmap</li>
             <li>Keyboard shortcuts cheatsheet — press <kbd>?</kbd> or <kbd>Ctrl+/</kbd> to open</li>
             <li>Detail panel now scrolls back to the top when switching between tasks</li>
           </ul>
@@ -2462,6 +2484,68 @@
       }
     }
     return c;
+  }
+
+  function computeStats() {
+    const allTasks = state.lists.flatMap(l => l.todos);
+    const total = allTasks.length;
+    const done = allTasks.filter(t => t.done).length;
+    const active = total - done;
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const overdue = allTasks.filter(t => !t.done && t.due && new Date(t.due + 'T00:00') < now).length;
+    const byPriority = { none: 0, low: 0, med: 0, high: 0 };
+    allTasks.filter(t => t.done).forEach(t => { byPriority[t.priority] = (byPriority[t.priority] || 0) + 1; });
+    const byList = state.lists.map(l => ({ name: l.name, color: l.color, total: l.todos.length, done: l.todos.filter(t => t.done).length }));
+    const daily = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().slice(0, 10);
+      let count = 0;
+      allTasks.forEach(t => { if (t.logbook && t.logbook.some(e => e.date && e.date.slice(0, 10) === ds)) count++; });
+      daily.push({ date: ds, label: d.toLocaleDateString('en', { weekday: 'short' }).slice(0, 2), count });
+    }
+    return { total, done, active, overdue, byPriority, byList, daily };
+  }
+
+  function renderStats() {
+    const s = computeStats();
+    const panel = $('statsPanel');
+    if (!panel) return;
+    const rate = s.total ? Math.round(s.done / s.total * 100) : 0;
+    const maxP = Math.max(...Object.values(s.byPriority), 1);
+    const maxD = Math.max(...s.daily.map(d => d.count), 1);
+    panel.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num">${s.total}</div><div class="stat-label">Total tasks</div></div>
+        <div class="stat-card"><div class="stat-num">${s.active}</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-num">${s.done}</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-num"${s.overdue ? ' style="color:#ff4d4d"' : ''}>${s.overdue}</div><div class="stat-label">Overdue</div></div>
+      </div>
+      <div class="stat-section">
+        <div class="field-label">Completion Rate</div>
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${rate}%"></div></div>
+        <div class="stat-bar-label">${rate}%</div>
+      </div>
+      <div class="stat-section">
+        <div class="field-label">Completed by Priority</div>
+        ${['high','med','low','none'].map(p => {
+          const cnt = s.byPriority[p] || 0;
+          return `<div class="stat-row"><span class="stat-row-label">${p === 'none' ? 'No priority' : p.charAt(0).toUpperCase() + p.slice(1)}</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${Math.round(cnt/maxP*100)}%"></div></div><span class="stat-row-num">${cnt}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="stat-section">
+        <div class="field-label">By List</div>
+        ${s.byList.map(l => {
+          const pct = l.total ? Math.round(l.done / l.total * 100) : 0;
+          return `<div class="stat-row"><span class="stat-row-label"><span class="stat-dot" style="background:${l.color}"></span>${l.name}</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${pct}%;background:${l.color}"></div></div><span class="stat-row-num">${l.done}/${l.total}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="stat-section">
+        <div class="field-label">Activity (last 14 days)</div>
+        <div class="stat-heatmap">
+          ${s.daily.map(d => `<div class="stat-heat-cell" style="background:rgba(var(--a),${d.count ? 0.2 + 0.8*(d.count/maxD) : 0.05})" title="${d.date}: ${d.count} entries"></div>`).join('')}
+        </div>
+      </div>`;
   }
 
   // ---- sidebar ----
@@ -3677,6 +3761,7 @@
       const tab = btn.dataset.tab;
       document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
       document.querySelectorAll('.settings-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+      if (tab === 'statistics') renderStats();
     };
   });
 
