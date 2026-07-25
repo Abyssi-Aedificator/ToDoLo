@@ -331,6 +331,7 @@
   .lists-sort-btn:hover { background: rgba(var(--w),0.18); opacity: 1; }
   .lists li.dragging, .subtasks li.dragging, #list li.dragging { opacity: 0.4; }
   .lists li.drag-over, .subtasks li.drag-over, #list li.drag-over { box-shadow: inset 0 2px 0 rgba(var(--w),0.7); }
+  .lists li.drag-over-task { box-shadow: inset 0 0 0 2px rgba(var(--a),0.5); background: rgba(var(--a),0.08); }
   .subtasks li[draggable="true"], #list li[draggable="true"] { cursor: grab; }
   .lists .all-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.9; }
 
@@ -1857,6 +1858,7 @@
         <div class="changelog-entry">
           <div class="changelog-version">1.6.0 <span class="current-badge">Unreleased</span></div>
           <ul>
+            <li>Drag tasks onto sidebar lists to move them between lists</li>
             <li>Statistics panel in Settings — completion rates, priority breakdown, per-list progress, and 14-day activity heatmap</li>
             <li>Keyboard shortcuts cheatsheet — press <kbd>?</kbd> or <kbd>Ctrl+/</kbd> to open</li>
             <li>Detail panel now scrolls back to the top when switching between tasks</li>
@@ -2638,13 +2640,37 @@
       });
       li.addEventListener('dragend', () => li.classList.remove('dragging'));
       li.addEventListener('dragover', e => {
+        const isTask = e.dataTransfer.types.includes('application/x-todolo-task');
+        if (!isTask && !e.dataTransfer.types.includes('text/plain')) return;
         e.preventDefault();
-        li.classList.add('drag-over');
+        e.dataTransfer.dropEffect = 'move';
+        li.classList.add(isTask ? 'drag-over-task' : 'drag-over');
       });
-      li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+      li.addEventListener('dragleave', () => { li.classList.remove('drag-over'); li.classList.remove('drag-over-task'); });
       li.addEventListener('drop', e => {
         e.preventDefault();
         li.classList.remove('drag-over');
+        li.classList.remove('drag-over-task');
+        if (e.dataTransfer.types.includes('application/x-todolo-task')) {
+          const taskId = Number(e.dataTransfer.getData('application/x-todolo-task'));
+          const task = findTaskById(taskId);
+          if (!task) return;
+          const fromList = ownerOf(task);
+          const toList = state.lists.find(x => x.id === l.id);
+          if (!fromList || !toList || fromList.id === toList.id) return;
+          const idx = fromList.todos.findIndex(x => x.id === taskId);
+          if (idx !== -1) fromList.todos.splice(idx, 1);
+          toList.todos.push(task);
+          pushUndo('move "' + task.text + '" to ' + toList.name, () => {
+            const fi = toList.todos.findIndex(x => x.id === taskId);
+            if (fi !== -1) toList.todos.splice(fi, 1);
+            fromList.todos.push(task);
+            save(); renderAll();
+          });
+          save(); renderAll();
+          toast('Moved to ' + toList.name);
+          return;
+        }
         const draggedId = Number(e.dataTransfer.getData('text/plain'));
         if (draggedId === l.id) return;
         const from = state.lists.findIndex(x => x.id === draggedId);
@@ -2843,14 +2869,15 @@
       if (t.done) li.classList.add('done');
       if (editingTask && editingTask.id === t.id) li.classList.add('selected');
 
+      li.draggable = true;
+      li.addEventListener('dragstart', e => {
+        li.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/x-todolo-task', String(t.id));
+        e.dataTransfer.setData('text/plain', String(t.id));
+      });
+      li.addEventListener('dragend', () => li.classList.remove('dragging'));
       if (canDragManual) {
-        li.draggable = true;
-        li.addEventListener('dragstart', e => {
-          li.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', String(t.id));
-        });
-        li.addEventListener('dragend', () => li.classList.remove('dragging'));
         li.addEventListener('dragover', e => {
           e.preventDefault();
           li.classList.add('drag-over');
@@ -2859,6 +2886,7 @@
         li.addEventListener('drop', e => {
           e.preventDefault();
           li.classList.remove('drag-over');
+          if (e.dataTransfer.types.includes('application/x-todolo-task')) return;
           const draggedId = Number(e.dataTransfer.getData('text/plain'));
           if (draggedId === t.id) return;
           const from = owner.todos.findIndex(x => x.id === draggedId);
