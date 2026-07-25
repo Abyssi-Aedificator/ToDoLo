@@ -579,7 +579,6 @@
   .detail {
     width: 0;
     flex-shrink: 0;
-    overflow: hidden;
     position: relative;
     background: rgba(var(--w),0.10);
     border-left: 1px solid rgba(var(--w),0.18);
@@ -1816,6 +1815,12 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
+          <div class="changelog-version">1.6.0 <span class="current-badge">Unreleased</span></div>
+          <ul>
+            <li>Detail panel now scrolls back to the top when switching between tasks</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
           <div class="changelog-version">1.5.0 <span class="current-badge">2026-07-23</span></div>
           <ul>
             <li>Multi-select &amp; batch actions — select multiple tasks and complete or delete them in bulk</li>
@@ -2132,9 +2137,9 @@
     logbook: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
     checkSquare: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg>'
   };
-  const DEV = false;
+  const DEV = true;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.5.0';
+  const APP_VERSION = '1.6.0';
 
   const $ = id => document.getElementById(id);
 
@@ -3119,6 +3124,8 @@
   function openTaskPanel(t, owner) {
     editingTask = t;
     editingTaskList = owner || ownerOf(t) || activeList();
+    const inner = document.querySelector('.detail-body-inner');
+    if (inner) inner.scrollTop = 0;
     tTitle.value = t.text;
     tDesc.value = t.desc || '';
     tDue.value = t.due || '';
@@ -3137,6 +3144,7 @@
     tComplete.textContent = editingTask.done ? 'Mark incomplete' : 'Mark complete';
     detail.classList.add('open', 'showing-task');
     applyDetailWidth();
+    requestAnimationFrame(() => { const el = document.querySelector('.detail-body-inner'); if (el) el.scrollTop = 0; });
     renderTasks(); // refresh selected-row highlight
   }
   function populateListSelect(selId) {
