@@ -331,6 +331,7 @@
   .lists-sort-btn:hover { background: rgba(var(--w),0.18); opacity: 1; }
   .lists li.dragging, .subtasks li.dragging, #list li.dragging { opacity: 0.4; }
   .lists li.drag-over, .subtasks li.drag-over, #list li.drag-over { box-shadow: inset 0 2px 0 rgba(var(--w),0.7); }
+  .lists li.drag-over-task { box-shadow: inset 0 0 0 2px rgba(var(--a),0.5); background: rgba(var(--a),0.08); }
   .subtasks li[draggable="true"], #list li[draggable="true"] { cursor: grab; }
   .lists .all-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.9; }
 
@@ -579,7 +580,6 @@
   .detail {
     width: 0;
     flex-shrink: 0;
-    overflow: hidden;
     position: relative;
     background: rgba(var(--w),0.10);
     border-left: 1px solid rgba(var(--w),0.18);
@@ -1279,6 +1279,42 @@
   }
   .toast-action:hover { background: rgba(var(--w),0.4); }
 
+  /* ---------- SHORTCUTS MODAL ---------- */
+  .shortcuts-grid { display: flex; flex-direction: column; gap: 16px; }
+  .shortcut-group-title {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; opacity: 0.5; margin-bottom: 6px;
+  }
+  .shortcut-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 5px; font-size: 0.85rem;
+  }
+  .shortcut-row span:last-child { margin-left: auto; opacity: 0.7; }
+  kbd {
+    display: inline-block; padding: 3px 8px; border-radius: 6px;
+    background: rgba(var(--w),0.12); border: 1px solid rgba(var(--w),0.2);
+    font-family: inherit; font-size: 0.76rem; font-weight: 600;
+    min-width: 26px; text-align: center; line-height: 1.4;
+  }
+  .kbd-group { display: inline-flex; gap: 4px; }
+
+  /* ---------- STATISTICS ---------- */
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card { text-align: center; padding: 14px 8px; border-radius: 12px; background: rgba(var(--w),0.06); border: 1px solid rgba(var(--w),0.1); }
+  .stat-num { font-size: 1.6rem; font-weight: 700; }
+  .stat-label { font-size: 0.73rem; opacity: 0.6; margin-top: 2px; }
+  .stat-section { margin-bottom: 18px; }
+  .stat-bar-track { height: 8px; border-radius: 4px; background: rgba(var(--w),0.08); overflow: hidden; margin: 6px 0; }
+  .stat-bar-fill { height: 100%; border-radius: 4px; background: rgba(var(--a),0.7); transition: width 0.4s ease; }
+  .stat-bar-label { font-size: 0.8rem; font-weight: 600; opacity: 0.8; }
+  .stat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .stat-row-label { min-width: 100px; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; }
+  .stat-row-num { font-size: 0.8rem; font-weight: 600; min-width: 40px; text-align: right; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .stat-heatmap { display: flex; gap: 3px; flex-wrap: wrap; }
+  .stat-heat-cell { width: 28px; height: 28px; border-radius: 4px; }
+  @media (max-width: 720px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
+
   /* ---------- CONTEXT MENU ---------- */
   .ctx-menu {
     position: fixed; z-index: 300; min-width: 180px; max-width: 260px;
@@ -1530,6 +1566,7 @@
         <span id="batchCount">0 selected</span>
         <button class="btn-ghost" id="batchSelectAll">Select all</button>
         <button class="btn-ghost" id="batchComplete">Complete</button>
+        <button class="btn-ghost" id="batchEdit">Edit</button>
         <button class="btn-ghost" id="batchDelete">Delete</button>
         <button class="btn-ghost" id="batchExit">Cancel</button>
       </div>
@@ -1737,6 +1774,7 @@
         <button class="settings-tab-btn active" data-tab="theme">Theme</button>
         <button class="settings-tab-btn" data-tab="sync">Sync &amp; Backup</button>
         <button class="settings-tab-btn" data-tab="changelog">Changelog</button>
+        <button class="settings-tab-btn" data-tab="statistics">Statistics</button>
       </div>
 
       <div class="settings-scroll">
@@ -1812,9 +1850,24 @@
           </div>
         </div>
 
+        <!-- STATISTICS TAB -->
+        <div class="settings-panel" data-panel="statistics" id="statsPanel"></div>
+
         <!-- CHANGELOG TAB -->
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
+        <div class="changelog-entry">
+          <div class="changelog-version">1.6.0 <span class="current-badge">2026-07-25</span></div>
+          <ul>
+            <li>Batch edit — change priority, status, list, or due date on multiple selected tasks at once</li>
+            <li>Drag tasks onto sidebar lists to move them between lists</li>
+            <li>Statistics panel in Settings — completion rates, priority breakdown, per-list progress, and 14-day activity heatmap</li>
+            <li>Keyboard shortcuts cheatsheet — press <kbd>?</kbd> or <kbd>Ctrl+/</kbd> to open</li>
+            <li>Detail panel now scrolls back to the top when switching between tasks</li>
+            <li>Fixed undo support for batch complete and batch delete</li>
+            <li>Fixed drag-and-drop reorder within the same list</li>
+          </ul>
+        </div>
         <div class="changelog-entry">
           <div class="changelog-version">1.5.0 <span class="current-badge">2026-07-23</span></div>
           <ul>
@@ -2064,6 +2117,77 @@
     </div>
   </div>
 
+  <!-- KEYBOARD SHORTCUTS -->
+  <div class="overlay" id="shortcutsOverlay">
+    <div class="modal" style="width:440px;max-height:80vh;overflow-y:auto">
+      <h2 style="margin-bottom:16px">Keyboard Shortcuts</h2>
+      <div class="shortcuts-grid">
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">Navigation</div>
+          <div class="shortcut-row"><span class="kbd-group"><kbd>↑</kbd><kbd>↓</kbd></span><span>Move focus</span></div>
+          <div class="shortcut-row"><kbd>Enter</kbd><span>Open focused task</span></div>
+          <div class="shortcut-row"><kbd>Esc</kbd><span>Close panel / modal / menu</span></div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">Actions</div>
+          <div class="shortcut-row"><kbd>Space</kbd><span>Toggle completion</span></div>
+          <div class="shortcut-row"><kbd>Del</kbd><span>Delete task</span></div>
+          <div class="shortcut-row"><span class="kbd-group"><kbd>Ctrl</kbd><kbd>Z</kbd></span><span>Undo</span></div>
+        </div>
+        <div class="shortcut-group">
+          <div class="shortcut-group-title">Global</div>
+          <div class="shortcut-row"><span class="kbd-group"><kbd>Ctrl</kbd><kbd>K</kbd></span><span>Quick Open search</span></div>
+          <div class="shortcut-row"><span class="kbd-group"><kbd>Ctrl</kbd><kbd>/</kbd></span><span>Toggle this cheatsheet</span></div>
+          <div class="shortcut-row"><kbd>?</kbd><span>Toggle this cheatsheet</span></div>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top:18px">
+        <button class="btn-primary" id="shortcutsClose">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATCH EDIT -->
+  <div class="overlay" id="batchEditOverlay">
+    <div class="modal" style="width:380px">
+      <h2>Batch Edit</h2>
+      <p class="field-label" style="opacity:0.6;margin-bottom:14px" id="batchEditCount">0 tasks selected</p>
+
+      <label class="field-label">Priority</label>
+      <div class="prio-group" id="batchPrio">
+        <button type="button" data-prio="none">None</button>
+        <button type="button" data-prio="low">Low</button>
+        <button type="button" data-prio="med">Med</button>
+        <button type="button" data-prio="high">High</button>
+      </div>
+
+      <label class="field-label" style="margin-top:12px">Status</label>
+      <div class="status-group" id="batchStatus">
+        <button type="button" data-status="todo">To Do</button>
+        <button type="button" data-status="in-progress">In Progress</button>
+        <button type="button" data-status="paused">Paused</button>
+      </div>
+
+      <label class="field-label" style="margin-top:12px">Move to list</label>
+      <select id="batchListSel" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid rgba(var(--w),0.3);background:rgba(var(--w),0.15);color:var(--ink);font-size:0.88rem;font-family:inherit;outline:none">
+        <option value="">— No change —</option>
+      </select>
+
+      <label class="field-label" style="margin-top:12px">Due date</label>
+      <select id="batchDueSel" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid rgba(var(--w),0.3);background:rgba(var(--w),0.15);color:var(--ink);font-size:0.88rem;font-family:inherit;outline:none">
+        <option value="">— No change —</option>
+        <option value="today">Today</option>
+        <option value="tomorrow">Tomorrow</option>
+        <option value="clear">Clear</option>
+      </select>
+
+      <div class="modal-actions" style="margin-top:18px">
+        <button class="btn-ghost" id="batchEditCancel">Cancel</button>
+        <button class="btn-primary" id="batchEditApply">Apply</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
@@ -2134,7 +2258,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.5.0';
+  const APP_VERSION = '1.6.0';
 
   const $ = id => document.getElementById(id);
 
@@ -2409,6 +2533,68 @@
     return c;
   }
 
+  function computeStats() {
+    const allTasks = state.lists.flatMap(l => l.todos);
+    const total = allTasks.length;
+    const done = allTasks.filter(t => t.done).length;
+    const active = total - done;
+    const now = new Date(); now.setHours(0, 0, 0, 0);
+    const overdue = allTasks.filter(t => !t.done && t.due && new Date(t.due + 'T00:00') < now).length;
+    const byPriority = { none: 0, low: 0, med: 0, high: 0 };
+    allTasks.filter(t => t.done).forEach(t => { byPriority[t.priority] = (byPriority[t.priority] || 0) + 1; });
+    const byList = state.lists.map(l => ({ name: l.name, color: l.color, total: l.todos.length, done: l.todos.filter(t => t.done).length }));
+    const daily = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().slice(0, 10);
+      let count = 0;
+      allTasks.forEach(t => { if (t.logbook && t.logbook.some(e => e.date && e.date.slice(0, 10) === ds)) count++; });
+      daily.push({ date: ds, label: d.toLocaleDateString('en', { weekday: 'short' }).slice(0, 2), count });
+    }
+    return { total, done, active, overdue, byPriority, byList, daily };
+  }
+
+  function renderStats() {
+    const s = computeStats();
+    const panel = $('statsPanel');
+    if (!panel) return;
+    const rate = s.total ? Math.round(s.done / s.total * 100) : 0;
+    const maxP = Math.max(...Object.values(s.byPriority), 1);
+    const maxD = Math.max(...s.daily.map(d => d.count), 1);
+    panel.innerHTML = `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num">${s.total}</div><div class="stat-label">Total tasks</div></div>
+        <div class="stat-card"><div class="stat-num">${s.active}</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-num">${s.done}</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-num"${s.overdue ? ' style="color:#ff4d4d"' : ''}>${s.overdue}</div><div class="stat-label">Overdue</div></div>
+      </div>
+      <div class="stat-section">
+        <div class="field-label">Completion Rate</div>
+        <div class="stat-bar-track"><div class="stat-bar-fill" style="width:${rate}%"></div></div>
+        <div class="stat-bar-label">${rate}%</div>
+      </div>
+      <div class="stat-section">
+        <div class="field-label">Completed by Priority</div>
+        ${['high','med','low','none'].map(p => {
+          const cnt = s.byPriority[p] || 0;
+          return `<div class="stat-row"><span class="stat-row-label">${p === 'none' ? 'No priority' : p.charAt(0).toUpperCase() + p.slice(1)}</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${Math.round(cnt/maxP*100)}%"></div></div><span class="stat-row-num">${cnt}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="stat-section">
+        <div class="field-label">By List</div>
+        ${s.byList.map(l => {
+          const pct = l.total ? Math.round(l.done / l.total * 100) : 0;
+          return `<div class="stat-row"><span class="stat-row-label"><span class="stat-dot" style="background:${l.color}"></span>${l.name}</span><div class="stat-bar-track"><div class="stat-bar-fill" style="width:${pct}%;background:${l.color}"></div></div><span class="stat-row-num">${l.done}/${l.total}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="stat-section">
+        <div class="field-label">Activity (last 14 days)</div>
+        <div class="stat-heatmap">
+          ${s.daily.map(d => `<div class="stat-heat-cell" style="background:rgba(var(--a),${d.count ? 0.2 + 0.8*(d.count/maxD) : 0.05})" title="${d.date}: ${d.count} entries"></div>`).join('')}
+        </div>
+      </div>`;
+  }
+
   // ---- sidebar ----
   function renderNav() {
     listNav.innerHTML = '';
@@ -2499,13 +2685,37 @@
       });
       li.addEventListener('dragend', () => li.classList.remove('dragging'));
       li.addEventListener('dragover', e => {
+        const isTask = e.dataTransfer.types.includes('application/x-todolo-task');
+        if (!isTask && !e.dataTransfer.types.includes('text/plain')) return;
         e.preventDefault();
-        li.classList.add('drag-over');
+        e.dataTransfer.dropEffect = 'move';
+        li.classList.add(isTask ? 'drag-over-task' : 'drag-over');
       });
-      li.addEventListener('dragleave', () => li.classList.remove('drag-over'));
+      li.addEventListener('dragleave', () => { li.classList.remove('drag-over'); li.classList.remove('drag-over-task'); });
       li.addEventListener('drop', e => {
         e.preventDefault();
         li.classList.remove('drag-over');
+        li.classList.remove('drag-over-task');
+        if (e.dataTransfer.types.includes('application/x-todolo-task')) {
+          const taskId = Number(e.dataTransfer.getData('application/x-todolo-task'));
+          const task = findTaskById(taskId);
+          if (!task) return;
+          const fromList = ownerOf(task);
+          const toList = state.lists.find(x => x.id === l.id);
+          if (!fromList || !toList || fromList.id === toList.id) return;
+          const idx = fromList.todos.findIndex(x => x.id === taskId);
+          if (idx !== -1) fromList.todos.splice(idx, 1);
+          toList.todos.push(task);
+          pushUndo('move "' + task.text + '" to ' + toList.name, () => {
+            const fi = toList.todos.findIndex(x => x.id === taskId);
+            if (fi !== -1) toList.todos.splice(fi, 1);
+            fromList.todos.push(task);
+            save(); renderAll();
+          });
+          save(); renderAll();
+          toast('Moved to ' + toList.name);
+          return;
+        }
         const draggedId = Number(e.dataTransfer.getData('text/plain'));
         if (draggedId === l.id) return;
         const from = state.lists.findIndex(x => x.id === draggedId);
@@ -2704,14 +2914,15 @@
       if (t.done) li.classList.add('done');
       if (editingTask && editingTask.id === t.id) li.classList.add('selected');
 
+      li.draggable = true;
+      li.addEventListener('dragstart', e => {
+        li.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('application/x-todolo-task', String(t.id));
+        e.dataTransfer.setData('text/plain', String(t.id));
+      });
+      li.addEventListener('dragend', () => li.classList.remove('dragging'));
       if (canDragManual) {
-        li.draggable = true;
-        li.addEventListener('dragstart', e => {
-          li.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', String(t.id));
-        });
-        li.addEventListener('dragend', () => li.classList.remove('dragging'));
         li.addEventListener('dragover', e => {
           e.preventDefault();
           li.classList.add('drag-over');
@@ -3119,6 +3330,8 @@
   function openTaskPanel(t, owner) {
     editingTask = t;
     editingTaskList = owner || ownerOf(t) || activeList();
+    const inner = document.querySelector('.detail-body-inner');
+    if (inner) inner.scrollTop = 0;
     tTitle.value = t.text;
     tDesc.value = t.desc || '';
     tDue.value = t.due || '';
@@ -3137,6 +3350,7 @@
     tComplete.textContent = editingTask.done ? 'Mark incomplete' : 'Mark complete';
     detail.classList.add('open', 'showing-task');
     applyDetailWidth();
+    requestAnimationFrame(() => { const el = document.querySelector('.detail-body-inner'); if (el) el.scrollTop = 0; });
     renderTasks(); // refresh selected-row highlight
   }
   function populateListSelect(selId) {
@@ -3538,6 +3752,10 @@
   settingsClose.onclick = () => { settingsOverlay.classList.remove('show'); dbxMsg(''); };
   settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) settingsOverlay.classList.remove('show'); });
 
+  // ---- shortcuts overlay ----
+  $('shortcutsClose').onclick = closeShortcuts;
+  $('shortcutsOverlay').addEventListener('click', e => { if (e.target === $('shortcutsOverlay')) closeShortcuts(); });
+
   const notifToggle = $('notifToggle');
   notifToggle.checked = localStorage.getItem('glass-todos-notifications') === 'on';
   notifToggle.addEventListener('change', async () => {
@@ -3615,6 +3833,7 @@
       const tab = btn.dataset.tab;
       document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
       document.querySelectorAll('.settings-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+      if (tab === 'statistics') renderStats();
     };
   });
 
@@ -3767,9 +3986,11 @@
     if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
       e.preventDefault(); performUndo(); return;
     }
-    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
+    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); closeShortcuts(); closeBatchEdit(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
+    if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); if ($('shortcutsOverlay').classList.contains('show')) closeShortcuts(); else openShortcuts(); return; }
     const tag = document.activeElement ? document.activeElement.tagName : '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (e.key === '?') { e.preventDefault(); if ($('shortcutsOverlay').classList.contains('show')) closeShortcuts(); else openShortcuts(); return; }
     const items = list.querySelectorAll('li[data-task-id]');
     if (!items.length) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); focusedIdx = Math.min(focusedIdx + 1, items.length - 1); updateFocused(); }
@@ -4338,6 +4559,9 @@
     quickOpenOverlay.classList.remove('show');
   }
 
+  function openShortcuts() { $('shortcutsOverlay').classList.add('show'); }
+  function closeShortcuts() { $('shortcutsOverlay').classList.remove('show'); }
+
   quickOpenInput.addEventListener('input', debounce(() => {
     const q = quickOpenInput.value.trim().toLowerCase();
     _qoHighlight = -1;
@@ -4623,15 +4847,95 @@
     updateBatchBar(); renderTasks();
   };
   $('batchComplete').onclick = () => {
-    selectedIds.forEach(id => { const t = findTaskById(id); if (t && !t.done) { t.done = true; if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo'; } });
+    const old = [];
+    selectedIds.forEach(id => { const t = findTaskById(id); if (t && !t.done) { old.push({ id: t.id, done: false, status: t.status }); t.done = true; if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo'; } });
+    if (old.length) pushUndo('complete ' + old.length + ' tasks', () => { old.forEach(o => { const t = findTaskById(o.id); if (t) { t.done = o.done; t.status = o.status; } }); save(); renderAll(); });
     exitSelectMode(); save(); renderAll();
   };
   $('batchDelete').onclick = () => {
     const tasks = [];
     selectedIds.forEach(id => { const t = findTaskById(id); if (t) { const owner = ownerOf(t); if (owner) tasks.push({ t, owner }); } });
+    const snapshots = tasks.map(({ t, owner }) => ({ t: { ...t }, listId: owner.id }));
     tasks.forEach(({ t, owner }) => { const idx = owner.todos.findIndex(x => x.id === t.id); if (idx !== -1) owner.todos.splice(idx, 1); });
+    if (snapshots.length) pushUndo('delete ' + snapshots.length + ' tasks', () => { snapshots.forEach(s => { const list = state.lists.find(l => l.id === s.listId); if (list) list.todos.push(s.t); }); save(); renderAll(); });
     exitSelectMode(); save(); renderAll();
   };
+
+  // ---- batch edit ----
+  let batchPrioVal = null, batchStatusVal = null;
+  function openBatchEdit() {
+    batchPrioVal = null; batchStatusVal = null;
+    $('batchEditCount').textContent = selectedIds.size + ' tasks selected';
+    [...$('batchPrio').children].forEach(b => b.classList.remove('on'));
+    [...$('batchStatus').children].forEach(b => b.classList.remove('on'));
+    const listSel = $('batchListSel');
+    listSel.innerHTML = '<option value="">— No change —</option>';
+    state.lists.forEach(l => { const o = document.createElement('option'); o.value = l.id; o.textContent = l.name; listSel.appendChild(o); });
+    listSel.value = '';
+    $('batchDueSel').value = '';
+    $('batchEditOverlay').classList.add('show');
+  }
+  function closeBatchEdit() { $('batchEditOverlay').classList.remove('show'); }
+  $('batchEdit').onclick = openBatchEdit;
+  $('batchEditCancel').onclick = closeBatchEdit;
+  $('batchPrio').addEventListener('click', e => {
+    const b = e.target.closest('[data-prio]');
+    if (!b) return;
+    const v = b.dataset.prio;
+    if (batchPrioVal === v) { batchPrioVal = null; b.classList.remove('on'); }
+    else { batchPrioVal = v; [...$('batchPrio').children].forEach(x => x.classList.remove('on')); b.classList.add('on'); }
+  });
+  $('batchStatus').addEventListener('click', e => {
+    const b = e.target.closest('[data-status]');
+    if (!b) return;
+    const v = b.dataset.status;
+    if (batchStatusVal === v) { batchStatusVal = null; b.classList.remove('on'); }
+    else { batchStatusVal = v; [...$('batchStatus').children].forEach(x => x.classList.remove('on')); b.classList.add('on'); }
+  });
+  $('batchEditApply').onclick = () => {
+    const oldStates = [];
+    const listVal = $('batchListSel').value;
+    const dueVal = $('batchDueSel').value;
+    selectedIds.forEach(id => {
+      const t = findTaskById(id);
+      if (!t) return;
+      const owner = ownerOf(t);
+      oldStates.push({ id, done: t.done, priority: t.priority, status: t.status, due: t.due, listId: owner ? owner.id : null });
+      if (batchPrioVal !== null) t.priority = batchPrioVal;
+      if (batchStatusVal !== null) t.status = batchStatusVal;
+      if (listVal && owner) {
+        const target = state.lists.find(l => l.id === Number(listVal));
+        if (target && target.id !== owner.id) {
+          owner.todos = owner.todos.filter(x => x.id !== t.id);
+          target.todos.push(t);
+        }
+      }
+      if (dueVal === 'today') t.due = dateStr(0);
+      else if (dueVal === 'tomorrow') t.due = dateStr(1);
+      else if (dueVal === 'clear') t.due = '';
+    });
+    pushUndo('batch edit ' + selectedIds.size + ' tasks', () => {
+      oldStates.forEach(os => {
+        const t = findTaskById(os.id);
+        if (!t) return;
+        t.done = os.done; t.priority = os.priority; t.status = os.status; t.due = os.due;
+        if (os.listId != null) {
+          const curOwner = ownerOf(t);
+          const target = state.lists.find(l => l.id === os.listId);
+          if (curOwner && target && curOwner.id !== target.id) {
+            curOwner.todos = curOwner.todos.filter(x => x.id !== t.id);
+            target.todos.push(t);
+          }
+        }
+      });
+      save(); renderAll();
+    });
+    closeBatchEdit();
+    exitSelectMode();
+    save(); renderAll();
+    toast('Updated ' + oldStates.length + ' tasks');
+  };
+  $('batchEditOverlay').addEventListener('click', e => { if (e.target === $('batchEditOverlay')) closeBatchEdit(); });
 
   document.addEventListener('click', e => {
     if (!ctxMenu.classList.contains('open')) return;
