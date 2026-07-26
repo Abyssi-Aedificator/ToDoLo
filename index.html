@@ -1857,13 +1857,14 @@
         <div class="settings-panel" data-panel="changelog">
         <div class="changelog">
         <div class="changelog-entry">
-          <div class="changelog-version">1.6.0 <span class="current-badge">Unreleased</span></div>
+          <div class="changelog-version">1.6.0 <span class="current-badge">2026-07-25</span></div>
           <ul>
             <li>Batch edit — change priority, status, list, or due date on multiple selected tasks at once</li>
             <li>Drag tasks onto sidebar lists to move them between lists</li>
             <li>Statistics panel in Settings — completion rates, priority breakdown, per-list progress, and 14-day activity heatmap</li>
             <li>Keyboard shortcuts cheatsheet — press <kbd>?</kbd> or <kbd>Ctrl+/</kbd> to open</li>
             <li>Detail panel now scrolls back to the top when switching between tasks</li>
+            <li>Fixed undo support for batch complete and batch delete</li>
             <li>Fixed drag-and-drop reorder within the same list</li>
           </ul>
         </div>
@@ -4846,13 +4847,17 @@
     updateBatchBar(); renderTasks();
   };
   $('batchComplete').onclick = () => {
-    selectedIds.forEach(id => { const t = findTaskById(id); if (t && !t.done) { t.done = true; if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo'; } });
+    const old = [];
+    selectedIds.forEach(id => { const t = findTaskById(id); if (t && !t.done) { old.push({ id: t.id, done: false, status: t.status }); t.done = true; if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo'; } });
+    if (old.length) pushUndo('complete ' + old.length + ' tasks', () => { old.forEach(o => { const t = findTaskById(o.id); if (t) { t.done = o.done; t.status = o.status; } }); save(); renderAll(); });
     exitSelectMode(); save(); renderAll();
   };
   $('batchDelete').onclick = () => {
     const tasks = [];
     selectedIds.forEach(id => { const t = findTaskById(id); if (t) { const owner = ownerOf(t); if (owner) tasks.push({ t, owner }); } });
+    const snapshots = tasks.map(({ t, owner }) => ({ t: { ...t }, listId: owner.id }));
     tasks.forEach(({ t, owner }) => { const idx = owner.todos.findIndex(x => x.id === t.id); if (idx !== -1) owner.todos.splice(idx, 1); });
+    if (snapshots.length) pushUndo('delete ' + snapshots.length + ' tasks', () => { snapshots.forEach(s => { const list = state.lists.find(l => l.id === s.listId); if (list) list.todos.push(s.t); }); save(); renderAll(); });
     exitSelectMode(); save(); renderAll();
   };
 
