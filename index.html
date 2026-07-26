@@ -1566,6 +1566,7 @@
         <span id="batchCount">0 selected</span>
         <button class="btn-ghost" id="batchSelectAll">Select all</button>
         <button class="btn-ghost" id="batchComplete">Complete</button>
+        <button class="btn-ghost" id="batchEdit">Edit</button>
         <button class="btn-ghost" id="batchDelete">Delete</button>
         <button class="btn-ghost" id="batchExit">Cancel</button>
       </div>
@@ -1858,6 +1859,7 @@
         <div class="changelog-entry">
           <div class="changelog-version">1.6.0 <span class="current-badge">Unreleased</span></div>
           <ul>
+            <li>Batch edit — change priority, status, list, or due date on multiple selected tasks at once</li>
             <li>Drag tasks onto sidebar lists to move them between lists</li>
             <li>Statistics panel in Settings — completion rates, priority breakdown, per-list progress, and 14-day activity heatmap</li>
             <li>Keyboard shortcuts cheatsheet — press <kbd>?</kbd> or <kbd>Ctrl+/</kbd> to open</li>
@@ -2139,6 +2141,47 @@
       </div>
       <div class="modal-actions" style="margin-top:18px">
         <button class="btn-primary" id="shortcutsClose">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BATCH EDIT -->
+  <div class="overlay" id="batchEditOverlay">
+    <div class="modal" style="width:380px">
+      <h2>Batch Edit</h2>
+      <p class="field-label" style="opacity:0.6;margin-bottom:14px" id="batchEditCount">0 tasks selected</p>
+
+      <label class="field-label">Priority</label>
+      <div class="prio-group" id="batchPrio">
+        <button type="button" data-prio="none">None</button>
+        <button type="button" data-prio="low">Low</button>
+        <button type="button" data-prio="med">Med</button>
+        <button type="button" data-prio="high">High</button>
+      </div>
+
+      <label class="field-label" style="margin-top:12px">Status</label>
+      <div class="status-group" id="batchStatus">
+        <button type="button" data-status="todo">To Do</button>
+        <button type="button" data-status="in-progress">In Progress</button>
+        <button type="button" data-status="paused">Paused</button>
+      </div>
+
+      <label class="field-label" style="margin-top:12px">Move to list</label>
+      <select id="batchListSel" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid rgba(var(--w),0.3);background:rgba(var(--w),0.15);color:var(--ink);font-size:0.88rem;font-family:inherit;outline:none">
+        <option value="">— No change —</option>
+      </select>
+
+      <label class="field-label" style="margin-top:12px">Due date</label>
+      <select id="batchDueSel" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid rgba(var(--w),0.3);background:rgba(var(--w),0.15);color:var(--ink);font-size:0.88rem;font-family:inherit;outline:none">
+        <option value="">— No change —</option>
+        <option value="today">Today</option>
+        <option value="tomorrow">Tomorrow</option>
+        <option value="clear">Clear</option>
+      </select>
+
+      <div class="modal-actions" style="margin-top:18px">
+        <button class="btn-ghost" id="batchEditCancel">Cancel</button>
+        <button class="btn-primary" id="batchEditApply">Apply</button>
       </div>
     </div>
   </div>
@@ -3942,7 +3985,7 @@
     if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
       e.preventDefault(); performUndo(); return;
     }
-    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); closeShortcuts(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
+    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); closeShortcuts(); closeBatchEdit(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
     if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); if ($('shortcutsOverlay').classList.contains('show')) closeShortcuts(); else openShortcuts(); return; }
     const tag = document.activeElement ? document.activeElement.tagName : '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -4812,6 +4855,82 @@
     tasks.forEach(({ t, owner }) => { const idx = owner.todos.findIndex(x => x.id === t.id); if (idx !== -1) owner.todos.splice(idx, 1); });
     exitSelectMode(); save(); renderAll();
   };
+
+  // ---- batch edit ----
+  let batchPrioVal = null, batchStatusVal = null;
+  function openBatchEdit() {
+    batchPrioVal = null; batchStatusVal = null;
+    $('batchEditCount').textContent = selectedIds.size + ' tasks selected';
+    [...$('batchPrio').children].forEach(b => b.classList.remove('on'));
+    [...$('batchStatus').children].forEach(b => b.classList.remove('on'));
+    const listSel = $('batchListSel');
+    listSel.innerHTML = '<option value="">— No change —</option>';
+    state.lists.forEach(l => { const o = document.createElement('option'); o.value = l.id; o.textContent = l.name; listSel.appendChild(o); });
+    listSel.value = '';
+    $('batchDueSel').value = '';
+    $('batchEditOverlay').classList.add('show');
+  }
+  function closeBatchEdit() { $('batchEditOverlay').classList.remove('show'); }
+  $('batchEdit').onclick = openBatchEdit;
+  $('batchEditCancel').onclick = closeBatchEdit;
+  $('batchPrio').addEventListener('click', e => {
+    const b = e.target.closest('[data-prio]');
+    if (!b) return;
+    const v = b.dataset.prio;
+    if (batchPrioVal === v) { batchPrioVal = null; b.classList.remove('on'); }
+    else { batchPrioVal = v; [...$('batchPrio').children].forEach(x => x.classList.remove('on')); b.classList.add('on'); }
+  });
+  $('batchStatus').addEventListener('click', e => {
+    const b = e.target.closest('[data-status]');
+    if (!b) return;
+    const v = b.dataset.status;
+    if (batchStatusVal === v) { batchStatusVal = null; b.classList.remove('on'); }
+    else { batchStatusVal = v; [...$('batchStatus').children].forEach(x => x.classList.remove('on')); b.classList.add('on'); }
+  });
+  $('batchEditApply').onclick = () => {
+    const oldStates = [];
+    const listVal = $('batchListSel').value;
+    const dueVal = $('batchDueSel').value;
+    selectedIds.forEach(id => {
+      const t = findTaskById(id);
+      if (!t) return;
+      const owner = ownerOf(t);
+      oldStates.push({ id, done: t.done, priority: t.priority, status: t.status, due: t.due, listId: owner ? owner.id : null });
+      if (batchPrioVal !== null) t.priority = batchPrioVal;
+      if (batchStatusVal !== null) t.status = batchStatusVal;
+      if (listVal && owner) {
+        const target = state.lists.find(l => l.id === Number(listVal));
+        if (target && target.id !== owner.id) {
+          owner.todos = owner.todos.filter(x => x.id !== t.id);
+          target.todos.push(t);
+        }
+      }
+      if (dueVal === 'today') t.due = dateStr(0);
+      else if (dueVal === 'tomorrow') t.due = dateStr(1);
+      else if (dueVal === 'clear') t.due = '';
+    });
+    pushUndo('batch edit ' + selectedIds.size + ' tasks', () => {
+      oldStates.forEach(os => {
+        const t = findTaskById(os.id);
+        if (!t) return;
+        t.done = os.done; t.priority = os.priority; t.status = os.status; t.due = os.due;
+        if (os.listId != null) {
+          const curOwner = ownerOf(t);
+          const target = state.lists.find(l => l.id === os.listId);
+          if (curOwner && target && curOwner.id !== target.id) {
+            curOwner.todos = curOwner.todos.filter(x => x.id !== t.id);
+            target.todos.push(t);
+          }
+        }
+      });
+      save(); renderAll();
+    });
+    closeBatchEdit();
+    exitSelectMode();
+    save(); renderAll();
+    toast('Updated ' + oldStates.length + ' tasks');
+  };
+  $('batchEditOverlay').addEventListener('click', e => { if (e.target === $('batchEditOverlay')) closeBatchEdit(); });
 
   document.addEventListener('click', e => {
     if (!ctxMenu.classList.contains('open')) return;
