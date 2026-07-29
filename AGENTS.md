@@ -28,6 +28,10 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 - `@media (max-width: 720px)` — sidebar becomes a slide-in drawer, detail panel goes full-screen
 - `--panel-solid` — mobile panel background (dark `rgba(20,40,50,0.94)`, light `rgba(248,250,252,0.94)`); prevents list bleed-through on mobile
 
+## Commit policy
+
+- Each bug fix or feature change must be a separate, individual commit
+
 ## Gotchas
 
 - `createGlassSelect()` returns an object with a `.value` getter/setter — not a DOM element
