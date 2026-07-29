@@ -19,14 +19,22 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 
 ## Versioning & changelog
 
-- `APP_VERSION` constant (line ~1852) and the first entry in the changelog `<div class="changelog">` must stay in sync
+- `APP_VERSION` constant (line ~1852) and the first entry in `changelog.txt` must stay in sync
 - `DEV = true` shows a red dev banner — set to `false` before release
-- Changelog lives inline in the settings modal HTML; new entry goes at the top of `<div class="changelog">`
+- Changelog lives in `changelog.txt`; new entry goes at the top
 
 ## Mobile responsive breakpoint
 
 - `@media (max-width: 720px)` — sidebar becomes a slide-in drawer, detail panel goes full-screen
 - `--panel-solid` — mobile panel background (dark `rgba(20,40,50,0.94)`, light `rgba(248,250,252,0.94)`); prevents list bleed-through on mobile
+
+## Workflow
+
+- After finishing each feature: update `changelog.txt`, commit, then update AGENTS.md if needed
+
+## Commit policy
+
+- Each bug fix or feature change must be a separate, individual commit
 
 ## Gotchas
 
