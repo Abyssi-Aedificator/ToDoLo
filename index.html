@@ -1872,7 +1872,6 @@
       <p style="margin-bottom:22px">See what's changed in the new version.</p>
       <div class="modal-actions" style="justify-content:center">
         <button class="btn-primary" id="versionOk">Got it</button>
-        <button class="btn-ghost" id="versionChangelog">View changelog</button>
       </div>
     </div>
   </div>
@@ -3598,17 +3597,13 @@
   });
 
   // ---- version change notification ----
-  const versionOverlay = $('versionOverlay'), versionOk = $('versionOk'), versionChangelog = $('versionChangelog');
+  const versionOverlay = $('versionOverlay'), versionOk = $('versionOk');
   const prevVersion = localStorage.getItem('glass-todos-version');
   if (prevVersion !== APP_VERSION) {
     versionOverlay.classList.add('show');
     localStorage.setItem('glass-todos-version', APP_VERSION);
   }
   versionOk.onclick = () => versionOverlay.classList.remove('show');
-  versionChangelog.onclick = () => {
-    versionOverlay.classList.remove('show');
-    window.open('changelog.txt', '_blank');
-  };
   versionOverlay.addEventListener('click', e => { if (e.target === versionOverlay) versionOverlay.classList.remove('show'); });
 
   // ---- backup / restore ----

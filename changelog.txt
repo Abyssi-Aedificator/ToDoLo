@@ -1,7 +1,6 @@
 1.6.1
 - Changelog migrated to standalone file (changelog.txt)
 - Version overlay now opens changelog.txt instead of in-app panel
-- Set DEV = false for release
 
 1.6.0
 - Batch edit — change priority, status, list, or due date on multiple selected tasks at once
