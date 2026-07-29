@@ -1875,7 +1875,7 @@
   <div class="overlay" id="versionOverlay">
     <div class="modal confirm-modal" style="text-align:center">
       <h2>ToDoLo updated</h2>
-      <p style="margin-bottom:22px">See what's changed in the new version.</p>
+      <p style="margin-bottom:22px">Updated to v1.6.1.</p>
       <div class="modal-actions" style="justify-content:center">
         <button class="btn-primary" id="versionOk">Got it</button>
       </div>
@@ -2475,7 +2475,8 @@
             const fi = toList.todos.findIndex(x => x.id === taskId);
             if (fi !== -1) toList.todos.splice(fi, 1);
             fromList.todos.push(task);
-            save(); renderAll();
+          if (editingTask && editingTask.id === task.id) editingTaskList = toList;
+          save(); renderAll();
           });
           save(); renderAll();
           toast('Moved to ' + toList.name);
@@ -2626,6 +2627,7 @@
   }
 
   function renderTasks() {
+    updateBatchBar();
     const existingIds = new Set();
     list.querySelectorAll('[data-task-id]').forEach(el => existingIds.add(el.dataset.taskId));
     list.innerHTML = '';
@@ -2744,7 +2746,7 @@
 
     const left = shown.filter(({ t }) => !t.done).length;
     count.textContent = `${left} item${left !== 1 ? 's' : ''} left`;
-    clearDone.classList.toggle('visible', filter === 'done');
+    clearDone.classList.add('visible');
     requestAnimationFrame(() => list.classList.toggle('scrolled', list.scrollTop > 4));
   }
 
@@ -4615,7 +4617,7 @@
   $('batchDelete').onclick = () => {
     const tasks = [];
     selectedIds.forEach(id => { const t = findTaskById(id); if (t) { const owner = ownerOf(t); if (owner) tasks.push({ t, owner }); } });
-    const snapshots = tasks.map(({ t, owner }) => ({ t: { ...t }, listId: owner.id }));
+    const snapshots = tasks.map(({ t, owner }) => ({ t: JSON.parse(JSON.stringify(t)), listId: owner.id }));
     tasks.forEach(({ t, owner }) => { const idx = owner.todos.findIndex(x => x.id === t.id); if (idx !== -1) owner.todos.splice(idx, 1); });
     if (snapshots.length) pushUndo('delete ' + snapshots.length + ' tasks', () => { snapshots.forEach(s => { const list = state.lists.find(l => l.id === s.listId); if (list) list.todos.push(s.t); }); save(); renderAll(); });
     exitSelectMode(); save(); renderAll();

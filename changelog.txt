@@ -1,4 +1,9 @@
 1.6.1
+- Fixed drag-and-drop between lists duplicating tasks when detail panel is open
+- Fixed batch bar disappearing after view switches and filter changes
+- Fixed shallow copy in batch delete undo corrupting nested task data
+- Fixed version overlay showing misleading "See what's changed" text with no link
+- Fixed "Clear completed" button hidden unless on 'done' filter
 - Version badge in sidebar — shows the current version next to the app name
 - Changelog migrated to standalone file (changelog.txt)
 - Version overlay now opens changelog.txt instead of in-app panel
