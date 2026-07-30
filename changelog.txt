@@ -1,3 +1,6 @@
+1.7.1
+- Documented commit and push policies in AGENTS.md
+
 1.7.0
 - Per-list filter & sort — each list and smart view remembers its own filters, sort column, and sort direction
 
