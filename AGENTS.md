@@ -10,8 +10,8 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 
 ## Architecture
 
-- `index.html` — the entire app: CSS (lines ~1–1060), HTML (lines ~1060–1460), JS (lines ~1460–3900)
-- `sw.js` — service worker, caches assets under `CACHE = 'todolo-v9'`; bump the cache name after changing any asset
+- `index.html` — the entire app: CSS (lines ~1–1060), HTML (lines ~1060–1460), JS (lines ~1460–4890)
+- `sw.js` — service worker, caches assets under `CACHE = 'todolo-v14'`; bump the cache name after changing any asset
 - `manifest.json` — PWA manifest, icons point to `icon.svg`
 - `icon.svg` — app icon
 - All user data is stored in `localStorage` (key: `glass-todos-data`)
@@ -35,6 +35,7 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 ## Commit policy
 
 - Each bug fix or feature change must be a separate, individual commit
+- Never include version numbers in commit descriptions
 
 ## Gotchas
 

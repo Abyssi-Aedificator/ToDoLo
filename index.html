@@ -1404,7 +1404,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.6.1</span>
+        ToDoLo<span class="brand-badge">v1.7.0</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -1875,7 +1875,7 @@
   <div class="overlay" id="versionOverlay">
     <div class="modal confirm-modal" style="text-align:center">
       <h2>ToDoLo updated</h2>
-      <p style="margin-bottom:22px">Updated to v1.6.1.</p>
+      <p style="margin-bottom:22px">Updated to v1.7.0.</p>
       <div class="modal-actions" style="justify-content:center">
         <button class="btn-primary" id="versionOk">Got it</button>
       </div>
@@ -2023,7 +2023,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.6.1';
+  const APP_VERSION = '1.7.0';
 
   const $ = id => document.getElementById(id);
 
@@ -2387,7 +2387,7 @@
         badge.textContent = cnt;
         li.appendChild(badge);
       }
-      li.onclick = () => { state.activeId = v.id; save(); renderAll(); closeDrawer(); };
+      li.onclick = () => { saveListFilters(); state.activeId = v.id; loadListFilters(v.id); save(); renderAll(); closeDrawer(); };
       smartNav.appendChild(li);
     });
 
@@ -2410,7 +2410,7 @@
         badge.textContent = cnt;
         li.appendChild(badge);
       }
-      li.onclick = () => { state.activeId = 'in-progress'; save(); renderAll(); closeDrawer(); };
+      li.onclick = () => { saveListFilters(); state.activeId = 'in-progress'; loadListFilters('in-progress'); save(); renderAll(); closeDrawer(); };
       inProgressNav.appendChild(li);
     }
 
@@ -2433,7 +2433,7 @@
         badge.textContent = cnt;
         li.appendChild(badge);
       }
-      li.onclick = () => { state.activeId = 'paused'; save(); renderAll(); closeDrawer(); };
+      li.onclick = () => { saveListFilters(); state.activeId = 'paused'; loadListFilters('paused'); save(); renderAll(); closeDrawer(); };
       pausedNav.appendChild(li);
     }
 
@@ -2518,7 +2518,7 @@
       rm.onclick = e => { e.stopPropagation(); removeList(l.id); };
 
       li.append(dot, name, edit, rm, badge);
-      li.onclick = () => { state.activeId = l.id; save(); renderAll(); closeDrawer(); };
+      li.onclick = () => { saveListFilters(); state.activeId = l.id; loadListFilters(l.id); save(); renderAll(); closeDrawer(); };
       listNav.appendChild(li);
     });
   }
@@ -2562,7 +2562,7 @@
     } else {
       const id = nextId++;
       state.lists.push({ id, name: val, color: pickedColor, todos: [] });
-      state.activeId = id;
+      saveListFilters(); state.activeId = id;
     }
     closeModal();
     save(); renderAll();
@@ -2580,12 +2580,12 @@
       state.lists[0].todos = [];
     } else {
       state.lists = state.lists.filter(l => l.id !== id);
-      if (state.activeId === id) state.activeId = state.lists[0].id;
+      if (state.activeId === id) { saveListFilters(); state.activeId = state.lists[0].id; loadListFilters(state.activeId); }
     }
     save(); renderAll();
     pushUndo('delete list "' + savedList.name + '"', () => {
       state.lists.splice(Math.min(listIndex, state.lists.length), 0, savedList);
-      if (wasActive) state.activeId = savedList.id;
+      if (wasActive) { state.activeId = savedList.id; loadListFilters(savedList.id); }
       save(); renderAll();
     });
   }
@@ -2621,12 +2621,11 @@
     const opts = [{value:'any', label:'Any tag'}, {value:'__none', label:'No tag'}]
       .concat(tags.map(t => ({value:t, label:'#' + t})));
     tagFilter.setOptions(opts);
-    const saved = localStorage.getItem('glass-todos-tag-filter') || 'any';
-    const want = cur && cur !== 'any' ? cur : saved;
-    tagFilter.value = opts.some(o => o.value === want) ? want : 'any';
+    tagFilter.value = opts.some(o => o.value === cur) ? cur : 'any';
   }
 
   function renderTasks() {
+    saveListFilters();
     updateBatchBar();
     const existingIds = new Set();
     list.querySelectorAll('[data-task-id]').forEach(el => existingIds.add(el.dataset.taskId));
@@ -3646,7 +3645,7 @@
     closeTaskPanel();
     state = data;
     backfillState();
-    if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
+    if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) { saveListFilters(); state.activeId = state.lists[0].id; loadListFilters(state.activeId); }
     save(); renderAll();
     settingsOverlay.classList.remove('show');
   };
@@ -3801,9 +3800,8 @@
     filtersToggleBtn.classList.toggle('open', open);
     filtersToggleBtn.setAttribute('aria-expanded', String(open));
     filtersPanel.classList.toggle('open', open);
-    localStorage.setItem('glass-todos-filters-open', open ? '1' : '0');
   }
-  filtersToggleBtn.onclick = () => setFiltersOpen(!filtersPanel.classList.contains('open'));
+  filtersToggleBtn.onclick = () => { setFiltersOpen(!filtersPanel.classList.contains('open')); saveListFilters(); };
   setFiltersOpen(localStorage.getItem('glass-todos-filters-open') === '1');
 
   function updateFiltersBadge() {
@@ -3852,6 +3850,41 @@
     localStorage.setItem('glass-todos-sort-dir-3', sortDir3.classList.contains('desc') ? 'desc' : 'asc');
     renderTasks();
   };
+
+  // ---- per-list filter/sort helpers ----
+  function filtersKey(id) { return 'g-flt-' + id; }
+  function saveListFilters() {
+    localStorage.setItem(filtersKey(state.activeId), JSON.stringify({
+      f: filter, s: searchInput.value,
+      d: dueFilter.value, p: prioFilter.value, t: tagFilter.value,
+      sb: sortBy.value, sb2: sortBy2.value, sb3: sortBy3.value,
+      sd: sortDir.classList.contains('desc'),
+      sd2: sortDir2.classList.contains('desc'),
+      sd3: sortDir3.classList.contains('desc'),
+      fo: filtersPanel.classList.contains('open')
+    }));
+  }
+  function loadListFilters(id) {
+    try {
+      const o = JSON.parse(localStorage.getItem(filtersKey(id)));
+      if (!o) return false;
+      filter = o.f || 'all';
+      searchInput.value = o.s || '';
+      dueFilter.value = o.d || 'any';
+      prioFilter.value = o.p || 'any';
+      tagFilter.value = o.t || 'any';
+      sortBy.value = o.sb || 'manual';
+      sortBy2.value = o.sb2 || 'none';
+      sortBy3.value = o.sb3 || 'none';
+      sortDir.classList.toggle('desc', !!o.sd);
+      sortDir2.classList.toggle('desc', !!o.sd2);
+      sortDir3.classList.toggle('desc', !!o.sd3);
+      setFiltersOpen(o.fo !== false);
+      filters.forEach(f => f.classList.toggle('active', f.dataset.filter === filter));
+      return true;
+    } catch(e) { return false; }
+  }
+  if (!loadListFilters(state.activeId)) { saveListFilters(); }
 
   $('resetSort').onclick = () => {
     sortBy.value = 'manual'; sortBy2.value = 'none'; sortBy3.value = 'none';
@@ -4183,7 +4216,7 @@
     closeTaskPanel();
     state = d;
     backfillState();
-    if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) state.activeId = state.lists[0].id;
+    if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) { saveListFilters(); state.activeId = state.lists[0].id; loadListFilters(state.activeId); }
     _lastUploadedState = JSON.stringify(state); // we now match Dropbox; don't re-upload it
     _skipAutoUpload = true;
     save(); renderAll();
