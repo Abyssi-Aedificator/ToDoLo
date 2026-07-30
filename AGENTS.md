@@ -35,6 +35,7 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 ## Commit policy
 
 - Each bug fix or feature change must be a separate, individual commit
+- Never include version numbers in commit descriptions
 
 ## Gotchas
 
