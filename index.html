@@ -782,18 +782,40 @@
     margin-top: 4px; margin-bottom: 6px;
   }
 
-  .recur-end-row { margin-bottom: 10px; }
-  .recur-interval-row {
-    display: flex; align-items: flex-end; gap: 8px; margin-top: 8px;
+  .recur-options {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    background: rgba(var(--w),0.05);
+    border: 1px solid rgba(var(--w),0.1);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
   }
-  .recur-interval-row .recur-interval-unit {
-    font-size: 0.85rem; opacity: 0.7; padding-bottom: 9px;
+  .recur-opt { display: flex; flex-direction: column; gap: 6px; }
+  .recur-opt:first-child { min-width: 150px; }
+  .recur-opt .field-label { margin: 0; }
+  .recur-interval { display: flex; align-items: center; gap: 8px; }
+  .recur-interval .recur-interval-unit { font-size: 0.88rem; opacity: 0.7; }
+  .seg { display: flex; gap: 4px; padding: 3px; width: max-content; }
+  .seg button {
+    padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.78rem; color: var(--ink);
+    border: 1px solid rgba(var(--w),0.18);
+    background: transparent;
+    opacity: 0.65;
+    transition: all 0.15s;
+    font-family: inherit;
   }
-  .recur-interval-row .recur-count-input { flex: none; }
-  .recur-end-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
-  .recur-end-fields .gl-select { flex: 1; min-width: 130px; }
-  .recur-end-or { font-size: 0.8rem; opacity: 0.5; padding-bottom: 6px; }
-  .recur-count-wrap { display: flex; align-items: flex-end; gap: 6px; }
+  .seg button:hover { opacity: 1; background: rgba(var(--w),0.1); }
+  .seg button.on {
+    opacity: 1;
+    background: rgba(var(--w),0.35);
+    border-color: rgba(var(--w),0.45);
+    font-weight: 600;
+  }
+  .recur-end-inputs { margin-top: 4px; }
+  .recur-end-inputs .recur-end-date { max-width: 180px; }
+  .recur-count-wrap { display: flex; align-items: center; gap: 8px; }
+  .recur-count-suffix { font-size: 0.88rem; opacity: 0.7; }
   .recur-count-input {
     width: 60px; padding: 9px 8px; border-radius: 10px;
     border: 1px solid rgba(var(--w),0.3); background: rgba(var(--w),0.15);
@@ -801,7 +823,6 @@
     font-family: inherit; outline: none;
   }
   .recur-count-input:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
-  .field-label-sm { font-size: 0.75rem; opacity: 0.6; margin-bottom: 4px; }
 
   .prio-group { display: flex; gap: 6px; }
   .prio-group button {
@@ -1696,42 +1717,49 @@
               </button>
               <div class="gl-select-menu"></div>
             </div>
-            <div class="recur-interval-row" id="tRecurIntervalWrap" style="display:none">
-              <label class="field-label">Every</label>
-              <input type="number" id="tRecurInterval" class="text-input" min="1" max="99" value="1">
-              <span class="recur-interval-unit" id="tRecurIntervalUnit">days</span>
-            </div>
           </div>
         </div>
 
-        <div class="recur-end-row" id="recurEndRow" style="display:none">
-          <label class="field-label">Repeat until</label>
-          <div class="recur-end-fields">
-            <div class="gl-select" id="tRecurEnd">
-              <button class="gl-select-trigger" type="button">
-                <svg class="gl-cal-icon" viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>
-                <span class="gl-select-label placeholder">yyyy-mm-dd</span>
-                <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="gl-select-menu gl-cal-menu">
-                <div class="gl-cal-head">
-                  <button class="gl-cal-nav" type="button" data-dir="-1" title="Previous month">‹</button>
-                  <span class="gl-cal-title"></span>
-                  <button class="gl-cal-nav" type="button" data-dir="1" title="Next month">›</button>
-                </div>
-                <div class="gl-cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
-                <div class="gl-cal-grid"></div>
-                <div class="gl-cal-foot">
-                  <button class="gl-cal-action" type="button" data-action="today">Today</button>
-                  <button class="gl-cal-action" type="button" data-action="clear">Clear</button>
+        <div class="recur-options" id="recurEndRow" style="display:none">
+          <div class="recur-opt">
+            <label class="field-label">Repeats every</label>
+            <div class="recur-interval">
+              <input type="number" id="tRecurInterval" class="recur-count-input" min="1" max="99" value="1">
+              <span class="recur-interval-unit" id="tRecurIntervalUnit">days</span>
+            </div>
+          </div>
+          <div class="recur-opt">
+            <label class="field-label">Ends</label>
+            <div class="seg" id="tRecurEndMode">
+              <button type="button" data-end="never" class="on">Never</button>
+              <button type="button" data-end="date">On date</button>
+              <button type="button" data-end="count">After N times</button>
+            </div>
+            <div class="recur-end-inputs">
+              <div class="gl-select recur-end-date" id="tRecurEnd" style="display:none">
+                <button class="gl-select-trigger" type="button">
+                  <svg class="gl-cal-icon" viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>
+                  <span class="gl-select-label placeholder">yyyy-mm-dd</span>
+                  <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="gl-select-menu gl-cal-menu">
+                  <div class="gl-cal-head">
+                    <button class="gl-cal-nav" type="button" data-dir="-1" title="Previous month">‹</button>
+                    <span class="gl-cal-title"></span>
+                    <button class="gl-cal-nav" type="button" data-dir="1" title="Next month">›</button>
+                  </div>
+                  <div class="gl-cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+                  <div class="gl-cal-grid"></div>
+                  <div class="gl-cal-foot">
+                    <button class="gl-cal-action" type="button" data-action="today">Today</button>
+                    <button class="gl-cal-action" type="button" data-action="clear">Clear</button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <span class="recur-end-or">or</span>
-            <div class="recur-count-wrap">
-              <label class="field-label-sm">repeat</label>
-              <input type="number" id="tRecurCount" min="1" max="999" placeholder="∞" class="recur-count-input">
-              <label class="field-label-sm">times</label>
+              <div class="recur-count-wrap recur-end-count" id="tRecurCountWrap" style="display:none">
+                <input type="number" id="tRecurCount" min="1" max="999" placeholder="∞" class="recur-count-input">
+                <span class="recur-count-suffix">times</span>
+              </div>
             </div>
           </div>
         </div>
@@ -3894,10 +3922,15 @@
     const recurEndRow = $('recurEndRow');
     const hasRecur = tRecur.value !== 'none' && tDue.value;
     recurEndRow.style.display = hasRecur ? '' : 'none';
-    const wrap = $('tRecurIntervalWrap');
-    const unit = $('tRecurIntervalUnit');
-    wrap.style.display = hasRecur ? 'flex' : 'none';
-    unit.textContent = (RECUR_UNIT[tRecur.value] || 'periods');
+    $('tRecurIntervalUnit').textContent = (RECUR_UNIT[tRecur.value] || 'periods');
+    syncRecurEndMode();
+  }
+  function syncRecurEndMode() {
+    const mode = editingTask && editingTask.recurCount ? 'count' : (editingTask && editingTask.recurEnd ? 'date' : 'never');
+    $('tRecurEndMode').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.end === mode));
+    const showDate = mode === 'date', showCount = mode === 'count';
+    $('tRecurEnd').style.display = showDate ? '' : 'none';
+    $('tRecurCountWrap').style.display = showCount ? '' : 'none';
   }
 
   tDue = createGlassDatePicker('tDue', '', () => {
@@ -3922,10 +3955,30 @@
 
   let tRecurEnd;
   const tRecurCount = $('tRecurCount');
+  $('tRecurEndMode').addEventListener('click', e => {
+    const b = e.target.closest('[data-end]');
+    if (!b || !editingTask) return;
+    const mode = b.dataset.end;
+    if (mode === 'never') {
+      editingTask.recurEnd = ''; editingTask.recurCount = null;
+      tRecurEnd.value = ''; tRecurCount.value = '';
+    } else if (mode === 'date') {
+      editingTask.recurCount = null; tRecurCount.value = '';
+      if (!editingTask.recurEnd) editingTask.recurEnd = dateStr(0);
+      tRecurEnd.value = editingTask.recurEnd;
+    } else {
+      editingTask.recurEnd = ''; tRecurEnd.value = '';
+      if (!editingTask.recurCount) editingTask.recurCount = 1;
+      tRecurCount.value = editingTask.recurCount;
+    }
+    syncRecurEndMode();
+    commit();
+  });
   tRecurEnd = createGlassDatePicker('tRecurEnd', '', () => {
     if (editingTask) {
       editingTask.recurEnd = tRecurEnd.value;
       if (tRecurEnd.value) { editingTask.recurCount = null; tRecurCount.value = ''; }
+      syncRecurEndMode();
       commit();
     }
   });
@@ -3934,6 +3987,7 @@
     const v = tRecurCount.value ? parseInt(tRecurCount.value) : null;
     editingTask.recurCount = v;
     if (v) { editingTask.recurEnd = ''; tRecurEnd.value = ''; }
+    syncRecurEndMode();
     commit();
   });
   tList.querySelector('.gl-select-trigger').addEventListener('click', () => tList.classList.toggle('open'));
