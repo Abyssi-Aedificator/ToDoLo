@@ -1,4 +1,5 @@
 1.7.1
+- Fixed sticky group headers overlapping task content when scrolling
 - Documented commit and push policies in AGENTS.md
 
 1.7.0
