@@ -759,6 +759,13 @@
   }
 
   .recur-end-row { margin-bottom: 10px; }
+  .recur-interval-row {
+    display: flex; align-items: flex-end; gap: 8px; margin-top: 8px;
+  }
+  .recur-interval-row .recur-interval-unit {
+    font-size: 0.85rem; opacity: 0.7; padding-bottom: 9px;
+  }
+  .recur-interval-row .recur-count-input { flex: none; }
   .recur-end-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
   .recur-end-fields .gl-select { flex: 1; min-width: 130px; }
   .recur-end-or { font-size: 0.8rem; opacity: 0.5; padding-bottom: 6px; }
@@ -1665,6 +1672,11 @@
               </button>
               <div class="gl-select-menu"></div>
             </div>
+            <div class="recur-interval-row" id="tRecurIntervalWrap" style="display:none">
+              <label class="field-label">Every</label>
+              <input type="number" id="tRecurInterval" class="text-input" min="1" max="99" value="1">
+              <span class="recur-interval-unit" id="tRecurIntervalUnit">days</span>
+            </div>
           </div>
         </div>
 
@@ -2254,6 +2266,7 @@
     if (!Array.isArray(t.logbook)) t.logbook = [];
     if (t.recurEnd === undefined) t.recurEnd = '';
     if (t.recurCount === undefined) t.recurCount = null;
+    if (t.recurInterval === undefined) t.recurInterval = 1;
     if (t.completionCount === undefined) t.completionCount = 0;
   }
   function backfillState() {
@@ -2838,7 +2851,7 @@
       const iconSpan = document.createElement('span');
       iconSpan.innerHTML = ICON.repeat;
       c.appendChild(iconSpan);
-      c.appendChild(document.createTextNode(t.recur.charAt(0).toUpperCase() + t.recur.slice(1)));
+      c.appendChild(document.createTextNode(recurLabel(t)));
       meta.appendChild(c); any = true;
     }
     if (t.subtasks && t.subtasks.length) {
@@ -2943,7 +2956,7 @@
 
   const PRIO_RANK = { none: 0, low: 1, med: 2, high: 3 };
 
-  const RECUR_RANK = { none: 0, daily: 1, weekly: 2, monthly: 3 };
+  const RECUR_RANK = { none: 0, daily: 1, weekly: 2, monthly: 3, yearly: 4 };
 
   function sortCompareBy(mode, dir, a, b, ownerA, ownerB) {
     if (mode === 'manual' || mode === 'none') return 0;
@@ -2980,14 +2993,21 @@
   }
 
   const PRIO_LABEL = { none: 'No priority', low: 'Low priority', med: 'Med priority', high: 'High priority' };
-  const RECUR_LABEL = { none: 'No recurrence', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
+  const RECUR_LABEL = { none: 'No recurrence', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' };
+  const RECUR_UNIT = { daily: 'days', weekly: 'weeks', monthly: 'months', yearly: 'years' };
+  function recurLabel(t) {
+    const base = RECUR_LABEL[t.recur || 'none'];
+    const interval = t.recurInterval || 1;
+    if (interval <= 1) return base;
+    return 'Every ' + interval + ' ' + (RECUR_UNIT[t.recur] || 'periods');
+  }
 
   function groupLabel(t, owner) {
     const mode = sortBy.value;
     if (mode === 'due') return t.due ? monthYearLabel(t.due) : 'No due date';
     if (mode === 'created') { const d = new Date(t.id); return monthYearLabel(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')); }
     if (mode === 'priority') return PRIO_LABEL[t.priority || 'none'];
-    if (mode === 'recur') return RECUR_LABEL[t.recur || 'none'];
+    if (mode === 'recur') return recurLabel(t);
     if (mode === 'list') return owner ? owner.name : null;
     if (mode === 'alpha') return t.text.charAt(0).toUpperCase() || null;
     return null;
@@ -3023,7 +3043,7 @@
       if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo';
     }
     if (!t.done && t.recur && t.recur !== 'none' && t.due) {
-      const next = nextDate(t.due, t.recur);
+      const next = nextDate(t.due, t.recur, t.recurInterval || 1);
       let shouldStop = false;
       if (t.recurEnd && next > t.recurEnd) shouldStop = true;
       if (t.recurCount !== null && t.recurCount !== undefined) {
@@ -3050,11 +3070,12 @@
     }, animDelay);
   }
 
-  function nextDate(d, recur) {
+  function nextDate(d, recur, interval = 1) {
     const dt = new Date(d + 'T00:00');
-    if (recur === 'daily') dt.setDate(dt.getDate() + 1);
-    else if (recur === 'weekly') dt.setDate(dt.getDate() + 7);
-    else if (recur === 'monthly') { const origDay = dt.getDate(); dt.setMonth(dt.getMonth() + 1); if (dt.getDate() !== origDay) dt.setDate(0); }
+    if (recur === 'daily') dt.setDate(dt.getDate() + interval);
+    else if (recur === 'weekly') dt.setDate(dt.getDate() + interval * 7);
+    else if (recur === 'monthly') { const origDay = dt.getDate(); dt.setMonth(dt.getMonth() + interval); if (dt.getDate() !== origDay) dt.setDate(0); }
+    else if (recur === 'yearly') { const origDay = dt.getDate(); dt.setFullYear(dt.getFullYear() + interval); if (dt.getDate() !== origDay) dt.setDate(0); }
     const p = n => String(n).padStart(2, '0');
     return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`;
   }
@@ -3093,6 +3114,13 @@
     let priority = 'none';
     text = text.replace(/!(high|med|low|none)\b/gi, (_, p) => { priority = p.toLowerCase(); return ''; });
     let due = '';
+    let recur = 'none', recurInterval = 1;
+    text = text.replace(/\bevery (\d+) (day|week|month|year)s?\b/gi, (_, n, u) => {
+      recur = { day: 'daily', week: 'weekly', month: 'monthly', year: 'yearly' }[u.toLowerCase()];
+      recurInterval = Math.min(99, Math.max(1, Number(n)));
+      return '';
+    });
+    text = text.replace(/\b(daily|weekly|monthly|yearly)\b/gi, (_, r) => { recur = r.toLowerCase(); return ''; });
     text = text.replace(/\b(tomorrow)\b/i, () => { due = dateStr(1); return ''; });
     text = text.replace(/\b(today)\b/i, () => { due = dateStr(0); return ''; });
     text = text.replace(/\bnext week\b/i, () => { due = dateStr(7); return ''; });
@@ -3100,18 +3128,18 @@
     text = text.replace(/\bin (\d+) days?\b/i, (_, n) => { due = dateStr(Number(n)); return ''; });
     text = text.replace(/\bdue (\d{4}-\d{2}-\d{2})\b/i, (_, d) => { due = d; return ''; });
     text = text.replace(/\s+/g, ' ').trim();
-    return { text, tags, priority, due };
+    return { text, tags, priority, due, recur, recurInterval };
   }
 
   function addTask() {
     const val = input.value.trim();
     if (!val) return;
-    const { text, tags, priority, due } = parseNaturalInput(val);
+    const { text, tags, priority, due, recur, recurInterval } = parseNaturalInput(val);
     if (!text && !tags.length) return;
     const target = isAllView() ? state.lists[0] : activeList();
     const task = {
       id: nextId++, text: text || '', done: false,
-      desc: '', due, recur: 'none', recurEnd: '', recurCount: null, completionCount: 0, priority, status: 'todo', subtasks: [], tags, links: [], logbook: []
+      desc: '', due, recur, recurInterval: recurInterval || 1, recurEnd: '', recurCount: null, completionCount: 0, priority, status: 'todo', subtasks: [], tags, links: [], logbook: []
     };
     target.todos.unshift(task);
     input.value = '';
@@ -3133,6 +3161,7 @@
     tRecur.value = t.recur || 'none';
     tRecurEnd.value = t.recurEnd || '';
     tRecurCount.value = t.recurCount || '';
+    $('tRecurInterval').value = t.recurInterval || 1;
     syncRecurAvailability();
 
     populateListSelect(editingTaskList.id);
@@ -3719,6 +3748,10 @@
     const recurEndRow = $('recurEndRow');
     const hasRecur = tRecur.value !== 'none' && tDue.value;
     recurEndRow.style.display = hasRecur ? '' : 'none';
+    const wrap = $('tRecurIntervalWrap');
+    const unit = $('tRecurIntervalUnit');
+    wrap.style.display = hasRecur ? 'flex' : 'none';
+    unit.textContent = (RECUR_UNIT[tRecur.value] || 'periods');
   }
 
   tDue = createGlassDatePicker('tDue', '', () => {
@@ -3730,11 +3763,12 @@
     }
   });
   tRecur = createGlassSelect('tRecur', [
-    {value:'none', label:'None'}, {value:'daily', label:'Daily'}, {value:'weekly', label:'Weekly'}, {value:'monthly', label:'Monthly'}
+    {value:'none', label:'No recurrence'}, {value:'daily', label:'Daily'}, {value:'weekly', label:'Weekly'}, {value:'monthly', label:'Monthly'}, {value:'yearly', label:'Yearly'}
   ], 'none', () => {
     if (editingTask) {
       editingTask.recur = tRecur.value;
       if (tRecur.value === 'none') { editingTask.recurEnd = ''; editingTask.recurCount = null; tRecurEnd.value = ''; $('tRecurCount').value = ''; }
+      if (editingTask.recurInterval === undefined) editingTask.recurInterval = 1;
       syncRecurAvailability();
       commit();
     }
@@ -3758,6 +3792,16 @@
   });
   tList.querySelector('.gl-select-trigger').addEventListener('click', () => tList.classList.toggle('open'));
   document.addEventListener('click', e => { if (!document.querySelector('.gl-select.open')) return; document.querySelectorAll('.gl-select.open').forEach(el => { if (!el.contains(e.target)) el.classList.remove('open'); }); });
+  const tRecurIntervalInput = $('tRecurInterval');
+  tRecurIntervalInput.addEventListener('input', () => {
+    if (!editingTask) return;
+    let v = parseInt(tRecurIntervalInput.value);
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > 99) v = 99;
+    tRecurIntervalInput.value = v;
+    editingTask.recurInterval = v;
+    commit();
+  });
   tSubAdd.onclick = addSub;
   tSubInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSub(); } });
   tTagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
@@ -4627,10 +4671,10 @@
 
   $('ctxSkip').addEventListener('click', () => {
     if (!_ctxTask || _ctxTask.done || !_ctxTask.recur || _ctxTask.recur === 'none' || !_ctxTask.due) return;
-    _ctxTask.due = nextDate(_ctxTask.due, _ctxTask.recur);
+    _ctxTask.due = nextDate(_ctxTask.due, _ctxTask.recur, _ctxTask.recurInterval || 1);
     if (_ctxTask.status === 'in-progress' || _ctxTask.status === 'paused') _ctxTask.status = 'todo';
     save(); renderAll();
-    toast(`Skipped "${_ctxTask.text}" — next ${_ctxTask.recur} due`);
+    toast(`Skipped "${_ctxTask.text}" — next ${recurLabel(_ctxTask)} due`);
     closeCtxMenu();
   });
 
