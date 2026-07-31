@@ -2,6 +2,10 @@
 - The current group shows in a reserved bar at the top of the list that swaps as you scroll, while upcoming groups are labeled inline — group names never overlap tasks
 - Tasks now fade out as they scroll under the top edge of the list instead of being cut off
 - Documented commit and push policies in AGENTS.md
+- Yearly recurrence plus custom intervals — repeat every N days, weeks, months, or years, with end-of-month and leap-day handling
+- Quick add understands recurrence in plain language, e.g. "every 2 weeks" or "yearly"
+- Tag manager in Settings — rename, merge, or delete tags across all tasks with undo
+- Quick Open (Ctrl+K) now matches subtask text and shows the matching subtask
 
 1.7.0
 - Per-list filter & sort — each list and smart view remembers its own filters, sort column, and sort direction
