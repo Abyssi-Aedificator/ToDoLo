@@ -1114,15 +1114,6 @@
   #list .task-row.removing { opacity: 0; transform: scale(0.96); max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; pointer-events: none; }
   #list .empty { align-items: center; }
   .task-group { margin-bottom: 4px; }
-  .task-group .group-sep {
-    background: rgba(var(--w),0.10);
-    border: 1px solid rgba(var(--w),0.14); border-radius: 10px;
-    padding: 5px 10px; margin-bottom: 8px;
-    display: flex; align-items: center; gap: 10px;
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
-    color: var(--ink); opacity: 0.85; text-transform: uppercase;
-  }
-  .task-group .group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
   #list .task-row.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
   #list .task-row.focused { outline: 2px solid rgba(var(--a),0.6); outline-offset: -2px; }
   .batch-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; margin-bottom: 10px; border-radius: 12px; background: rgba(var(--a),0.2); border: 1px solid rgba(var(--a),0.35); font-size: 0.85rem; }
@@ -2688,12 +2679,7 @@
       } else if (group !== prevGroup) {
         groupEl = document.createElement('div');
         groupEl.className = 'task-group';
-        const sep = document.createElement('div');
-        sep.className = 'group-sep';
-        const span = document.createElement('span');
-        span.textContent = group;
-        sep.appendChild(span);
-        groupEl.appendChild(sep);
+        groupEl.dataset.group = group;
         list.appendChild(groupEl);
         prevGroup = group;
       }
@@ -2767,9 +2753,9 @@
       (groupEl || list).appendChild(li);
     });
 
-    const firstSep = list.querySelector('.task-group .group-sep span');
-    if (firstSep) {
-      groupBar.textContent = firstSep.textContent;
+    const firstGroup = list.querySelector('.task-group');
+    if (firstGroup) {
+      groupBar.textContent = firstGroup.dataset.group;
       groupBar.classList.add('show');
     } else {
       groupBar.classList.remove('show');
@@ -4378,9 +4364,8 @@
     list.querySelectorAll('.task-group').forEach(g => {
       if (g.getBoundingClientRect().top <= top + 1) cur = g;
     });
-    if (cur) {
-      const label = cur.querySelector('.group-sep span');
-      if (label && groupBar.textContent !== label.textContent) groupBar.textContent = label.textContent;
+    if (cur && cur.dataset.group && groupBar.textContent !== cur.dataset.group) {
+      groupBar.textContent = cur.dataset.group;
     }
   }
 
