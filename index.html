@@ -475,6 +475,30 @@
   }
   .settings-hint { font-size: 0.82rem; opacity: 0.65; margin: 0 0 14px; line-height: 1.5; }
 
+  .text-input {
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--w),0.2);
+    background: rgba(var(--w),0.1);
+    color: var(--ink); font-size: 0.88rem; outline: none; font-family: inherit;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .text-input::placeholder { opacity: 0.5; }
+  .text-input:focus { background: rgba(var(--w),0.18); border-color: rgba(var(--w),0.4); }
+
+  .tag-mgr-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 4px;
+    border-bottom: 1px solid rgba(var(--w),0.08);
+  }
+  .tag-mgr-row:last-child { border-bottom: none; }
+  .tag-mgr-swatch { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+  .tag-mgr-name { font-weight: 600; font-size: 0.9rem; }
+  .tag-mgr-count { font-size: 0.78rem; opacity: 0.6; margin-right: auto; }
+  .tag-mgr-actions { display: flex; gap: 6px; flex: none; }
+  .tag-mgr-actions .btn-ghost, .tag-mgr-actions .btn-danger { padding: 7px 12px; font-size: 0.78rem; border-radius: 10px; }
+  .tag-mgr-input { flex: 1; min-width: 160px; }
+
   .mode-toggle {
     display: flex; gap: 4px; padding: 4px;
     background: rgba(var(--w),0.06); border: 1px solid rgba(var(--w),0.1);
@@ -1786,6 +1810,7 @@
         <button class="settings-tab-btn active" data-tab="theme">Theme</button>
         <button class="settings-tab-btn" data-tab="sync">Sync &amp; Backup</button>
         <button class="settings-tab-btn" data-tab="statistics">Statistics</button>
+        <button class="settings-tab-btn" data-tab="tags">Tags</button>
       </div>
 
       <div class="settings-scroll">
@@ -1863,6 +1888,15 @@
 
         <!-- STATISTICS TAB -->
         <div class="settings-panel" data-panel="statistics" id="statsPanel"></div>
+
+        <!-- TAGS TAB -->
+        <div class="settings-panel" data-panel="tags">
+          <div class="settings-card">
+            <h3 class="settings-subhead">Tags</h3>
+            <p class="settings-hint">Rename, merge or delete the tags used across your tasks.</p>
+            <div id="tagsPanel"></div>
+          </div>
+        </div>
 
       </div><!-- .settings-scroll -->
       <div class="modal-actions">
@@ -2648,6 +2682,117 @@
       .concat(tags.map(t => ({value:t, label:'#' + t})));
     tagFilter.setOptions(opts);
     tagFilter.value = opts.some(o => o.value === cur) ? cur : 'any';
+  }
+
+  function normalizeTag(s) { return s.trim().replace(/^#+/, '').toLowerCase(); }
+  function countTag(tag) {
+    let n = 0;
+    state.lists.forEach(l => l.todos.forEach(t => { if ((t.tags || []).includes(tag)) n++; }));
+    return n;
+  }
+  function renderTagsPanel() {
+    const panel = $('tagsPanel');
+    panel.innerHTML = '';
+    const tags = allTags();
+    if (!tags.length) {
+      const p = document.createElement('p');
+      p.className = 'settings-hint';
+      p.textContent = 'No tags yet. Add one with #tag in the quick-add box or the task panel.';
+      panel.appendChild(p);
+      return;
+    }
+    tags.forEach(tag => {
+      const row = document.createElement('div');
+      row.className = 'tag-mgr-row';
+      const sw = document.createElement('span');
+      sw.className = 'tag-mgr-swatch';
+      sw.style.background = tagColor(tag);
+      const name = document.createElement('span');
+      name.className = 'tag-mgr-name';
+      name.textContent = '#' + tag;
+      const count = document.createElement('span');
+      count.className = 'tag-mgr-count';
+      const n = countTag(tag);
+      count.textContent = n + (n === 1 ? ' task' : ' tasks');
+      const actions = document.createElement('span');
+      actions.className = 'tag-mgr-actions';
+      const bRename = document.createElement('button');
+      bRename.type = 'button'; bRename.className = 'btn-ghost'; bRename.textContent = 'Rename';
+      const bMerge = document.createElement('button');
+      bMerge.type = 'button'; bMerge.className = 'btn-ghost'; bMerge.textContent = 'Merge';
+      const bDel = document.createElement('button');
+      bDel.type = 'button'; bDel.className = 'btn-danger'; bDel.textContent = 'Delete';
+      actions.append(bRename, bMerge, bDel);
+      row.append(sw, name, count, actions);
+      panel.appendChild(row);
+      bRename.onclick = () => startTagEdit(row, name, tag, 'rename');
+      bMerge.onclick = () => startTagEdit(row, name, tag, 'merge');
+      bDel.onclick = async () => {
+        if (await confirmDialog(`Remove the tag #${tag} from ${n} ${n === 1 ? 'task' : 'tasks'}? The tasks stay, only the tag goes.`, 'Delete tag', 'Delete')) {
+          deleteTagEverywhere(tag);
+          toast(`Deleted tag #${tag}`);
+        }
+      };
+    });
+  }
+  function startTagEdit(row, nameEl, tag, mode) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'tag-mgr-input text-input';
+    input.value = mode === 'rename' ? tag : '';
+    input.placeholder = mode === 'merge' ? 'merge into #tag…' : '#tag';
+    input.spellcheck = false;
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    const finish = commitIt => {
+      if (done) return;
+      done = true;
+      if (commitIt) {
+        const val = normalizeTag(input.value);
+        if (val && val !== tag) {
+          applyTagReplace(tag, val, mode === 'rename' ? 'Rename tag' : 'Merge tag');
+          toast(mode === 'rename' ? `Renamed #${tag} to #${val}` : `Merged #${tag} into #${val}`);
+        }
+      }
+      renderTagsPanel();
+    };
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    });
+    input.addEventListener('blur', () => finish(false));
+  }
+  function applyTagReplace(oldTag, newTag, description) {
+    const affected = [];
+    state.lists.forEach(l => l.todos.forEach(t => {
+      if (Array.isArray(t.tags) && t.tags.includes(oldTag)) affected.push(t);
+    }));
+    if (!affected.length) return;
+    const snap = affected.map(t => [t, (t.tags || []).slice()]);
+    pushUndo(description, () => {
+      snap.forEach(([t, tags]) => { t.tags = tags.slice(); });
+      save(); renderAll(); renderTagsPanel();
+    });
+    affected.forEach(t => {
+      t.tags = t.tags.filter(x => x !== oldTag);
+      if (!t.tags.includes(newTag)) t.tags.push(newTag);
+    });
+    save(); renderAll(); renderTagsPanel();
+  }
+  function deleteTagEverywhere(tag) {
+    const affected = [];
+    state.lists.forEach(l => l.todos.forEach(t => {
+      if (Array.isArray(t.tags) && t.tags.includes(tag)) affected.push(t);
+    }));
+    const snap = affected.map(t => [t, (t.tags || []).slice()]);
+    pushUndo('Delete tag', () => {
+      snap.forEach(([t, tags]) => { t.tags = tags.slice(); });
+      save(); renderAll(); renderTagsPanel();
+    });
+    affected.forEach(t => { t.tags = t.tags.filter(x => x !== tag); });
+    save(); renderAll(); renderTagsPanel();
   }
 
   function renderTasks() {
@@ -3658,6 +3803,7 @@
       document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
       document.querySelectorAll('.settings-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
       if (tab === 'statistics') renderStats();
+      if (tab === 'tags') renderTagsPanel();
     };
   });
 
