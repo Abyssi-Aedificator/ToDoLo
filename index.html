@@ -1114,6 +1114,14 @@
   #list .task-row.removing { opacity: 0; transform: scale(0.96); max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; pointer-events: none; }
   #list .empty { align-items: center; }
   .task-group { margin-bottom: 4px; }
+  .task-group .group-label {
+    display: flex; align-items: center; gap: 10px;
+    padding: 2px 0; margin-bottom: 8px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+    color: var(--ink); opacity: 0.6; text-transform: uppercase;
+  }
+  .task-group .group-label::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
+  .task-group.current .group-label { display: none; }
   #list .task-row.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
   #list .task-row.focused { outline: 2px solid rgba(var(--a),0.6); outline-offset: -2px; }
   .batch-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; margin-bottom: 10px; border-radius: 12px; background: rgba(var(--a),0.2); border: 1px solid rgba(var(--a),0.35); font-size: 0.85rem; }
@@ -2680,6 +2688,10 @@
         groupEl = document.createElement('div');
         groupEl.className = 'task-group';
         groupEl.dataset.group = group;
+        const label = document.createElement('div');
+        label.className = 'group-label';
+        label.textContent = group;
+        groupEl.appendChild(label);
         list.appendChild(groupEl);
         prevGroup = group;
       }
@@ -2755,6 +2767,7 @@
 
     const firstGroup = list.querySelector('.task-group');
     if (firstGroup) {
+      firstGroup.classList.add('current');
       groupBar.textContent = firstGroup.dataset.group;
       groupBar.classList.add('show');
     } else {
@@ -4364,8 +4377,12 @@
     list.querySelectorAll('.task-group').forEach(g => {
       if (g.getBoundingClientRect().top <= top + 1) cur = g;
     });
-    if (cur && cur.dataset.group && groupBar.textContent !== cur.dataset.group) {
-      groupBar.textContent = cur.dataset.group;
+    list.querySelectorAll('.task-group.current').forEach(g => g.classList.remove('current'));
+    if (cur) {
+      cur.classList.add('current');
+      if (cur.dataset.group && groupBar.textContent !== cur.dataset.group) {
+        groupBar.textContent = cur.dataset.group;
+      }
     }
   }
 

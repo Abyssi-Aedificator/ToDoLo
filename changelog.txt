@@ -1,5 +1,5 @@
 1.7.1
-- Group headers now appear in a reserved bar at the top of the list that swaps to the current group as you scroll, so the group name never overlaps tasks
+- The current group shows in a reserved bar at the top of the list that swaps as you scroll, while upcoming groups are labeled inline — group names never overlap tasks
 - Documented commit and push policies in AGENTS.md
 
 1.7.0
