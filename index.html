@@ -1082,7 +1082,7 @@
   .sort-label.sort-then { margin-left: 8px; }
   #sortDir.desc svg, #sortDir2.desc svg, #sortDir3.desc svg { transform: rotate(180deg); }
 
-  #list { flex: 1; overflow-y: auto; position: relative; }
+  #list { flex: 1; overflow-y: auto; position: relative; isolation: isolate; }
   #list::before {
     content: ''; position: sticky; top: 0; left: 0; right: 0; display: block; height: 16px; margin-top: -16px;
     background: linear-gradient(to bottom, rgba(var(--w),0.12) 0%, transparent 100%);
@@ -1102,7 +1102,7 @@
   #list .empty { align-items: center; }
   .task-group { margin-bottom: 4px; }
   .task-group .group-sep {
-    background: rgba(var(--w),0.12); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    background: rgba(var(--w),0.12); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
     border: 1px solid rgba(var(--w),0.14); border-radius: 10px;
     padding: 5px 10px; margin-bottom: 8px;
     display: flex; align-items: center; gap: 10px;
