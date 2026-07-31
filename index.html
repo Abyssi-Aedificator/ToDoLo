@@ -1171,7 +1171,7 @@
     color: var(--ink); opacity: 0.6; text-transform: uppercase;
   }
   .task-group .group-label::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
-  .task-group.current .group-label { display: none; }
+  .task-group.current .group-label { visibility: hidden; }
   #list .task-row.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
   #list .task-row.focused { outline: 2px solid rgba(var(--a),0.6); outline-offset: -2px; }
   .batch-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; margin-bottom: 10px; border-radius: 12px; background: rgba(var(--a),0.2); border: 1px solid rgba(var(--a),0.35); font-size: 0.85rem; }
