@@ -1082,7 +1082,20 @@
   .sort-label.sort-then { margin-left: 8px; }
   #sortDir.desc svg, #sortDir2.desc svg, #sortDir3.desc svg { transform: rotate(180deg); }
 
-  #list { flex: 1; overflow-y: auto; position: relative; isolation: isolate; }
+  .group-bar {
+    display: none;
+    align-items: center; gap: 10px;
+    padding: 6px 12px; margin-bottom: 8px;
+    border-radius: 10px;
+    background: rgba(var(--w),0.10);
+    border: 1px solid rgba(var(--w),0.14);
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+    color: var(--ink); opacity: 0.85; text-transform: uppercase;
+  }
+  .group-bar.show { display: flex; }
+  .group-bar::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
+
+  #list { flex: 1; overflow-y: auto; position: relative; }
   #list::before {
     content: ''; position: sticky; top: 0; left: 0; right: 0; display: block; height: 16px; margin-top: -16px;
     background: linear-gradient(to bottom, rgba(var(--w),0.12) 0%, transparent 100%);
@@ -1102,13 +1115,12 @@
   #list .empty { align-items: center; }
   .task-group { margin-bottom: 4px; }
   .task-group .group-sep {
-    background: rgba(var(--w),0.12); backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%);
+    background: rgba(var(--w),0.10);
     border: 1px solid rgba(var(--w),0.14); border-radius: 10px;
     padding: 5px 10px; margin-bottom: 8px;
     display: flex; align-items: center; gap: 10px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
     color: var(--ink); opacity: 0.85; text-transform: uppercase;
-    position: sticky; top: 0; z-index: 2;
   }
   .task-group .group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
   #list .task-row.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
@@ -1561,6 +1573,7 @@
         <button class="btn-ghost" id="batchExit">Cancel</button>
       </div>
 
+      <div class="group-bar" id="groupBar"></div>
       <div id="list"></div>
 
       <div class="cal-view" id="calView">
@@ -2133,6 +2146,7 @@
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
+  const groupBar = $('groupBar'), mainEl = document.querySelector('.main');
   const filtersToggleBtn = $('filtersToggleBtn'), filtersPanel = $('filtersPanel'), filtersBadge = $('filtersBadge');
   const filters = document.querySelectorAll('.filter');
   let dueFilter, prioFilter, tagFilter;
@@ -2752,6 +2766,14 @@
       li.append(selCb, check, main, del);
       (groupEl || list).appendChild(li);
     });
+
+    const firstSep = list.querySelector('.task-group .group-sep span');
+    if (firstSep) {
+      groupBar.textContent = firstSep.textContent;
+      groupBar.classList.add('show');
+    } else {
+      groupBar.classList.remove('show');
+    }
 
     const left = shown.filter(({ t }) => !t.done).length;
     count.textContent = `${left} item${left !== 1 ? 's' : ''} left`;
@@ -4345,7 +4367,22 @@
   // ---- scroll shadow ----
   list.addEventListener('scroll', () => {
     list.classList.toggle('scrolled', list.scrollTop > 4);
+    updateGroupBar();
   });
+  mainEl.addEventListener('scroll', updateGroupBar);
+  function updateGroupBar() {
+    if (!groupBar.classList.contains('show')) return;
+    const scroller = list.scrollHeight > list.clientHeight ? list : mainEl;
+    const top = scroller.getBoundingClientRect().top;
+    let cur = null;
+    list.querySelectorAll('.task-group').forEach(g => {
+      if (g.getBoundingClientRect().top <= top + 1) cur = g;
+    });
+    if (cur) {
+      const label = cur.querySelector('.group-sep span');
+      if (label && groupBar.textContent !== label.textContent) groupBar.textContent = label.textContent;
+    }
+  }
 
   // ---- Quick Open (Cmd/Ctrl+K) ----
   const quickOpenOverlay = $('quickOpenOverlay');
@@ -4874,6 +4911,7 @@
   function updateViewMode() {
     const isCal = viewMode === 'calendar';
     list.style.display = isCal ? 'none' : '';
+    groupBar.style.display = isCal ? 'none' : '';
     calView.classList.toggle('show', isCal);
     $('footerRow').style.display = isCal ? 'none' : '';
     $('batchBar').style.display = 'none';
