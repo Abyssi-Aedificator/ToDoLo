@@ -335,10 +335,10 @@
     transition: background 0.2s, opacity 0.2s;
   }
   .lists-sort-btn:hover { background: rgba(var(--w),0.18); opacity: 1; }
-  .lists li.dragging, .subtasks li.dragging, #list li.dragging { opacity: 0.4; }
-  .lists li.drag-over, .subtasks li.drag-over, #list li.drag-over { box-shadow: inset 0 2px 0 rgba(var(--w),0.7); }
+  .lists li.dragging, .subtasks li.dragging, #list .task-row.dragging { opacity: 0.4; }
+  .lists li.drag-over, .subtasks li.drag-over, #list .task-row.drag-over { box-shadow: inset 0 2px 0 rgba(var(--w),0.7); }
   .lists li.drag-over-task { box-shadow: inset 0 0 0 2px rgba(var(--a),0.5); background: rgba(var(--a),0.08); }
-  .subtasks li[draggable="true"], #list li[draggable="true"] { cursor: grab; }
+  .subtasks li[draggable="true"], #list .task-row[draggable="true"] { cursor: grab; }
   .lists .all-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.9; }
 
   .new-list-btn {
@@ -474,6 +474,30 @@
     letter-spacing: -0.01em;
   }
   .settings-hint { font-size: 0.82rem; opacity: 0.65; margin: 0 0 14px; line-height: 1.5; }
+
+  .text-input {
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--w),0.2);
+    background: rgba(var(--w),0.1);
+    color: var(--ink); font-size: 0.88rem; outline: none; font-family: inherit;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .text-input::placeholder { opacity: 0.5; }
+  .text-input:focus { background: rgba(var(--w),0.18); border-color: rgba(var(--w),0.4); }
+
+  .tag-mgr-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 4px;
+    border-bottom: 1px solid rgba(var(--w),0.08);
+  }
+  .tag-mgr-row:last-child { border-bottom: none; }
+  .tag-mgr-swatch { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+  .tag-mgr-name { font-weight: 600; font-size: 0.9rem; }
+  .tag-mgr-count { font-size: 0.78rem; opacity: 0.6; margin-right: auto; }
+  .tag-mgr-actions { display: flex; gap: 6px; flex: none; }
+  .tag-mgr-actions .btn-ghost, .tag-mgr-actions .btn-danger { padding: 7px 12px; font-size: 0.78rem; border-radius: 10px; }
+  .tag-mgr-input { flex: 1; min-width: 160px; }
 
   .mode-toggle {
     display: flex; gap: 4px; padding: 4px;
@@ -758,11 +782,40 @@
     margin-top: 4px; margin-bottom: 6px;
   }
 
-  .recur-end-row { margin-bottom: 10px; }
-  .recur-end-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
-  .recur-end-fields .gl-select { flex: 1; min-width: 130px; }
-  .recur-end-or { font-size: 0.8rem; opacity: 0.5; padding-bottom: 6px; }
-  .recur-count-wrap { display: flex; align-items: flex-end; gap: 6px; }
+  .recur-options {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    background: rgba(var(--w),0.05);
+    border: 1px solid rgba(var(--w),0.1);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .recur-opt { display: flex; flex-direction: column; gap: 6px; }
+  .recur-opt:first-child { min-width: 150px; }
+  .recur-opt .field-label { margin: 0; }
+  .recur-interval { display: flex; align-items: center; gap: 8px; }
+  .recur-interval .recur-interval-unit { font-size: 0.88rem; opacity: 0.7; }
+  .seg { display: flex; gap: 4px; padding: 3px; width: max-content; }
+  .seg button {
+    padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.78rem; color: var(--ink);
+    border: 1px solid rgba(var(--w),0.18);
+    background: transparent;
+    opacity: 0.65;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .seg button:hover { opacity: 1; background: rgba(var(--w),0.1); }
+  .seg button.on {
+    opacity: 1;
+    background: rgba(var(--w),0.35);
+    border-color: rgba(var(--w),0.45);
+    font-weight: 600;
+  }
+  .recur-end-inputs { margin-top: 4px; }
+  .recur-end-inputs .recur-end-date { max-width: 180px; }
+  .recur-count-wrap { display: flex; align-items: center; gap: 8px; }
+  .recur-count-suffix { font-size: 0.88rem; opacity: 0.7; }
   .recur-count-input {
     width: 60px; padding: 9px 8px; border-radius: 10px;
     border: 1px solid rgba(var(--w),0.3); background: rgba(var(--w),0.15);
@@ -770,7 +823,6 @@
     font-family: inherit; outline: none;
   }
   .recur-count-input:focus { background: rgba(var(--w),0.25); border-color: rgba(var(--w),0.6); }
-  .field-label-sm { font-size: 0.75rem; opacity: 0.6; margin-bottom: 4px; }
 
   .prio-group { display: flex; gap: 6px; }
   .prio-group button {
@@ -1082,14 +1134,25 @@
   .sort-label.sort-then { margin-left: 8px; }
   #sortDir.desc svg, #sortDir2.desc svg, #sortDir3.desc svg { transform: rotate(180deg); }
 
-  #list { list-style: none; flex: 1; overflow-y: auto; position: relative; }
-  #list::before {
-    content: ''; position: sticky; top: 0; left: 0; right: 0; display: block; height: 16px; margin-top: -16px;
-    background: linear-gradient(to bottom, rgba(var(--w),0.12) 0%, transparent 100%);
-    opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 3;
+  .group-bar {
+    display: none;
+    align-items: center; gap: 10px;
+    padding: 6px 12px; margin-bottom: 8px;
+    border-radius: 10px;
+    background: rgba(var(--w),0.10);
+    border: 1px solid rgba(var(--w),0.14);
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+    color: var(--ink); opacity: 0.85; text-transform: uppercase;
   }
-  #list.scrolled::before { opacity: 1; }
-  #list li {
+  .group-bar.show { display: flex; }
+  .group-bar::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
+
+  #list { flex: 1; overflow-y: auto; position: relative; }
+  #list.scrolled {
+    mask-image: linear-gradient(to bottom, transparent 0, black 18px, black 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 18px, black 100%);
+  }
+  #list .task-row {
     display: flex; align-items: flex-start; gap: 12px;
     padding: 13px 14px; margin-bottom: 10px; border-radius: 14px;
     background: rgba(var(--w),0.12);
@@ -1097,27 +1160,27 @@
     transition: opacity 0.28s ease, transform 0.28s ease, max-height 0.3s ease, margin-bottom 0.3s ease, padding 0.3s ease;
     overflow: hidden;
   }
-  #list li.inserted { animation: pop 0.3s ease; }
-  #list li.removing { opacity: 0; transform: scale(0.96); max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; pointer-events: none; }
-  #list li.empty { align-items: center; }
-  #list li.group-sep {
-    background: none; border: none; padding: 4px 2px; margin-bottom: 6px;
+  #list .task-row.inserted { animation: pop 0.3s ease; }
+  #list .task-row.removing { opacity: 0; transform: scale(0.96); max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; pointer-events: none; }
+  #list .empty { align-items: center; }
+  .task-group { margin-bottom: 4px; }
+  .task-group .group-label {
     display: flex; align-items: center; gap: 10px;
+    padding: 2px 0; margin-bottom: 8px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
     color: var(--ink); opacity: 0.6; text-transform: uppercase;
-    position: sticky; top: 0; z-index: 2;
   }
-  #list li.group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
-  #list li.group-sep:not(:first-child) { margin-top: 4px; }
-  #list li.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
-  #list li.focused { outline: 2px solid rgba(var(--a),0.6); outline-offset: -2px; }
+  .task-group .group-label::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
+  .task-group.current .group-label { display: none; }
+  #list .task-row.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
+  #list .task-row.focused { outline: 2px solid rgba(var(--a),0.6); outline-offset: -2px; }
   .batch-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; margin-bottom: 10px; border-radius: 12px; background: rgba(var(--a),0.2); border: 1px solid rgba(var(--a),0.35); font-size: 0.85rem; }
   .batch-bar #batchCount { font-weight: 600; margin-right: auto; }
   .batch-bar button { font-size: 0.8rem; padding: 5px 10px; }
-  #list li .select-cb { width: 18px; height: 18px; flex-shrink: 0; border-radius: 4px; border: 2px solid rgba(var(--w),0.5); cursor: pointer; display: none; align-items: center; justify-content: center; margin-top: 2px; }
-  #list.select-mode li .select-cb { display: flex; }
-  #list li .select-cb.checked { background: rgba(var(--a),0.8); border-color: rgba(var(--a),1); }
-  #list li .select-cb.checked::after { content: ''; width: 8px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translateY(-1px); }
+  #list .task-row .select-cb { width: 18px; height: 18px; flex-shrink: 0; border-radius: 4px; border: 2px solid rgba(var(--w),0.5); cursor: pointer; display: none; align-items: center; justify-content: center; margin-top: 2px; }
+  #list.select-mode .task-row .select-cb { display: flex; }
+  #list .task-row .select-cb.checked { background: rgba(var(--a),0.8); border-color: rgba(var(--a),1); }
+  #list .task-row .select-cb.checked::after { content: ''; width: 8px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translateY(-1px); }
   @keyframes pop {
     from { opacity: 0; transform: translateY(-6px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -1128,11 +1191,11 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 0.8rem; transition: background 0.2s;
   }
-  #list li.done .check {
+  #list .task-row.done .check {
     background: rgba(120,255,180,0.8); border-color: rgba(120,255,180,0.8); color: #14532d;
   }
   #list .text { flex: 1; font-size: 0.95rem; word-break: break-word; }
-  #list li.done .text { text-decoration: line-through; opacity: 0.55; }
+  #list .task-row.done .text { text-decoration: line-through; opacity: 0.55; }
   .del {
     display: flex; align-items: center; justify-content: center;
     background: none; border: none; color: var(--ink); opacity: 0.6;
@@ -1404,7 +1467,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.7.0</span>
+        ToDoLo<span class="brand-badge">v1.7.1</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -1559,7 +1622,8 @@
         <button class="btn-ghost" id="batchExit">Cancel</button>
       </div>
 
-      <ul id="list"></ul>
+      <div class="group-bar" id="groupBar"></div>
+      <div id="list"></div>
 
       <div class="cal-view" id="calView">
         <div class="cal-header">
@@ -1656,34 +1720,46 @@
           </div>
         </div>
 
-        <div class="recur-end-row" id="recurEndRow" style="display:none">
-          <label class="field-label">Repeat until</label>
-          <div class="recur-end-fields">
-            <div class="gl-select" id="tRecurEnd">
-              <button class="gl-select-trigger" type="button">
-                <svg class="gl-cal-icon" viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>
-                <span class="gl-select-label placeholder">yyyy-mm-dd</span>
-                <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </button>
-              <div class="gl-select-menu gl-cal-menu">
-                <div class="gl-cal-head">
-                  <button class="gl-cal-nav" type="button" data-dir="-1" title="Previous month">‹</button>
-                  <span class="gl-cal-title"></span>
-                  <button class="gl-cal-nav" type="button" data-dir="1" title="Next month">›</button>
-                </div>
-                <div class="gl-cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
-                <div class="gl-cal-grid"></div>
-                <div class="gl-cal-foot">
-                  <button class="gl-cal-action" type="button" data-action="today">Today</button>
-                  <button class="gl-cal-action" type="button" data-action="clear">Clear</button>
+        <div class="recur-options" id="recurEndRow" style="display:none">
+          <div class="recur-opt">
+            <label class="field-label">Repeats every</label>
+            <div class="recur-interval">
+              <input type="number" id="tRecurInterval" class="recur-count-input" min="1" max="99" value="1">
+              <span class="recur-interval-unit" id="tRecurIntervalUnit">days</span>
+            </div>
+          </div>
+          <div class="recur-opt">
+            <label class="field-label">Ends</label>
+            <div class="seg" id="tRecurEndMode">
+              <button type="button" data-end="never" class="on">Never</button>
+              <button type="button" data-end="date">On date</button>
+              <button type="button" data-end="count">After N times</button>
+            </div>
+            <div class="recur-end-inputs">
+              <div class="gl-select recur-end-date" id="tRecurEnd" style="display:none">
+                <button class="gl-select-trigger" type="button">
+                  <svg class="gl-cal-icon" viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v4M16 3v4"/></svg>
+                  <span class="gl-select-label placeholder">yyyy-mm-dd</span>
+                  <svg class="gl-chevron" viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <div class="gl-select-menu gl-cal-menu">
+                  <div class="gl-cal-head">
+                    <button class="gl-cal-nav" type="button" data-dir="-1" title="Previous month">‹</button>
+                    <span class="gl-cal-title"></span>
+                    <button class="gl-cal-nav" type="button" data-dir="1" title="Next month">›</button>
+                  </div>
+                  <div class="gl-cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+                  <div class="gl-cal-grid"></div>
+                  <div class="gl-cal-foot">
+                    <button class="gl-cal-action" type="button" data-action="today">Today</button>
+                    <button class="gl-cal-action" type="button" data-action="clear">Clear</button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <span class="recur-end-or">or</span>
-            <div class="recur-count-wrap">
-              <label class="field-label-sm">repeat</label>
-              <input type="number" id="tRecurCount" min="1" max="999" placeholder="∞" class="recur-count-input">
-              <label class="field-label-sm">times</label>
+              <div class="recur-count-wrap recur-end-count" id="tRecurCountWrap" style="display:none">
+                <input type="number" id="tRecurCount" min="1" max="999" placeholder="∞" class="recur-count-input">
+                <span class="recur-count-suffix">times</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1762,6 +1838,7 @@
         <button class="settings-tab-btn active" data-tab="theme">Theme</button>
         <button class="settings-tab-btn" data-tab="sync">Sync &amp; Backup</button>
         <button class="settings-tab-btn" data-tab="statistics">Statistics</button>
+        <button class="settings-tab-btn" data-tab="tags">Tags</button>
       </div>
 
       <div class="settings-scroll">
@@ -1840,6 +1917,15 @@
         <!-- STATISTICS TAB -->
         <div class="settings-panel" data-panel="statistics" id="statsPanel"></div>
 
+        <!-- TAGS TAB -->
+        <div class="settings-panel" data-panel="tags">
+          <div class="settings-card">
+            <h3 class="settings-subhead">Tags</h3>
+            <p class="settings-hint">Rename, merge or delete the tags used across your tasks.</p>
+            <div id="tagsPanel"></div>
+          </div>
+        </div>
+
       </div><!-- .settings-scroll -->
       <div class="modal-actions">
         <button class="btn-primary" id="settingsClose">Close</button>
@@ -1875,7 +1961,7 @@
   <div class="overlay" id="versionOverlay">
     <div class="modal confirm-modal" style="text-align:center">
       <h2>ToDoLo updated</h2>
-      <p style="margin-bottom:22px">Updated to v1.7.0.</p>
+      <p style="margin-bottom:22px">Updated to v1.7.1.</p>
       <div class="modal-actions" style="justify-content:center">
         <button class="btn-primary" id="versionOk">Got it</button>
       </div>
@@ -2023,7 +2109,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.7.0';
+  const APP_VERSION = '1.7.1';
 
   const $ = id => document.getElementById(id);
 
@@ -2131,6 +2217,7 @@
   const listsSortBtn = $('listsSortBtn');
   const listTitle = $('listTitle'), input = $('taskInput'), addBtn = $('addBtn');
   const list = $('list'), count = $('count'), clearDone = $('clearDone');
+  const groupBar = $('groupBar'), mainEl = document.querySelector('.main');
   const filtersToggleBtn = $('filtersToggleBtn'), filtersPanel = $('filtersPanel'), filtersBadge = $('filtersBadge');
   const filters = document.querySelectorAll('.filter');
   let dueFilter, prioFilter, tagFilter;
@@ -2241,6 +2328,7 @@
     if (!Array.isArray(t.logbook)) t.logbook = [];
     if (t.recurEnd === undefined) t.recurEnd = '';
     if (t.recurCount === undefined) t.recurCount = null;
+    if (t.recurInterval === undefined) t.recurInterval = 1;
     if (t.completionCount === undefined) t.completionCount = 0;
   }
   function backfillState() {
@@ -2624,6 +2712,117 @@
     tagFilter.value = opts.some(o => o.value === cur) ? cur : 'any';
   }
 
+  function normalizeTag(s) { return s.trim().replace(/^#+/, '').toLowerCase(); }
+  function countTag(tag) {
+    let n = 0;
+    state.lists.forEach(l => l.todos.forEach(t => { if ((t.tags || []).includes(tag)) n++; }));
+    return n;
+  }
+  function renderTagsPanel() {
+    const panel = $('tagsPanel');
+    panel.innerHTML = '';
+    const tags = allTags();
+    if (!tags.length) {
+      const p = document.createElement('p');
+      p.className = 'settings-hint';
+      p.textContent = 'No tags yet. Add one with #tag in the quick-add box or the task panel.';
+      panel.appendChild(p);
+      return;
+    }
+    tags.forEach(tag => {
+      const row = document.createElement('div');
+      row.className = 'tag-mgr-row';
+      const sw = document.createElement('span');
+      sw.className = 'tag-mgr-swatch';
+      sw.style.background = tagColor(tag);
+      const name = document.createElement('span');
+      name.className = 'tag-mgr-name';
+      name.textContent = '#' + tag;
+      const count = document.createElement('span');
+      count.className = 'tag-mgr-count';
+      const n = countTag(tag);
+      count.textContent = n + (n === 1 ? ' task' : ' tasks');
+      const actions = document.createElement('span');
+      actions.className = 'tag-mgr-actions';
+      const bRename = document.createElement('button');
+      bRename.type = 'button'; bRename.className = 'btn-ghost'; bRename.textContent = 'Rename';
+      const bMerge = document.createElement('button');
+      bMerge.type = 'button'; bMerge.className = 'btn-ghost'; bMerge.textContent = 'Merge';
+      const bDel = document.createElement('button');
+      bDel.type = 'button'; bDel.className = 'btn-danger'; bDel.textContent = 'Delete';
+      actions.append(bRename, bMerge, bDel);
+      row.append(sw, name, count, actions);
+      panel.appendChild(row);
+      bRename.onclick = () => startTagEdit(row, name, tag, 'rename');
+      bMerge.onclick = () => startTagEdit(row, name, tag, 'merge');
+      bDel.onclick = async () => {
+        if (await confirmDialog(`Remove the tag #${tag} from ${n} ${n === 1 ? 'task' : 'tasks'}? The tasks stay, only the tag goes.`, 'Delete tag', 'Delete')) {
+          deleteTagEverywhere(tag);
+          toast(`Deleted tag #${tag}`);
+        }
+      };
+    });
+  }
+  function startTagEdit(row, nameEl, tag, mode) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'tag-mgr-input text-input';
+    input.value = mode === 'rename' ? tag : '';
+    input.placeholder = mode === 'merge' ? 'merge into #tag…' : '#tag';
+    input.spellcheck = false;
+    nameEl.replaceWith(input);
+    input.focus();
+    input.select();
+    let done = false;
+    const finish = commitIt => {
+      if (done) return;
+      done = true;
+      if (commitIt) {
+        const val = normalizeTag(input.value);
+        if (val && val !== tag) {
+          applyTagReplace(tag, val, mode === 'rename' ? 'Rename tag' : 'Merge tag');
+          toast(mode === 'rename' ? `Renamed #${tag} to #${val}` : `Merged #${tag} into #${val}`);
+        }
+      }
+      renderTagsPanel();
+    };
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    });
+    input.addEventListener('blur', () => finish(false));
+  }
+  function applyTagReplace(oldTag, newTag, description) {
+    const affected = [];
+    state.lists.forEach(l => l.todos.forEach(t => {
+      if (Array.isArray(t.tags) && t.tags.includes(oldTag)) affected.push(t);
+    }));
+    if (!affected.length) return;
+    const snap = affected.map(t => [t, (t.tags || []).slice()]);
+    pushUndo(description, () => {
+      snap.forEach(([t, tags]) => { t.tags = tags.slice(); });
+      save(); renderAll(); renderTagsPanel();
+    });
+    affected.forEach(t => {
+      t.tags = t.tags.filter(x => x !== oldTag);
+      if (!t.tags.includes(newTag)) t.tags.push(newTag);
+    });
+    save(); renderAll(); renderTagsPanel();
+  }
+  function deleteTagEverywhere(tag) {
+    const affected = [];
+    state.lists.forEach(l => l.todos.forEach(t => {
+      if (Array.isArray(t.tags) && t.tags.includes(tag)) affected.push(t);
+    }));
+    const snap = affected.map(t => [t, (t.tags || []).slice()]);
+    pushUndo('Delete tag', () => {
+      snap.forEach(([t, tags]) => { t.tags = tags.slice(); });
+      save(); renderAll(); renderTagsPanel();
+    });
+    affected.forEach(t => { t.tags = t.tags.filter(x => x !== tag); });
+    save(); renderAll(); renderTagsPanel();
+  }
+
   function renderTasks() {
     saveListFilters();
     updateBatchBar();
@@ -2640,7 +2839,7 @@
     const canDragManual = !all && sortBy.value === 'manual' && sortBy2.value === 'none' && sortBy3.value === 'none';
 
     if (shown.length === 0) {
-      const li = document.createElement('li');
+      const li = document.createElement('div');
       li.className = 'empty';
       const isEmpty = filter === 'all' && dueFilter.value === 'any' && prioFilter.value === 'any' && tagFilter.value === 'any' && !searchInput.value.trim();
       const illo = document.createElement('div');
@@ -2663,19 +2862,26 @@
     }
 
     let prevGroup = undefined;
+    let groupEl = null;
     shown.forEach(({ t, owner }) => {
       const group = groupLabel(t, owner);
-      if (group !== null && group !== prevGroup) {
-        const sep = document.createElement('li');
-        sep.className = 'group-sep';
-        const span = document.createElement('span');
-        span.textContent = group;
-        sep.appendChild(span);
-        list.appendChild(sep);
+      if (group === null) {
+        groupEl = null;
+        prevGroup = undefined;
+      } else if (group !== prevGroup) {
+        groupEl = document.createElement('div');
+        groupEl.className = 'task-group';
+        groupEl.dataset.group = group;
+        const label = document.createElement('div');
+        label.className = 'group-label';
+        label.textContent = group;
+        groupEl.appendChild(label);
+        list.appendChild(groupEl);
         prevGroup = group;
       }
 
-      const li = document.createElement('li');
+      const li = document.createElement('div');
+      li.className = 'task-row';
       li.dataset.taskId = t.id;
       if (t.done) li.classList.add('done');
       if (editingTask && editingTask.id === t.id) li.classList.add('selected');
@@ -2740,8 +2946,17 @@
       };
 
       li.append(selCb, check, main, del);
-      list.appendChild(li);
+      (groupEl || list).appendChild(li);
     });
+
+    const firstGroup = list.querySelector('.task-group');
+    if (firstGroup) {
+      firstGroup.classList.add('current');
+      groupBar.textContent = firstGroup.dataset.group;
+      groupBar.classList.add('show');
+    } else {
+      groupBar.classList.remove('show');
+    }
 
     const left = shown.filter(({ t }) => !t.done).length;
     count.textContent = `${left} item${left !== 1 ? 's' : ''} left`;
@@ -2809,7 +3024,7 @@
       const iconSpan = document.createElement('span');
       iconSpan.innerHTML = ICON.repeat;
       c.appendChild(iconSpan);
-      c.appendChild(document.createTextNode(t.recur.charAt(0).toUpperCase() + t.recur.slice(1)));
+      c.appendChild(document.createTextNode(recurLabel(t)));
       meta.appendChild(c); any = true;
     }
     if (t.subtasks && t.subtasks.length) {
@@ -2914,7 +3129,7 @@
 
   const PRIO_RANK = { none: 0, low: 1, med: 2, high: 3 };
 
-  const RECUR_RANK = { none: 0, daily: 1, weekly: 2, monthly: 3 };
+  const RECUR_RANK = { none: 0, daily: 1, weekly: 2, monthly: 3, yearly: 4 };
 
   function sortCompareBy(mode, dir, a, b, ownerA, ownerB) {
     if (mode === 'manual' || mode === 'none') return 0;
@@ -2951,14 +3166,21 @@
   }
 
   const PRIO_LABEL = { none: 'No priority', low: 'Low priority', med: 'Med priority', high: 'High priority' };
-  const RECUR_LABEL = { none: 'No recurrence', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly' };
+  const RECUR_LABEL = { none: 'No recurrence', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' };
+  const RECUR_UNIT = { daily: 'days', weekly: 'weeks', monthly: 'months', yearly: 'years' };
+  function recurLabel(t) {
+    const base = RECUR_LABEL[t.recur || 'none'];
+    const interval = t.recurInterval || 1;
+    if (interval <= 1) return base;
+    return 'Every ' + interval + ' ' + (RECUR_UNIT[t.recur] || 'periods');
+  }
 
   function groupLabel(t, owner) {
     const mode = sortBy.value;
     if (mode === 'due') return t.due ? monthYearLabel(t.due) : 'No due date';
     if (mode === 'created') { const d = new Date(t.id); return monthYearLabel(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')); }
     if (mode === 'priority') return PRIO_LABEL[t.priority || 'none'];
-    if (mode === 'recur') return RECUR_LABEL[t.recur || 'none'];
+    if (mode === 'recur') return recurLabel(t);
     if (mode === 'list') return owner ? owner.name : null;
     if (mode === 'alpha') return t.text.charAt(0).toUpperCase() || null;
     return null;
@@ -2994,7 +3216,7 @@
       if (t.status === 'in-progress' || t.status === 'paused') t.status = 'todo';
     }
     if (!t.done && t.recur && t.recur !== 'none' && t.due) {
-      const next = nextDate(t.due, t.recur);
+      const next = nextDate(t.due, t.recur, t.recurInterval || 1);
       let shouldStop = false;
       if (t.recurEnd && next > t.recurEnd) shouldStop = true;
       if (t.recurCount !== null && t.recurCount !== undefined) {
@@ -3021,11 +3243,12 @@
     }, animDelay);
   }
 
-  function nextDate(d, recur) {
+  function nextDate(d, recur, interval = 1) {
     const dt = new Date(d + 'T00:00');
-    if (recur === 'daily') dt.setDate(dt.getDate() + 1);
-    else if (recur === 'weekly') dt.setDate(dt.getDate() + 7);
-    else if (recur === 'monthly') { const origDay = dt.getDate(); dt.setMonth(dt.getMonth() + 1); if (dt.getDate() !== origDay) dt.setDate(0); }
+    if (recur === 'daily') dt.setDate(dt.getDate() + interval);
+    else if (recur === 'weekly') dt.setDate(dt.getDate() + interval * 7);
+    else if (recur === 'monthly') { const origDay = dt.getDate(); dt.setMonth(dt.getMonth() + interval); if (dt.getDate() !== origDay) dt.setDate(0); }
+    else if (recur === 'yearly') { const origDay = dt.getDate(); dt.setFullYear(dt.getFullYear() + interval); if (dt.getDate() !== origDay) dt.setDate(0); }
     const p = n => String(n).padStart(2, '0');
     return `${dt.getFullYear()}-${p(dt.getMonth()+1)}-${p(dt.getDate())}`;
   }
@@ -3064,6 +3287,13 @@
     let priority = 'none';
     text = text.replace(/!(high|med|low|none)\b/gi, (_, p) => { priority = p.toLowerCase(); return ''; });
     let due = '';
+    let recur = 'none', recurInterval = 1;
+    text = text.replace(/\bevery (\d+) (day|week|month|year)s?\b/gi, (_, n, u) => {
+      recur = { day: 'daily', week: 'weekly', month: 'monthly', year: 'yearly' }[u.toLowerCase()];
+      recurInterval = Math.min(99, Math.max(1, Number(n)));
+      return '';
+    });
+    text = text.replace(/\b(daily|weekly|monthly|yearly)\b/gi, (_, r) => { recur = r.toLowerCase(); return ''; });
     text = text.replace(/\b(tomorrow)\b/i, () => { due = dateStr(1); return ''; });
     text = text.replace(/\b(today)\b/i, () => { due = dateStr(0); return ''; });
     text = text.replace(/\bnext week\b/i, () => { due = dateStr(7); return ''; });
@@ -3071,18 +3301,18 @@
     text = text.replace(/\bin (\d+) days?\b/i, (_, n) => { due = dateStr(Number(n)); return ''; });
     text = text.replace(/\bdue (\d{4}-\d{2}-\d{2})\b/i, (_, d) => { due = d; return ''; });
     text = text.replace(/\s+/g, ' ').trim();
-    return { text, tags, priority, due };
+    return { text, tags, priority, due, recur, recurInterval };
   }
 
   function addTask() {
     const val = input.value.trim();
     if (!val) return;
-    const { text, tags, priority, due } = parseNaturalInput(val);
+    const { text, tags, priority, due, recur, recurInterval } = parseNaturalInput(val);
     if (!text && !tags.length) return;
     const target = isAllView() ? state.lists[0] : activeList();
     const task = {
       id: nextId++, text: text || '', done: false,
-      desc: '', due, recur: 'none', recurEnd: '', recurCount: null, completionCount: 0, priority, status: 'todo', subtasks: [], tags, links: [], logbook: []
+      desc: '', due, recur, recurInterval: recurInterval || 1, recurEnd: '', recurCount: null, completionCount: 0, priority, status: 'todo', subtasks: [], tags, links: [], logbook: []
     };
     target.todos.unshift(task);
     input.value = '';
@@ -3104,6 +3334,7 @@
     tRecur.value = t.recur || 'none';
     tRecurEnd.value = t.recurEnd || '';
     tRecurCount.value = t.recurCount || '';
+    $('tRecurInterval').value = t.recurInterval || 1;
     syncRecurAvailability();
 
     populateListSelect(editingTaskList.id);
@@ -3600,6 +3831,7 @@
       document.querySelectorAll('.settings-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
       document.querySelectorAll('.settings-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
       if (tab === 'statistics') renderStats();
+      if (tab === 'tags') renderTagsPanel();
     };
   });
 
@@ -3690,6 +3922,15 @@
     const recurEndRow = $('recurEndRow');
     const hasRecur = tRecur.value !== 'none' && tDue.value;
     recurEndRow.style.display = hasRecur ? '' : 'none';
+    $('tRecurIntervalUnit').textContent = (RECUR_UNIT[tRecur.value] || 'periods');
+    syncRecurEndMode();
+  }
+  function syncRecurEndMode() {
+    const mode = editingTask && editingTask.recurCount ? 'count' : (editingTask && editingTask.recurEnd ? 'date' : 'never');
+    $('tRecurEndMode').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.end === mode));
+    const showDate = mode === 'date', showCount = mode === 'count';
+    $('tRecurEnd').style.display = showDate ? '' : 'none';
+    $('tRecurCountWrap').style.display = showCount ? '' : 'none';
   }
 
   tDue = createGlassDatePicker('tDue', '', () => {
@@ -3701,11 +3942,12 @@
     }
   });
   tRecur = createGlassSelect('tRecur', [
-    {value:'none', label:'None'}, {value:'daily', label:'Daily'}, {value:'weekly', label:'Weekly'}, {value:'monthly', label:'Monthly'}
+    {value:'none', label:'No recurrence'}, {value:'daily', label:'Daily'}, {value:'weekly', label:'Weekly'}, {value:'monthly', label:'Monthly'}, {value:'yearly', label:'Yearly'}
   ], 'none', () => {
     if (editingTask) {
       editingTask.recur = tRecur.value;
       if (tRecur.value === 'none') { editingTask.recurEnd = ''; editingTask.recurCount = null; tRecurEnd.value = ''; $('tRecurCount').value = ''; }
+      if (editingTask.recurInterval === undefined) editingTask.recurInterval = 1;
       syncRecurAvailability();
       commit();
     }
@@ -3713,10 +3955,30 @@
 
   let tRecurEnd;
   const tRecurCount = $('tRecurCount');
+  $('tRecurEndMode').addEventListener('click', e => {
+    const b = e.target.closest('[data-end]');
+    if (!b || !editingTask) return;
+    const mode = b.dataset.end;
+    if (mode === 'never') {
+      editingTask.recurEnd = ''; editingTask.recurCount = null;
+      tRecurEnd.value = ''; tRecurCount.value = '';
+    } else if (mode === 'date') {
+      editingTask.recurCount = null; tRecurCount.value = '';
+      if (!editingTask.recurEnd) editingTask.recurEnd = dateStr(0);
+      tRecurEnd.value = editingTask.recurEnd;
+    } else {
+      editingTask.recurEnd = ''; tRecurEnd.value = '';
+      if (!editingTask.recurCount) editingTask.recurCount = 1;
+      tRecurCount.value = editingTask.recurCount;
+    }
+    syncRecurEndMode();
+    commit();
+  });
   tRecurEnd = createGlassDatePicker('tRecurEnd', '', () => {
     if (editingTask) {
       editingTask.recurEnd = tRecurEnd.value;
       if (tRecurEnd.value) { editingTask.recurCount = null; tRecurCount.value = ''; }
+      syncRecurEndMode();
       commit();
     }
   });
@@ -3725,10 +3987,21 @@
     const v = tRecurCount.value ? parseInt(tRecurCount.value) : null;
     editingTask.recurCount = v;
     if (v) { editingTask.recurEnd = ''; tRecurEnd.value = ''; }
+    syncRecurEndMode();
     commit();
   });
   tList.querySelector('.gl-select-trigger').addEventListener('click', () => tList.classList.toggle('open'));
   document.addEventListener('click', e => { if (!document.querySelector('.gl-select.open')) return; document.querySelectorAll('.gl-select.open').forEach(el => { if (!el.contains(e.target)) el.classList.remove('open'); }); });
+  const tRecurIntervalInput = $('tRecurInterval');
+  tRecurIntervalInput.addEventListener('input', () => {
+    if (!editingTask) return;
+    let v = parseInt(tRecurIntervalInput.value);
+    if (isNaN(v) || v < 1) v = 1;
+    if (v > 99) v = 99;
+    tRecurIntervalInput.value = v;
+    editingTask.recurInterval = v;
+    commit();
+  });
   tSubAdd.onclick = addSub;
   tSubInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSub(); } });
   tTagInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } });
@@ -3752,7 +4025,7 @@
     const tag = document.activeElement ? document.activeElement.tagName : '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     if (e.key === '?') { e.preventDefault(); if ($('shortcutsOverlay').classList.contains('show')) closeShortcuts(); else openShortcuts(); return; }
-    const items = list.querySelectorAll('li[data-task-id]');
+    const items = list.querySelectorAll('[data-task-id]');
     if (!items.length) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); focusedIdx = Math.min(focusedIdx + 1, items.length - 1); updateFocused(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); focusedIdx = Math.max(focusedIdx - 1, 0); updateFocused(); }
@@ -3762,7 +4035,7 @@
   });
 
   function updateFocused() {
-    const items = list.querySelectorAll('li[data-task-id]');
+    const items = list.querySelectorAll('[data-task-id]');
     items.forEach((li, i) => li.classList.toggle('focused', i === focusedIdx));
     if (focusedIdx >= 0 && items[focusedIdx]) items[focusedIdx].scrollIntoView({ block: 'nearest' });
   }
@@ -4335,7 +4608,25 @@
   // ---- scroll shadow ----
   list.addEventListener('scroll', () => {
     list.classList.toggle('scrolled', list.scrollTop > 4);
+    updateGroupBar();
   });
+  mainEl.addEventListener('scroll', updateGroupBar);
+  function updateGroupBar() {
+    if (!groupBar.classList.contains('show')) return;
+    const scroller = list.scrollHeight > list.clientHeight ? list : mainEl;
+    const top = scroller.getBoundingClientRect().top;
+    let cur = null;
+    list.querySelectorAll('.task-group').forEach(g => {
+      if (g.getBoundingClientRect().top <= top + 1) cur = g;
+    });
+    list.querySelectorAll('.task-group.current').forEach(g => g.classList.remove('current'));
+    if (cur) {
+      cur.classList.add('current');
+      if (cur.dataset.group && groupBar.textContent !== cur.dataset.group) {
+        groupBar.textContent = cur.dataset.group;
+      }
+    }
+  }
 
   // ---- Quick Open (Cmd/Ctrl+K) ----
   const quickOpenOverlay = $('quickOpenOverlay');
@@ -4368,8 +4659,9 @@
         const inTitle = t.text.toLowerCase().includes(q);
         const inDesc = (t.desc || '').toLowerCase().includes(q);
         const inTags = (t.tags || []).some(tag => tag.includes(q));
-        if (inTitle || inDesc || inTags) {
-          matches.push({ t, owner: list });
+        const sub = (t.subtasks || []).find(s => s.text.toLowerCase().includes(q));
+        if (inTitle || inDesc || inTags || sub) {
+          matches.push({ t, owner: list, subMatch: sub ? sub.text : null });
         }
       });
     });
@@ -4406,6 +4698,7 @@
         if (m.t.priority && m.t.priority !== 'none') parts.push(m.t.priority);
         if (m.t.status === 'in-progress') parts.push('\u25B6');
         if (m.t.status === 'paused') parts.push('\u23F8');
+        if (m.subMatch) parts.push('\u25B8 ' + m.subMatch);
         meta.textContent = parts.join(' \u00B7 ');
         div.append(text, meta);
         div.onclick = () => { closeQuickOpen(); openTaskPanel(m.t, m.owner); };
@@ -4580,10 +4873,10 @@
 
   $('ctxSkip').addEventListener('click', () => {
     if (!_ctxTask || _ctxTask.done || !_ctxTask.recur || _ctxTask.recur === 'none' || !_ctxTask.due) return;
-    _ctxTask.due = nextDate(_ctxTask.due, _ctxTask.recur);
+    _ctxTask.due = nextDate(_ctxTask.due, _ctxTask.recur, _ctxTask.recurInterval || 1);
     if (_ctxTask.status === 'in-progress' || _ctxTask.status === 'paused') _ctxTask.status = 'todo';
     save(); renderAll();
-    toast(`Skipped "${_ctxTask.text}" — next ${_ctxTask.recur} due`);
+    toast(`Skipped "${_ctxTask.text}" — next ${recurLabel(_ctxTask)} due`);
     closeCtxMenu();
   });
 
@@ -4637,7 +4930,7 @@
 
   $('batchExit').onclick = exitSelectMode;
   $('batchSelectAll').onclick = () => {
-    const tasks = $('list').querySelectorAll('li[data-task-id]');
+    const tasks = $('list').querySelectorAll('[data-task-id]');
     tasks.forEach(li => selectedIds.add(Number(li.dataset.taskId)));
     updateBatchBar(); renderTasks();
   };
@@ -4864,6 +5157,7 @@
   function updateViewMode() {
     const isCal = viewMode === 'calendar';
     list.style.display = isCal ? 'none' : '';
+    groupBar.style.display = isCal ? 'none' : '';
     calView.classList.toggle('show', isCal);
     $('footerRow').style.display = isCal ? 'none' : '';
     $('batchBar').style.display = 'none';
