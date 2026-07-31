@@ -4605,8 +4605,9 @@
         const inTitle = t.text.toLowerCase().includes(q);
         const inDesc = (t.desc || '').toLowerCase().includes(q);
         const inTags = (t.tags || []).some(tag => tag.includes(q));
-        if (inTitle || inDesc || inTags) {
-          matches.push({ t, owner: list });
+        const sub = (t.subtasks || []).find(s => s.text.toLowerCase().includes(q));
+        if (inTitle || inDesc || inTags || sub) {
+          matches.push({ t, owner: list, subMatch: sub ? sub.text : null });
         }
       });
     });
@@ -4643,6 +4644,7 @@
         if (m.t.priority && m.t.priority !== 'none') parts.push(m.t.priority);
         if (m.t.status === 'in-progress') parts.push('\u25B6');
         if (m.t.status === 'paused') parts.push('\u23F8');
+        if (m.subMatch) parts.push('\u25B8 ' + m.subMatch);
         meta.textContent = parts.join(' \u00B7 ');
         div.append(text, meta);
         div.onclick = () => { closeQuickOpen(); openTaskPanel(m.t, m.owner); };
