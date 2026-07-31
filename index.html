@@ -1102,11 +1102,12 @@
   #list .empty { align-items: center; }
   .task-group { margin-bottom: 4px; }
   .task-group .group-sep {
-    background: rgba(var(--w),0.06); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-    border: none; padding: 4px 2px; margin-bottom: 6px;
+    background: rgba(var(--w),0.10); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--w),0.14); border-radius: 10px;
+    padding: 5px 10px; margin-bottom: 8px;
     display: flex; align-items: center; gap: 10px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
-    color: var(--ink); opacity: 0.6; text-transform: uppercase;
+    color: var(--ink); opacity: 0.85; text-transform: uppercase;
     position: sticky; top: 0; z-index: 2;
   }
   .task-group .group-sep::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }

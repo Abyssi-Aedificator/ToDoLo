@@ -1,6 +1,7 @@
 1.7.1
 - Fixed sticky group headers overlapping task content when scrolling
 - Fixed sticky group headers stacking on top of each other — each group now sticks within its own container
+- Restyled group headers as frosted-glass pills with rounded corners that blur the content scrolling behind them
 - Documented commit and push policies in AGENTS.md
 
 1.7.0
