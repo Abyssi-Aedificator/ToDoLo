@@ -3211,6 +3211,8 @@
     const wasDone = t.done;
     const oldDue = t.due;
     const oldCC = t.completionCount || 0;
+    const oldStatus = t.status;
+    const oldSubs = JSON.parse(JSON.stringify(t.subtasks || []));
     if (completing) {
       const li = list.querySelector(`[data-task-id="${t.id}"]`);
       if (li) li.classList.add('removing');
@@ -3236,7 +3238,7 @@
       if (!t.done) t.wontdo = false;
     }
     const label = completing ? 'complete' : 'uncomplete';
-    pushUndo(label + ' "' + t.text + '"', () => { t.done = wasDone; t.due = oldDue; t.completionCount = oldCC; save(); renderAll(); });
+    pushUndo(label + ' "' + t.text + '"', () => { t.done = wasDone; t.due = oldDue; t.completionCount = oldCC; t.status = oldStatus; t.subtasks = oldSubs; restoreSubtaskOrder(t); save(); renderAll(); });
     const animDelay = completing ? 280 : 0;
     setTimeout(() => {
       if (completing && editingTask && editingTask.id === t.id) { closeTaskPanel(); save(); renderAll(); }
