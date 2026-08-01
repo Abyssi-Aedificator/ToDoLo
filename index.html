@@ -4882,22 +4882,24 @@
 
   $('ctxDueToday').addEventListener('click', () => {
     if (!_ctxTask || _ctxTask.done) return;
-    const oldDue = _ctxTask.due;
-    _ctxTask.due = dateStr(0);
+    const task = _ctxTask;
+    const oldDue = task.due;
+    task.due = dateStr(0);
     save(); renderAll();
-    pushUndo('due today "' + _ctxTask.text + '"', () => { _ctxTask.due = oldDue; save(); renderAll(); });
-    toast(`"${_ctxTask.text}" — due today`);
+    pushUndo('due today "' + task.text + '"', () => { task.due = oldDue; save(); renderAll(); });
+    toast(`"${task.text}" — due today`);
     closeCtxMenu();
   });
 
   $('ctxWontDo').addEventListener('click', () => {
     if (!_ctxTask) return;
-    const wasDone = _ctxTask.done, wasWontDo = _ctxTask.wontdo, wasStatus = _ctxTask.status;
-    _ctxTask.done = true;
-    _ctxTask.wontdo = true;
-    if (_ctxTask.status === 'in-progress' || _ctxTask.status === 'paused') _ctxTask.status = 'todo';
+    const task = _ctxTask;
+    const wasDone = task.done, wasWontDo = task.wontdo, wasStatus = task.status;
+    task.done = true;
+    task.wontdo = true;
+    if (task.status === 'in-progress' || task.status === 'paused') task.status = 'todo';
     save(); renderAll();
-    pushUndo('won\'t do "' + _ctxTask.text + '"', () => { _ctxTask.done = wasDone; _ctxTask.wontdo = wasWontDo; _ctxTask.status = wasStatus; save(); renderAll(); });
+    pushUndo('won\'t do "' + task.text + '"', () => { task.done = wasDone; task.wontdo = wasWontDo; task.status = wasStatus; save(); renderAll(); });
     closeCtxMenu();
   });
 
