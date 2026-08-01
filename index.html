@@ -5151,7 +5151,7 @@
         const more = document.createElement('div');
         more.className = 'cal-more';
         more.textContent = '+' + (tasks.length - maxShow) + ' more';
-        more.onclick = e => { e.stopPropagation(); dueFilter.value = 'any'; tagFilter.value = 'any'; prioFilter.value = 'any'; searchInput.value = ''; localStorage.setItem('glass-todos-due-filter', 'any'); localStorage.setItem('glass-todos-prio-filter', 'any'); localStorage.setItem('glass-todos-tag-filter', 'any'); filter = 'all'; localStorage.setItem('glass-todos-filter', 'all'); filters.forEach(x => x.classList.toggle('active', x.dataset.filter === 'all')); viewMode = 'list'; localStorage.setItem('glass-todos-view', 'list'); updateViewMode(); sortBy.value = 'due'; localStorage.setItem('glass-todos-sort-by', 'due'); renderTasks(); };
+        more.onclick = e => { e.stopPropagation(); dueFilter.value = dateStr_; localStorage.setItem('glass-todos-due-filter', dateStr_); viewMode = 'list'; localStorage.setItem('glass-todos-view', 'list'); updateViewMode(); renderTasks(); };
         container.appendChild(more);
       }
       div.appendChild(container);
