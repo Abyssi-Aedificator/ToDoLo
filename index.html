@@ -2962,7 +2962,7 @@
 
     const left = shown.filter(({ t }) => !t.done).length;
     count.textContent = `${left} item${left !== 1 ? 's' : ''} left`;
-    clearDone.classList.add('visible');
+    clearDone.classList.toggle('visible', shown.some(({ t }) => t.done));
     requestAnimationFrame(() => list.classList.toggle('scrolled', list.scrollTop > 4));
   }
 
