@@ -4861,6 +4861,7 @@
       }
     }
     task.status = 'in-progress';
+    if (editingTask === task) { tRecur.value = task.recur || 'none'; tRecurEnd.value = task.recurEnd || ''; $('tRecurCount').value = task.recurCount || ''; }
     save(); renderAll();
   });
 
@@ -4876,6 +4877,7 @@
       }
     }
     task.status = 'paused';
+    if (editingTask === task) { tRecur.value = task.recur || 'none'; tRecurEnd.value = task.recurEnd || ''; $('tRecurCount').value = task.recurCount || ''; }
     save(); renderAll();
   });
 
