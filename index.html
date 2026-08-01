@@ -1171,7 +1171,7 @@
     color: var(--ink); opacity: 0.6; text-transform: uppercase;
   }
   .task-group .group-label::after { content: ''; flex: 1; height: 1px; background: rgba(var(--w),0.18); }
-  .task-group.current .group-label { display: none; }
+  .task-group.current .group-label { visibility: hidden; }
   #list .task-row.selected { background: rgba(var(--w),0.24); border-color: rgba(var(--w),0.45); }
   #list .task-row.focused { outline: 2px solid rgba(var(--a),0.6); outline-offset: -2px; }
   .batch-bar { display: flex; align-items: center; gap: 8px; padding: 8px 14px; margin-bottom: 10px; border-radius: 12px; background: rgba(var(--a),0.2); border: 1px solid rgba(var(--a),0.35); font-size: 0.85rem; }
@@ -1467,7 +1467,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.7.1</span>
+        ToDoLo<span class="brand-badge">v1.7.2</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -2109,7 +2109,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.7.1';
+  const APP_VERSION = '1.7.2';
 
   const $ = id => document.getElementById(id);
 
@@ -2559,12 +2559,13 @@
           const idx = fromList.todos.findIndex(x => x.id === taskId);
           if (idx !== -1) fromList.todos.splice(idx, 1);
           toList.todos.push(task);
+          if (editingTask && editingTask.id === task.id) { editingTaskList = toList; populateListSelect(toList.id); }
           pushUndo('move "' + task.text + '" to ' + toList.name, () => {
             const fi = toList.todos.findIndex(x => x.id === taskId);
             if (fi !== -1) toList.todos.splice(fi, 1);
             fromList.todos.push(task);
-          if (editingTask && editingTask.id === task.id) editingTaskList = toList;
-          save(); renderAll();
+            if (editingTask && editingTask.id === task.id) { editingTaskList = fromList; populateListSelect(fromList.id); }
+            save(); renderAll();
           });
           save(); renderAll();
           toast('Moved to ' + toList.name);
@@ -2664,6 +2665,7 @@
     const savedList = JSON.parse(JSON.stringify(list));
     const listIndex = state.lists.indexOf(list);
     const wasActive = state.activeId === id;
+    const wasLast = state.lists.length === 1;
     if (state.lists.length === 1) {
       state.lists[0].todos = [];
     } else {
@@ -2672,7 +2674,7 @@
     }
     save(); renderAll();
     pushUndo('delete list "' + savedList.name + '"', () => {
-      state.lists.splice(Math.min(listIndex, state.lists.length), 0, savedList);
+      if (!wasLast) state.lists.splice(Math.min(listIndex, state.lists.length), 0, savedList);
       if (wasActive) { state.activeId = savedList.id; loadListFilters(savedList.id); }
       save(); renderAll();
     });
@@ -2960,7 +2962,7 @@
 
     const left = shown.filter(({ t }) => !t.done).length;
     count.textContent = `${left} item${left !== 1 ? 's' : ''} left`;
-    clearDone.classList.add('visible');
+    clearDone.classList.toggle('visible', shown.some(({ t }) => t.done));
     requestAnimationFrame(() => list.classList.toggle('scrolled', list.scrollTop > 4));
   }
 
@@ -3210,6 +3212,8 @@
     const wasDone = t.done;
     const oldDue = t.due;
     const oldCC = t.completionCount || 0;
+    const oldStatus = t.status;
+    const oldSubs = JSON.parse(JSON.stringify(t.subtasks || []));
     if (completing) {
       const li = list.querySelector(`[data-task-id="${t.id}"]`);
       if (li) li.classList.add('removing');
@@ -3235,7 +3239,7 @@
       if (!t.done) t.wontdo = false;
     }
     const label = completing ? 'complete' : 'uncomplete';
-    pushUndo(label + ' "' + t.text + '"', () => { t.done = wasDone; t.due = oldDue; t.completionCount = oldCC; save(); renderAll(); });
+    pushUndo(label + ' "' + t.text + '"', () => { t.done = wasDone; t.due = oldDue; t.completionCount = oldCC; t.status = oldStatus; t.subtasks = oldSubs; restoreSubtaskOrder(t); save(); renderAll(); });
     const animDelay = completing ? 280 : 0;
     setTimeout(() => {
       if (completing && editingTask && editingTask.id === t.id) { closeTaskPanel(); save(); renderAll(); }
@@ -3294,8 +3298,8 @@
       return '';
     });
     text = text.replace(/\b(daily|weekly|monthly|yearly)\b/gi, (_, r) => { recur = r.toLowerCase(); return ''; });
-    text = text.replace(/\b(tomorrow)\b/i, () => { due = dateStr(1); return ''; });
-    text = text.replace(/\b(today)\b/i, () => { due = dateStr(0); return ''; });
+    text = text.replace(/\b(tomorrow)(?:'s)?\b/i, () => { due = dateStr(1); return ''; });
+    text = text.replace(/\b(today)(?:'s)?\b/i, () => { due = dateStr(0); return ''; });
     text = text.replace(/\bnext week\b/i, () => { due = dateStr(7); return ''; });
     text = text.replace(/\bnext (mon|tue|wed|thu|fri|sat|sun)\b/i, (_, d) => { due = nextWeekday(d.toLowerCase()); return ''; });
     text = text.replace(/\bin (\d+) days?\b/i, (_, n) => { due = dateStr(Number(n)); return ''; });
@@ -3315,6 +3319,7 @@
       desc: '', due, recur, recurInterval: recurInterval || 1, recurEnd: '', recurCount: null, completionCount: 0, priority, status: 'todo', subtasks: [], tags, links: [], logbook: []
     };
     target.todos.unshift(task);
+    if (recur !== 'none' && !due) toast('Recurring task has no due date — set one so it can advance');
     input.value = '';
     save(); renderAll();
     openTaskPanel(task, target);
@@ -3348,7 +3353,9 @@
     detail.classList.add('open', 'showing-task');
     applyDetailWidth();
     requestAnimationFrame(() => { const el = document.querySelector('.detail-body-inner'); if (el) el.scrollTop = 0; });
+    const prevScroll = list.scrollTop;
     renderTasks(); // refresh selected-row highlight
+    list.scrollTop = prevScroll;
   }
   function populateListSelect(selId) {
     const menu = tListMenu;
@@ -3655,7 +3662,7 @@
       const msg = `Do you want to remove the due date when setting this task to ${sLabel}?`;
       if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
         editingTask.due = '';
-        if (editingTask.recur !== 'none') { editingTask.recur = 'none'; tRecur.value = 'none'; }
+        if (editingTask.recur !== 'none') { editingTask.recur = 'none'; editingTask.recurEnd = ''; editingTask.recurCount = null; tRecur.value = 'none'; tRecurEnd.value = ''; $('tRecurCount').value = ''; }
         syncRecurAvailability();
         tDue.value = '';
       }
@@ -3754,6 +3761,7 @@
   $('shortcutsOverlay').addEventListener('click', e => { if (e.target === $('shortcutsOverlay')) closeShortcuts(); });
 
   const notifToggle = $('notifToggle');
+  let _notifTimer = null;
   notifToggle.checked = localStorage.getItem('glass-todos-notifications') === 'on';
   notifToggle.addEventListener('change', async () => {
     if (notifToggle.checked && 'Notification' in window && Notification.permission !== 'granted') {
@@ -3761,7 +3769,8 @@
       if (perm !== 'granted') { notifToggle.checked = false; toast('Notification permission denied'); return; }
     }
     localStorage.setItem('glass-todos-notifications', notifToggle.checked ? 'on' : 'off');
-    if (notifToggle.checked) { checkDueNotifications(); setInterval(checkDueNotifications, 5 * 60 * 1000); }
+    if (_notifTimer) { clearInterval(_notifTimer); _notifTimer = null; }
+    if (notifToggle.checked) { checkDueNotifications(); _notifTimer = setInterval(checkDueNotifications, 5 * 60 * 1000); }
   });
 
   // ---- theme system (mode + colour) ----
@@ -3936,7 +3945,7 @@
   tDue = createGlassDatePicker('tDue', '', () => {
     if (editingTask) {
       editingTask.due = tDue.value;
-      if (!tDue.value && editingTask.recur !== 'none') { editingTask.recur = 'none'; tRecur.value = 'none'; }
+      if (!tDue.value && editingTask.recur !== 'none') { editingTask.recur = 'none'; editingTask.recurEnd = ''; editingTask.recurCount = null; tRecur.value = 'none'; tRecurEnd.value = ''; $('tRecurCount').value = ''; }
       syncRecurAvailability();
       commit();
     }
@@ -4020,7 +4029,7 @@
     if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
       e.preventDefault(); performUndo(); return;
     }
-    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); closeShortcuts(); closeBatchEdit(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
+    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); closeShortcuts(); closeBatchEdit(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); if (!confirmOverlay.classList.contains('show')) closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
     if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); if ($('shortcutsOverlay').classList.contains('show')) closeShortcuts(); else openShortcuts(); return; }
     const tag = document.activeElement ? document.activeElement.tagName : '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
@@ -4849,10 +4858,11 @@
       const msg = `Do you want to remove the due date when setting this task to In Progress?`;
       if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
         task.due = '';
-        if (task.recur !== 'none') task.recur = 'none';
+        if (task.recur !== 'none') { task.recur = 'none'; task.recurEnd = ''; task.recurCount = null; }
       }
     }
     task.status = 'in-progress';
+    if (editingTask === task) { tRecur.value = task.recur || 'none'; tRecurEnd.value = task.recurEnd || ''; $('tRecurCount').value = task.recurCount || ''; }
     save(); renderAll();
   });
 
@@ -4864,10 +4874,11 @@
       const msg = `Do you want to remove the due date when setting this task to Paused?`;
       if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
         task.due = '';
-        if (task.recur !== 'none') task.recur = 'none';
+        if (task.recur !== 'none') { task.recur = 'none'; task.recurEnd = ''; task.recurCount = null; }
       }
     }
     task.status = 'paused';
+    if (editingTask === task) { tRecur.value = task.recur || 'none'; tRecurEnd.value = task.recurEnd || ''; $('tRecurCount').value = task.recurCount || ''; }
     save(); renderAll();
   });
 
@@ -4882,22 +4893,24 @@
 
   $('ctxDueToday').addEventListener('click', () => {
     if (!_ctxTask || _ctxTask.done) return;
-    const oldDue = _ctxTask.due;
-    _ctxTask.due = dateStr(0);
+    const task = _ctxTask;
+    const oldDue = task.due;
+    task.due = dateStr(0);
     save(); renderAll();
-    pushUndo('due today "' + _ctxTask.text + '"', () => { _ctxTask.due = oldDue; save(); renderAll(); });
-    toast(`"${_ctxTask.text}" — due today`);
+    pushUndo('due today "' + task.text + '"', () => { task.due = oldDue; save(); renderAll(); });
+    toast(`"${task.text}" — due today`);
     closeCtxMenu();
   });
 
   $('ctxWontDo').addEventListener('click', () => {
     if (!_ctxTask) return;
-    const wasDone = _ctxTask.done, wasWontDo = _ctxTask.wontdo, wasStatus = _ctxTask.status;
-    _ctxTask.done = true;
-    _ctxTask.wontdo = true;
-    if (_ctxTask.status === 'in-progress' || _ctxTask.status === 'paused') _ctxTask.status = 'todo';
+    const task = _ctxTask;
+    const wasDone = task.done, wasWontDo = task.wontdo, wasStatus = task.status;
+    task.done = true;
+    task.wontdo = true;
+    if (task.status === 'in-progress' || task.status === 'paused') task.status = 'todo';
     save(); renderAll();
-    pushUndo('won\'t do "' + _ctxTask.text + '"', () => { _ctxTask.done = wasDone; _ctxTask.wontdo = wasWontDo; _ctxTask.status = wasStatus; save(); renderAll(); });
+    pushUndo('won\'t do "' + task.text + '"', () => { task.done = wasDone; task.wontdo = wasWontDo; task.status = wasStatus; save(); renderAll(); });
     closeCtxMenu();
   });
 
@@ -4980,22 +4993,30 @@
     if (batchStatusVal === v) { batchStatusVal = null; b.classList.remove('on'); }
     else { batchStatusVal = v; [...$('batchStatus').children].forEach(x => x.classList.remove('on')); b.classList.add('on'); }
   });
-  $('batchEditApply').onclick = () => {
+  $('batchEditApply').onclick = async () => {
     const oldStates = [];
     const listVal = $('batchListSel').value;
     const dueVal = $('batchDueSel').value;
+    let removeDue = (batchStatusVal === 'in-progress' || batchStatusVal === 'paused')
+      && selectedIds.some(id => { const t = findTaskById(id); return t && !!t.due; });
+    if (removeDue) {
+      const sLabel = batchStatusVal === 'in-progress' ? 'In Progress' : 'Paused';
+      removeDue = await confirmDialog(`Do you want to remove due dates when setting these tasks to ${sLabel}?`, 'Change to Due date', 'Remove', 'Don\'t');
+    }
     selectedIds.forEach(id => {
       const t = findTaskById(id);
       if (!t) return;
       const owner = ownerOf(t);
-      oldStates.push({ id, done: t.done, priority: t.priority, status: t.status, due: t.due, listId: owner ? owner.id : null });
+      oldStates.push({ id, done: t.done, priority: t.priority, status: t.status, due: t.due, recur: t.recur, recurEnd: t.recurEnd, recurCount: t.recurCount, recurInterval: t.recurInterval, listId: owner ? owner.id : null });
       if (batchPrioVal !== null) t.priority = batchPrioVal;
       if (batchStatusVal !== null) t.status = batchStatusVal;
+      if (removeDue && t.due) { t.due = ''; t.recur = 'none'; t.recurEnd = ''; t.recurCount = null; }
       if (listVal && owner) {
         const target = state.lists.find(l => l.id === Number(listVal));
         if (target && target.id !== owner.id) {
           owner.todos = owner.todos.filter(x => x.id !== t.id);
           target.todos.push(t);
+          if (editingTask && editingTask.id === t.id) { editingTaskList = target; populateListSelect(target.id); }
         }
       }
       if (dueVal === 'today') t.due = dateStr(0);
@@ -5007,12 +5028,14 @@
         const t = findTaskById(os.id);
         if (!t) return;
         t.done = os.done; t.priority = os.priority; t.status = os.status; t.due = os.due;
+        t.recur = os.recur; t.recurEnd = os.recurEnd; t.recurCount = os.recurCount; t.recurInterval = os.recurInterval;
         if (os.listId != null) {
           const curOwner = ownerOf(t);
           const target = state.lists.find(l => l.id === os.listId);
           if (curOwner && target && curOwner.id !== target.id) {
             curOwner.todos = curOwner.todos.filter(x => x.id !== t.id);
             target.todos.push(t);
+            if (editingTask && editingTask.id === t.id) { editingTaskList = target; populateListSelect(target.id); }
           }
         }
       });
@@ -5141,7 +5164,7 @@
         const more = document.createElement('div');
         more.className = 'cal-more';
         more.textContent = '+' + (tasks.length - maxShow) + ' more';
-        more.onclick = e => { e.stopPropagation(); dueFilter.value = 'any'; tagFilter.value = 'any'; prioFilter.value = 'any'; searchInput.value = ''; localStorage.setItem('glass-todos-due-filter', 'any'); localStorage.setItem('glass-todos-prio-filter', 'any'); localStorage.setItem('glass-todos-tag-filter', 'any'); filter = 'all'; localStorage.setItem('glass-todos-filter', 'all'); filters.forEach(x => x.classList.toggle('active', x.dataset.filter === 'all')); viewMode = 'list'; localStorage.setItem('glass-todos-view', 'list'); updateViewMode(); sortBy.value = 'due'; localStorage.setItem('glass-todos-sort-by', 'due'); renderTasks(); };
+        more.onclick = e => { e.stopPropagation(); dueFilter.value = dateStr_; localStorage.setItem('glass-todos-due-filter', dateStr_); viewMode = 'list'; localStorage.setItem('glass-todos-view', 'list'); updateViewMode(); renderTasks(); };
         container.appendChild(more);
       }
       div.appendChild(container);
