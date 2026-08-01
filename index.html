@@ -3298,8 +3298,8 @@
       return '';
     });
     text = text.replace(/\b(daily|weekly|monthly|yearly)\b/gi, (_, r) => { recur = r.toLowerCase(); return ''; });
-    text = text.replace(/\b(tomorrow)\b/i, () => { due = dateStr(1); return ''; });
-    text = text.replace(/\b(today)\b/i, () => { due = dateStr(0); return ''; });
+    text = text.replace(/\b(tomorrow)(?:'s)?\b/i, () => { due = dateStr(1); return ''; });
+    text = text.replace(/\b(today)(?:'s)?\b/i, () => { due = dateStr(0); return ''; });
     text = text.replace(/\bnext week\b/i, () => { due = dateStr(7); return ''; });
     text = text.replace(/\bnext (mon|tue|wed|thu|fri|sat|sun)\b/i, (_, d) => { due = nextWeekday(d.toLowerCase()); return ''; });
     text = text.replace(/\bin (\d+) days?\b/i, (_, n) => { due = dateStr(Number(n)); return ''; });
