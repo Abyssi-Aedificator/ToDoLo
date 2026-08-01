@@ -3661,7 +3661,7 @@
       const msg = `Do you want to remove the due date when setting this task to ${sLabel}?`;
       if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
         editingTask.due = '';
-        if (editingTask.recur !== 'none') { editingTask.recur = 'none'; tRecur.value = 'none'; }
+        if (editingTask.recur !== 'none') { editingTask.recur = 'none'; editingTask.recurEnd = ''; editingTask.recurCount = null; tRecur.value = 'none'; tRecurEnd.value = ''; $('tRecurCount').value = ''; }
         syncRecurAvailability();
         tDue.value = '';
       }
@@ -3942,7 +3942,7 @@
   tDue = createGlassDatePicker('tDue', '', () => {
     if (editingTask) {
       editingTask.due = tDue.value;
-      if (!tDue.value && editingTask.recur !== 'none') { editingTask.recur = 'none'; tRecur.value = 'none'; }
+      if (!tDue.value && editingTask.recur !== 'none') { editingTask.recur = 'none'; editingTask.recurEnd = ''; editingTask.recurCount = null; tRecur.value = 'none'; tRecurEnd.value = ''; $('tRecurCount').value = ''; }
       syncRecurAvailability();
       commit();
     }
@@ -4855,7 +4855,7 @@
       const msg = `Do you want to remove the due date when setting this task to In Progress?`;
       if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
         task.due = '';
-        if (task.recur !== 'none') task.recur = 'none';
+        if (task.recur !== 'none') { task.recur = 'none'; task.recurEnd = ''; task.recurCount = null; }
       }
     }
     task.status = 'in-progress';
@@ -4870,7 +4870,7 @@
       const msg = `Do you want to remove the due date when setting this task to Paused?`;
       if (await confirmDialog(msg, 'Change to Due date', 'Remove', 'Don\'t')) {
         task.due = '';
-        if (task.recur !== 'none') task.recur = 'none';
+        if (task.recur !== 'none') { task.recur = 'none'; task.recurEnd = ''; task.recurCount = null; }
       }
     }
     task.status = 'paused';
