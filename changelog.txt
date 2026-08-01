@@ -1,5 +1,19 @@
 1.7.2
 - Fixed the list getting stuck when scrolling across group titles
+- Fixed Ctrl+Z after right-click "Due Today" or "Won't Do" crashing or silently mutating a different task — undo now targets the original task
+- Fixed deleting the last list and then undoing duplicating the list
+- Fixed undo of completing a task losing its status and checklist order
+- Fixed the task list jumping to the top when opening a task from a scrolled position
+- Fixed the detail panel's list selector going stale when moving the open task between lists
+- Fixed cleared recurrence leaving stale end date / count behind that resurrected later
+- Fixed Escape closing the task panel while a confirmation dialog was still open
+- Fixed calendar "+N more" resetting all filters instead of showing that day
+- Fixed notification checks stacking an extra timer on every settings toggle
+- Fixed the detail panel's recurrence dropdown not updating after a context-menu status change
+- Fixed "Clear completed" staying visible when no tasks are completed
+- Fixed natural-language parsing leaving a stray "'s" in "today's" / "tomorrow's"
+- Batch Edit now asks whether to remove due dates when setting tasks to In Progress or Paused
+- Recurring tasks added without a due date now warn that they won't advance until one is set
 
 1.7.1
 - The current group shows in a reserved bar at the top of the list that swaps as you scroll, while upcoming groups are labeled inline — group names never overlap tasks

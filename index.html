@@ -3319,6 +3319,7 @@
       desc: '', due, recur, recurInterval: recurInterval || 1, recurEnd: '', recurCount: null, completionCount: 0, priority, status: 'todo', subtasks: [], tags, links: [], logbook: []
     };
     target.todos.unshift(task);
+    if (recur !== 'none' && !due) toast('Recurring task has no due date — set one so it can advance');
     input.value = '';
     save(); renderAll();
     openTaskPanel(task, target);
