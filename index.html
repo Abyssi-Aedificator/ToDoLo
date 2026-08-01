@@ -2664,6 +2664,7 @@
     const savedList = JSON.parse(JSON.stringify(list));
     const listIndex = state.lists.indexOf(list);
     const wasActive = state.activeId === id;
+    const wasLast = state.lists.length === 1;
     if (state.lists.length === 1) {
       state.lists[0].todos = [];
     } else {
@@ -2672,7 +2673,7 @@
     }
     save(); renderAll();
     pushUndo('delete list "' + savedList.name + '"', () => {
-      state.lists.splice(Math.min(listIndex, state.lists.length), 0, savedList);
+      if (!wasLast) state.lists.splice(Math.min(listIndex, state.lists.length), 0, savedList);
       if (wasActive) { state.activeId = savedList.id; loadListFilters(savedList.id); }
       save(); renderAll();
     });
