@@ -4026,7 +4026,7 @@
     if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
       e.preventDefault(); performUndo(); return;
     }
-    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); closeShortcuts(); closeBatchEdit(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
+    if (e.key === 'Escape') { if (ctxMenu.classList.contains('open')) closeCtxMenu(); closeQuickOpen(); closeShortcuts(); closeBatchEdit(); document.querySelectorAll('.gl-select.open').forEach(el => el.classList.remove('open')); closeModal(); if (!confirmOverlay.classList.contains('show')) closeTaskPanel(); if (confirmOverlay.classList.contains('show') && confirmCleanup) confirmCleanup(false); if (versionOverlay.classList.contains('show')) versionOverlay.classList.remove('show'); focusedIdx = -1; updateFocused(); return; }
     if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); if ($('shortcutsOverlay').classList.contains('show')) closeShortcuts(); else openShortcuts(); return; }
     const tag = document.activeElement ? document.activeElement.tagName : '';
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
