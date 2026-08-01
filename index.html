@@ -3760,6 +3760,7 @@
   $('shortcutsOverlay').addEventListener('click', e => { if (e.target === $('shortcutsOverlay')) closeShortcuts(); });
 
   const notifToggle = $('notifToggle');
+  let _notifTimer = null;
   notifToggle.checked = localStorage.getItem('glass-todos-notifications') === 'on';
   notifToggle.addEventListener('change', async () => {
     if (notifToggle.checked && 'Notification' in window && Notification.permission !== 'granted') {
@@ -3767,7 +3768,8 @@
       if (perm !== 'granted') { notifToggle.checked = false; toast('Notification permission denied'); return; }
     }
     localStorage.setItem('glass-todos-notifications', notifToggle.checked ? 'on' : 'off');
-    if (notifToggle.checked) { checkDueNotifications(); setInterval(checkDueNotifications, 5 * 60 * 1000); }
+    if (_notifTimer) { clearInterval(_notifTimer); _notifTimer = null; }
+    if (notifToggle.checked) { checkDueNotifications(); _notifTimer = setInterval(checkDueNotifications, 5 * 60 * 1000); }
   });
 
   // ---- theme system (mode + colour) ----
