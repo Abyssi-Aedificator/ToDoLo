@@ -4992,17 +4992,24 @@
     if (batchStatusVal === v) { batchStatusVal = null; b.classList.remove('on'); }
     else { batchStatusVal = v; [...$('batchStatus').children].forEach(x => x.classList.remove('on')); b.classList.add('on'); }
   });
-  $('batchEditApply').onclick = () => {
+  $('batchEditApply').onclick = async () => {
     const oldStates = [];
     const listVal = $('batchListSel').value;
     const dueVal = $('batchDueSel').value;
+    let removeDue = (batchStatusVal === 'in-progress' || batchStatusVal === 'paused')
+      && selectedIds.some(id => { const t = findTaskById(id); return t && !!t.due; });
+    if (removeDue) {
+      const sLabel = batchStatusVal === 'in-progress' ? 'In Progress' : 'Paused';
+      removeDue = await confirmDialog(`Do you want to remove due dates when setting these tasks to ${sLabel}?`, 'Change to Due date', 'Remove', 'Don\'t');
+    }
     selectedIds.forEach(id => {
       const t = findTaskById(id);
       if (!t) return;
       const owner = ownerOf(t);
-      oldStates.push({ id, done: t.done, priority: t.priority, status: t.status, due: t.due, listId: owner ? owner.id : null });
+      oldStates.push({ id, done: t.done, priority: t.priority, status: t.status, due: t.due, recur: t.recur, recurEnd: t.recurEnd, recurCount: t.recurCount, recurInterval: t.recurInterval, listId: owner ? owner.id : null });
       if (batchPrioVal !== null) t.priority = batchPrioVal;
       if (batchStatusVal !== null) t.status = batchStatusVal;
+      if (removeDue && t.due) { t.due = ''; t.recur = 'none'; t.recurEnd = ''; t.recurCount = null; }
       if (listVal && owner) {
         const target = state.lists.find(l => l.id === Number(listVal));
         if (target && target.id !== owner.id) {
@@ -5020,6 +5027,7 @@
         const t = findTaskById(os.id);
         if (!t) return;
         t.done = os.done; t.priority = os.priority; t.status = os.status; t.due = os.due;
+        t.recur = os.recur; t.recurEnd = os.recurEnd; t.recurCount = os.recurCount; t.recurInterval = os.recurInterval;
         if (os.listId != null) {
           const curOwner = ownerOf(t);
           const target = state.lists.find(l => l.id === os.listId);
