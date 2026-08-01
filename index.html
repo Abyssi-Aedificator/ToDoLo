@@ -3351,7 +3351,9 @@
     detail.classList.add('open', 'showing-task');
     applyDetailWidth();
     requestAnimationFrame(() => { const el = document.querySelector('.detail-body-inner'); if (el) el.scrollTop = 0; });
+    const prevScroll = list.scrollTop;
     renderTasks(); // refresh selected-row highlight
+    list.scrollTop = prevScroll;
   }
   function populateListSelect(selId) {
     const menu = tListMenu;
