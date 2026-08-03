@@ -1,3 +1,5 @@
+1.7.3
+
 1.7.2
 - Fixed the list getting stuck when scrolling across group titles
 - Fixed Ctrl+Z after right-click "Due Today" or "Won't Do" crashing or silently mutating a different task — undo now targets the original task
