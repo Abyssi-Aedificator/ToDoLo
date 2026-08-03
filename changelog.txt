@@ -1,5 +1,6 @@
 1.7.3
 - Tag input now suggests existing tags as you type
+- Fixed the update notification showing a stale version number
 
 1.7.2
 - Fixed the list getting stuck when scrolling across group titles

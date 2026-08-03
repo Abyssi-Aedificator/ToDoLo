@@ -1985,7 +1985,7 @@
   <div class="overlay" id="versionOverlay">
     <div class="modal confirm-modal" style="text-align:center">
       <h2>ToDoLo updated</h2>
-      <p style="margin-bottom:22px">Updated to v1.7.1.</p>
+      <p id="versionText" style="margin-bottom:22px">Updated.</p>
       <div class="modal-actions" style="justify-content:center">
         <button class="btn-primary" id="versionOk">Got it</button>
       </div>
@@ -3871,6 +3871,7 @@
 
   // ---- version change notification ----
   const versionOverlay = $('versionOverlay'), versionOk = $('versionOk');
+  $('versionText').textContent = 'Updated to v' + APP_VERSION + '.';
   const prevVersion = localStorage.getItem('glass-todos-version');
   if (prevVersion !== APP_VERSION) {
     versionOverlay.classList.add('show');
