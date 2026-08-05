@@ -3680,6 +3680,13 @@
     const s = editingTask ? editingTask.status : 'todo';
     [...tStatus.children].forEach(b => b.classList.toggle('on', b.dataset.status === s));
   }
+  function goToFocus(status) {
+    if (status !== 'in-progress' && status !== 'paused') return;
+    saveListFilters();
+    state.activeId = status;
+    loadListFilters(status);
+  }
+
   async function setStatus(s) {
     if (!editingTask) return;
     if ((s === 'in-progress' || s === 'paused') && editingTask.due) {
@@ -3693,6 +3700,7 @@
       }
     }
     editingTask.status = s;
+    if ((s === 'in-progress' || s === 'paused') && !editingTask.done) goToFocus(s);
     renderStatus(); commit();
   }
 
@@ -4944,6 +4952,7 @@
     }
     task.status = 'in-progress';
     if (editingTask === task) { tRecur.value = task.recur || 'none'; tRecurEnd.value = task.recurEnd || ''; $('tRecurCount').value = task.recurCount || ''; }
+    if (!task.done) goToFocus('in-progress');
     save(); renderAll();
   });
 
@@ -4960,6 +4969,7 @@
     }
     task.status = 'paused';
     if (editingTask === task) { tRecur.value = task.recur || 'none'; tRecurEnd.value = task.recurEnd || ''; $('tRecurCount').value = task.recurCount || ''; }
+    if (!task.done) goToFocus('paused');
     save(); renderAll();
   });
 
@@ -5124,6 +5134,7 @@
     });
     closeBatchEdit();
     exitSelectMode();
+    if (batchStatusVal === 'in-progress' || batchStatusVal === 'paused') goToFocus(batchStatusVal);
     save(); renderAll();
     toast('Updated ' + oldStates.length + ' tasks');
   };

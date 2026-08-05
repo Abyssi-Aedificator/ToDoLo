@@ -1,4 +1,5 @@
 Version 1.7.4
+- Setting a task to In Progress or Paused now opens that Focus section so you follow where the task went
 
 Version 1.7.3
 - Tag input now suggests existing tags as you type
