@@ -74,6 +74,12 @@
     color-scheme: light;
     --bg-gradient: linear-gradient(135deg, #c9efe2 0%, #9fd8e8 50%, #d8f1d0 100%);
   }
+  /* tint the light-mode mobile panels toward the active theme colour (falls back to the plain value above) */
+  @supports (color: color-mix(in srgb, red 10%, white)) {
+    html[data-mode="light"] {
+      --panel-solid: color-mix(in srgb, rgb(var(--a)) 14%, rgb(248 250 252));
+    }
+  }
 
   /* ---- colour hues (background gradient + blobs) ---- */
   html[data-color="blue"]   { --a: 47, 127, 214; --bg-gradient: linear-gradient(135deg, #131a5a 0%, #2f7fd6 50%, #36d0e0 100%); --blob-1: rgba(70,150,240,0.38);  --blob-2: rgba(60,210,225,0.32); }
