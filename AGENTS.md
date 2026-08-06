@@ -26,7 +26,7 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 ## Mobile responsive breakpoint
 
 - `@media (max-width: 720px)` — sidebar becomes a slide-in drawer, detail panel goes full-screen
-- `--panel-solid` — mobile panel background (dark `rgba(20,40,50,0.94)`, light `rgba(248,250,252,0.94)`); prevents list bleed-through on mobile
+- `--panel-solid` — mobile panel background (dark `rgba(20,40,50,0.94)`, light tinted toward the theme via `color-mix`); prevents list bleed-through on mobile
 
 ## Workflow
 
@@ -37,6 +37,7 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 - Each bug fix or feature change must be a separate, individual commit
 - Never include version numbers in commit descriptions
 - Do not push to origin unless explicitly asked
+- Version bumps (APP_VERSION, sidebar badge, sw.js `CACHE`, changelog version header) are folded into the commit for the release's last change — never a separate "Bump version" commit
 
 ## Gotchas
 
