@@ -1,3 +1,6 @@
+Version 1.7.5
+- Fixed the empty task-detail hint leaking over the layout on mobile
+
 Version 1.7.4
 - Setting a task to In Progress or Paused now opens that Focus section so you follow where the task went
 
