@@ -14,8 +14,9 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 - `sw.js` — service worker, caches assets under `CACHE = 'todolo-v14'`; bump the cache name after changing any asset
 - `manifest.json` — PWA manifest, icons point to `icon.svg`
 - `icon.svg` — app icon
-- All user data is stored in `localStorage` (key: `glass-todos-data`)
+- All user data is stored in `localStorage` (key: `glass-todos-v2`)
 - State object: `state = { activeId, lists: [...] }` — persisted on every mutation via `save()`
+- Dropbox backup payload carries `data` (state) plus `ui` (per-view filter/sort/search, saved presets, view mode) — both are applied on download/restore; the export file uses the same envelope
 
 ## Versioning & changelog
 

@@ -1,3 +1,6 @@
+Version 1.7.6
+- Filter and sort settings, search, and saved presets now sync across devices via Dropbox and are included in exported backups
+
 Version 1.7.5
 - Fixed the empty task-detail hint leaking over the layout on mobile
 - Light-mode drawer and task-detail panels now tint to match the theme colour instead of plain white
