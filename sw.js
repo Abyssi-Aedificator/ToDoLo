@@ -1,4 +1,4 @@
-const CACHE = 'todolo-v19';
+const CACHE = 'todolo-v20';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {

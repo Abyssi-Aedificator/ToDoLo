@@ -1495,7 +1495,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.7.5</span>
+        ToDoLo<span class="brand-badge">v1.7.6</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -2140,7 +2140,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.7.5';
+  const APP_VERSION = '1.7.6';
 
   const $ = id => document.getElementById(id);
 
@@ -2335,7 +2335,7 @@
   const selectedIds = new Set();
   let filterPresets = [];
   try { filterPresets = JSON.parse(localStorage.getItem('glass-todos-presets') || '[]'); } catch(e) { filterPresets = []; }
-  function savePresets() { localStorage.setItem('glass-todos-presets', JSON.stringify(filterPresets)); }
+  function savePresets() { localStorage.setItem('glass-todos-presets', JSON.stringify(filterPresets)); scheduleAutoUpload(); }
   let viewMode = localStorage.getItem('glass-todos-view') || 'list';
   let calYear, calMonth;
   let nextId = Date.now();
@@ -3898,7 +3898,7 @@
   // ---- backup / restore ----
   const exportBtn = $('exportBtn'), importBtn = $('importBtn'), importFile = $('importFile');
   exportBtn.onclick = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify({ app: 'ToDoLo', version: 2, exportedAt: new Date().toISOString(), data: state, ui: collectFilterSettings() }, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -3912,13 +3912,15 @@
     const file = importFile.files[0];
     importFile.value = '';
     if (!file) return;
-    let data;
+    let parsed;
     try {
-      data = JSON.parse(await file.text());
+      parsed = JSON.parse(await file.text());
     } catch {
       alert('That file isn\'t valid JSON.');
       return;
     }
+    const data = parsed && parsed.data ? parsed.data : parsed; // accept wrapped or raw
+    const ui = parsed && parsed.ui;
     if (!data || !Array.isArray(data.lists) || !data.lists.length) {
       alert('That file doesn\'t look like a ToDoLo backup.');
       return;
@@ -3928,6 +3930,7 @@
     state = data;
     backfillState();
     if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) { saveListFilters(); state.activeId = state.lists[0].id; loadListFilters(state.activeId); }
+    applySyncedFilterSettings(ui);
     save(); renderAll();
     settingsOverlay.classList.remove('show');
   };
@@ -4157,22 +4160,23 @@
     f.classList.add('active');
     filter = f.dataset.filter;
     localStorage.setItem('glass-todos-filter', filter);
+    scheduleAutoUpload();
     renderTasks();
   });
 
   dueFilter = createGlassSelect('dueFilter', [
     {value:'any', label:'Any due date'}, {value:'overdue', label:'Overdue'}, {value:'today', label:'Due today'},
     {value:'week', label:'Due this week'}, {value:'month', label:'Due this month'}, {value:'none', label:'No due date'}
-  ], localStorage.getItem('glass-todos-due-filter') || 'any', () => { localStorage.setItem('glass-todos-due-filter', dueFilter.value); renderTasks(); });
+  ], localStorage.getItem('glass-todos-due-filter') || 'any', () => { localStorage.setItem('glass-todos-due-filter', dueFilter.value); scheduleAutoUpload(); renderTasks(); });
   prioFilter = createGlassSelect('prioFilter', [
     {value:'any', label:'Any priority'}, {value:'high', label:'High'}, {value:'med', label:'Med'}, {value:'low', label:'Low'}, {value:'none', label:'None'}
-  ], localStorage.getItem('glass-todos-prio-filter') || 'any', () => { localStorage.setItem('glass-todos-prio-filter', prioFilter.value); renderTasks(); });
+  ], localStorage.getItem('glass-todos-prio-filter') || 'any', () => { localStorage.setItem('glass-todos-prio-filter', prioFilter.value); scheduleAutoUpload(); renderTasks(); });
   tagFilter = createGlassSelect('tagFilter', [
     {value:'any', label:'Any tag'}, {value:'__none', label:'No tag'}
-  ], localStorage.getItem('glass-todos-tag-filter') || 'any', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); renderTasks(); });
+  ], localStorage.getItem('glass-todos-tag-filter') || 'any', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); scheduleAutoUpload(); renderTasks(); });
   let _searchTimer;
-  searchInput.addEventListener('input', () => { clearTimeout(_searchTimer); _searchTimer = setTimeout(renderTasks, 150); });
-  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { searchInput.value = ''; renderTasks(); searchInput.blur(); e.stopPropagation(); } });
+  searchInput.addEventListener('input', () => { clearTimeout(_searchTimer); _searchTimer = setTimeout(() => { saveListFilters(); scheduleAutoUpload(); renderTasks(); }, 150); });
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { clearTimeout(_searchTimer); searchInput.value = ''; saveListFilters(); scheduleAutoUpload(); renderTasks(); searchInput.blur(); e.stopPropagation(); } });
 
   function setFiltersOpen(open) {
     filtersToggleBtn.classList.toggle('open', open);
@@ -4197,11 +4201,12 @@
     {value:'manual', label:'Manual'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
     {value:'alpha', label:'Title (A–Z)'}, {value:'created', label:'Date created'}, {value:'recur', label:'Recurrence'},
     {value:'subtasks', label:'Sub-task progress'}, {value:'list', label:'List name'}
-  ], localStorage.getItem('glass-todos-sort-by') || 'manual', () => { localStorage.setItem('glass-todos-sort-by', sortBy.value); renderTasks(); });
+  ], localStorage.getItem('glass-todos-sort-by') || 'manual', () => { localStorage.setItem('glass-todos-sort-by', sortBy.value); saveListFilters(); scheduleAutoUpload(); renderTasks(); });
   if (localStorage.getItem('glass-todos-sort-dir') === 'desc') sortDir.classList.add('desc');
   sortDir.onclick = () => {
     sortDir.classList.toggle('desc');
     localStorage.setItem('glass-todos-sort-dir', sortDir.classList.contains('desc') ? 'desc' : 'asc');
+    saveListFilters(); scheduleAutoUpload();
     renderTasks();
   };
 
@@ -4209,11 +4214,12 @@
     {value:'none', label:'None'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
     {value:'alpha', label:'Title (A–Z)'}, {value:'created', label:'Date created'}, {value:'recur', label:'Recurrence'},
     {value:'subtasks', label:'Sub-task progress'}, {value:'list', label:'List name'}
-  ], localStorage.getItem('glass-todos-sort-by-2') || 'none', () => { localStorage.setItem('glass-todos-sort-by-2', sortBy2.value); renderTasks(); });
+  ], localStorage.getItem('glass-todos-sort-by-2') || 'none', () => { localStorage.setItem('glass-todos-sort-by-2', sortBy2.value); saveListFilters(); scheduleAutoUpload(); renderTasks(); });
   if (localStorage.getItem('glass-todos-sort-dir-2') === 'desc') sortDir2.classList.add('desc');
   sortDir2.onclick = () => {
     sortDir2.classList.toggle('desc');
     localStorage.setItem('glass-todos-sort-dir-2', sortDir2.classList.contains('desc') ? 'desc' : 'asc');
+    saveListFilters(); scheduleAutoUpload();
     renderTasks();
   };
 
@@ -4221,11 +4227,12 @@
     {value:'none', label:'None'}, {value:'due', label:'Due date'}, {value:'priority', label:'Priority'},
     {value:'alpha', label:'Title (A–Z)'}, {value:'created', label:'Date created'}, {value:'recur', label:'Recurrence'},
     {value:'subtasks', label:'Sub-task progress'}, {value:'list', label:'List name'}
-  ], localStorage.getItem('glass-todos-sort-by-3') || 'none', () => { localStorage.setItem('glass-todos-sort-by-3', sortBy3.value); renderTasks(); });
+  ], localStorage.getItem('glass-todos-sort-by-3') || 'none', () => { localStorage.setItem('glass-todos-sort-by-3', sortBy3.value); saveListFilters(); scheduleAutoUpload(); renderTasks(); });
   if (localStorage.getItem('glass-todos-sort-dir-3') === 'desc') sortDir3.classList.add('desc');
   sortDir3.onclick = () => {
     sortDir3.classList.toggle('desc');
     localStorage.setItem('glass-todos-sort-dir-3', sortDir3.classList.contains('desc') ? 'desc' : 'asc');
+    saveListFilters(); scheduleAutoUpload();
     renderTasks();
   };
 
@@ -4264,6 +4271,25 @@
   }
   if (!loadListFilters(state.activeId)) { saveListFilters(); }
 
+  // bundle the filter/sort settings, saved presets, and view mode for the backup payload
+  function collectFilterSettings() {
+    saveListFilters();
+    const perList = {};
+    state.lists.forEach(l => { const k = filtersKey(l.id); const raw = localStorage.getItem(k); if (raw) { try { perList[l.id] = JSON.parse(raw); } catch(e) {} } });
+    AGGREGATE_VIEWS.forEach(v => { const k = filtersKey(v); const raw = localStorage.getItem(k); if (raw) { try { perList[v] = JSON.parse(raw); } catch(e) {} } });
+    return { presets: filterPresets, view: viewMode, perList };
+  }
+  // apply synced settings (from a Dropbox download or a file restore) onto the live UI
+  function applySyncedFilterSettings(ui) {
+    if (!ui) return;
+    if (Array.isArray(ui.presets)) { filterPresets = ui.presets; savePresets(); renderPresets(); }
+    if (ui.view) { viewMode = ui.view; localStorage.setItem('glass-todos-view', viewMode); updateViewMode(); }
+    if (ui.perList && typeof ui.perList === 'object') {
+      Object.keys(ui.perList).forEach(id => { try { localStorage.setItem(filtersKey(id), JSON.stringify(ui.perList[id])); } catch(e) {} });
+      if (loadListFilters(state.activeId)) renderTasks();
+    }
+  }
+
   $('resetSort').onclick = () => {
     sortBy.value = 'manual'; sortBy2.value = 'none'; sortBy3.value = 'none';
     sortDir.classList.remove('desc'); sortDir2.classList.remove('desc'); sortDir3.classList.remove('desc');
@@ -4273,6 +4299,7 @@
     localStorage.setItem('glass-todos-sort-dir', 'asc');
     localStorage.setItem('glass-todos-sort-dir-2', 'asc');
     localStorage.setItem('glass-todos-sort-dir-3', 'asc');
+    saveListFilters(); scheduleAutoUpload();
     renderTasks();
   };
 
@@ -4287,6 +4314,7 @@
     localStorage.setItem('glass-todos-due-filter', 'any');
     localStorage.setItem('glass-todos-prio-filter', 'any');
     localStorage.setItem('glass-todos-tag-filter', 'any');
+    saveListFilters(); scheduleAutoUpload();
     renderTasks();
   }
   $('resetFilters').onclick = resetAllFilters;
@@ -4343,6 +4371,7 @@
     if (p.dir !== undefined) { sortDir.classList.toggle('desc', p.dir); localStorage.setItem('glass-todos-sort-dir', p.dir ? 'desc' : 'asc'); }
     if (p.dir2 !== undefined) { sortDir2.classList.toggle('desc', p.dir2); localStorage.setItem('glass-todos-sort-dir-2', p.dir2 ? 'desc' : 'asc'); }
     if (p.dir3 !== undefined) { sortDir3.classList.toggle('desc', p.dir3); localStorage.setItem('glass-todos-sort-dir-3', p.dir3 ? 'desc' : 'asc'); }
+    saveListFilters(); scheduleAutoUpload();
     renderTasks();
     toast('Loaded preset "' + p.name + '"');
   }
@@ -4586,25 +4615,26 @@
 
   function dbxParseBackup(text) {
     const parsed = JSON.parse(text);
-    const d = parsed && parsed.data ? parsed.data : parsed; // accept wrapped or raw
-    if (!d || !Array.isArray(d.lists) || !d.lists.length) throw new Error('bad backup format');
-    return d;
+    const data = parsed && parsed.data ? parsed.data : parsed; // accept wrapped or raw
+    if (!data || !Array.isArray(data.lists) || !data.lists.length) throw new Error('bad backup format');
+    return { data, ui: parsed && parsed.ui };
   }
-  function dbxApplyData(d) {
+  function dbxApplyData(d, ui) {
     closeTaskPanel();
     state = d;
     backfillState();
     if (!AGGREGATE_VIEWS.includes(state.activeId) && !state.lists.some(l => l.id === state.activeId)) { saveListFilters(); state.activeId = state.lists[0].id; loadListFilters(state.activeId); }
-    _lastUploadedState = JSON.stringify(state); // we now match Dropbox; don't re-upload it
+    applySyncedFilterSettings(ui);
+    _lastUploadedState = JSON.stringify({ state, ui: collectFilterSettings() }); // we now match Dropbox; don't re-upload it
     _skipAutoUpload = true;
     save(); renderAll();
   }
 
   async function dropboxUpload(silent) {
     if (!await dropboxRefreshIfNeeded()) { if (!silent) toast('⚠ Dropbox session expired — reconnect'); return; }
-    const snapshot = JSON.stringify(state);
+    const snapshot = JSON.stringify({ state, ui: collectFilterSettings() });
     if (silent && snapshot === _lastUploadedState) return; // nothing changed since last push
-    const payload = { app: 'ToDoLo', version: 1, exportedAt: new Date().toISOString(), data: state };
+    const payload = { app: 'ToDoLo', version: 2, exportedAt: new Date().toISOString(), data: state, ui: collectFilterSettings() };
     setSyncing(true);
     try {
       const res = await fetch('https://content.dropboxapi.com/2/files/upload', {
@@ -4632,9 +4662,9 @@
       });
       if (res.status === 409) { toast('No backup in Dropbox yet — upload one first'); return; }
       if (!res.ok) throw new Error('download failed (' + res.status + ')');
-      const d = dbxParseBackup(await res.text());
+      const { data, ui } = dbxParseBackup(await res.text());
       if (!skipConfirm && !await confirmDialog('Download from Dropbox? It will replace all your current lists and tasks.', 'Download from Dropbox', 'Download')) return;
-      dbxApplyData(d);
+      dbxApplyData(data, ui);
       dbx.lastSync = new Date().toLocaleString(); dbx.lastSyncAt = Date.now(); dbxSave(); updateDropboxUI();
       toast('Synced from Dropbox');
     } catch (err) { toast('⚠ ' + (err.message === 'bad backup format' ? 'Dropbox file isn\'t a ToDoLo backup' : err.message)); }
@@ -5291,6 +5321,7 @@
     viewMode = b.dataset.view;
     localStorage.setItem('glass-todos-view', viewMode);
     updateViewMode();
+    scheduleAutoUpload();
     if (viewMode !== 'calendar') renderTasks();
   }));
 
