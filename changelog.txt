@@ -1,5 +1,6 @@
 Version 1.7.7
 - The Presets dropdown now shows the active preset's name and highlights it in the menu; it resets to "Presets" whenever the filter/sort combo changes
+- Tasks now sit closer to the group bar and group names, and the current-group header no longer gets stuck when scrolling slowly into the next group
 
 Version 1.7.6
 - Filter and sort settings, search, and saved presets now sync across devices via Dropbox and are included in exported backups
