@@ -1138,6 +1138,8 @@
     font-size: 0.8rem; gap: 6px;
   }
   .gl-select-sm .gl-chevron { width: 14px; height: 14px; }
+  #presetSelect .gl-select-trigger { min-width: 0; }
+  #presetSelect .gl-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .filter-search {
     flex: 1 1 100%; padding: 8px 12px; border-radius: 10px;
     border: 1px solid rgba(var(--w),0.2);
@@ -1165,7 +1167,7 @@
   .group-bar {
     display: none;
     align-items: center; gap: 10px;
-    padding: 6px 12px; margin-bottom: 8px;
+    padding: 6px 12px; margin-bottom: 6px;
     border-radius: 10px;
     background: rgba(var(--w),0.10);
     border: 1px solid rgba(var(--w),0.14);
@@ -1194,7 +1196,7 @@
   .task-group { margin-bottom: 4px; }
   .task-group .group-label {
     display: flex; align-items: center; gap: 10px;
-    padding: 2px 0; margin-bottom: 8px;
+    padding: 0; margin-bottom: 4px;
     font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
     color: var(--ink); opacity: 0.6; text-transform: uppercase;
   }
@@ -1495,7 +1497,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.7.6</span>
+        ToDoLo<span class="brand-badge">v1.7.7</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -2140,7 +2142,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.7.6';
+  const APP_VERSION = '1.7.7';
 
   const $ = id => document.getElementById(id);
 
@@ -2864,6 +2866,7 @@
     list.innerHTML = '';
     populateTagFilter();
     updateFiltersBadge();
+    updatePresetLabel();
 
     const all = isAllView();
     listTitle.textContent = SMART_TITLES[state.activeId] || activeList().name;
@@ -4321,8 +4324,31 @@
   $('resetFiltersBtn').onclick = resetAllFilters;
 
   const presetSelect = $('presetSelect'), presetMenu = $('presetMenu');
+  const presetLabel = presetSelect.querySelector('.gl-select-label');
+  function findActivePreset() {
+    const cur = {
+      filter,
+      due: dueFilter.value, prio: prioFilter.value, tag: tagFilter.value,
+      sort: sortBy.value, sort2: sortBy2.value, sort3: sortBy3.value,
+      dir: sortDir.classList.contains('desc'),
+      dir2: sortDir2.classList.contains('desc'),
+      dir3: sortDir3.classList.contains('desc')
+    };
+    for (const p of filterPresets) {
+      if (p.filter === cur.filter && p.due === cur.due && p.prio === cur.prio && p.tag === cur.tag &&
+          p.sort === cur.sort && p.sort2 === cur.sort2 && p.sort3 === cur.sort3 &&
+          p.dir === cur.dir && p.dir2 === cur.dir2 && p.dir3 === cur.dir3) return p;
+    }
+    return null;
+  }
+  function updatePresetLabel() {
+    const active = findActivePreset();
+    presetLabel.textContent = active ? active.name : 'Presets';
+    presetLabel.title = active ? active.name : '';
+  }
   function renderPresets() {
     presetMenu.innerHTML = '';
+    const active = findActivePreset();
     const saveItem = document.createElement('button');
     saveItem.className = 'gl-select-item';
     saveItem.textContent = '+ Save current…';
@@ -4330,7 +4356,7 @@
     presetMenu.appendChild(saveItem);
     filterPresets.forEach((p, i) => {
       const item = document.createElement('button');
-      item.className = 'gl-select-item';
+      item.className = 'gl-select-item' + (active === p ? ' selected' : '');
       item.textContent = p.name;
       item.onclick = e => { e.stopPropagation(); presetSelect.classList.remove('open'); loadPreset(p); };
       presetMenu.appendChild(item);
@@ -4343,7 +4369,7 @@
       del.onclick = e => { e.stopPropagation(); presetSelect.classList.remove('open'); managePresets(); };
       presetMenu.appendChild(del);
     }
-    presetSelect.querySelector('.gl-select-label').textContent = 'Presets';
+    updatePresetLabel();
   }
   function promptSavePreset() {
     const name = prompt('Preset name:');
@@ -4388,7 +4414,7 @@
     }
   }
   renderPresets();
-  presetSelect.querySelector('.gl-select-trigger').addEventListener('click', e => { e.stopPropagation(); presetSelect.classList.toggle('open'); });
+  presetSelect.querySelector('.gl-select-trigger').addEventListener('click', e => { e.stopPropagation(); if (!presetSelect.classList.contains('open')) renderPresets(); presetSelect.classList.toggle('open'); });
 
   listsSortBtn.innerHTML = ICON.sortAz;
   listsSortBtn.onclick = () => {
