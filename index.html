@@ -1141,7 +1141,7 @@
   #presetSelect .gl-select-trigger { min-width: 0; }
   #presetSelect .gl-select-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .filter-search {
-    flex: 1 1 100%; padding: 8px 12px; border-radius: 10px;
+    flex: 1 1 100%; padding: 8px 12px; border-radius: 10px; margin-bottom: 12px;
     border: 1px solid rgba(var(--w),0.2);
     background: rgba(var(--w),0.08); color: var(--ink);
     font-size: 0.85rem; font-family: inherit; outline: none;
@@ -1497,7 +1497,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.7.8</span>
+        ToDoLo<span class="brand-badge">v1.7.9</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -1551,6 +1551,7 @@
         <button id="addBtn" title="Add task"><svg class="ico" viewBox="0 0 24 24" width="22" height="22"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
 
+      <input type="search" id="searchInput" class="filter-search" placeholder="Search tasks…" maxlength="100">
       <div class="filters-toggle-row">
         <button class="filters-toggle" id="filtersToggleBtn" type="button" aria-expanded="false">
           <svg class="ico" viewBox="0 0 24 24" width="16" height="16"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
@@ -1571,7 +1572,6 @@
       </div>
       <div class="filters-panel" id="filtersPanel">
       <div class="filters" id="filterRow">
-        <input type="search" id="searchInput" class="filter-search" placeholder="Search tasks…" maxlength="100">
         <button class="filter active" data-filter="all">All</button>
         <button class="filter" data-filter="active">Active</button>
         <button class="filter" data-filter="done">Done</button>
@@ -2142,7 +2142,7 @@
   };
   const DEV = false;
   if (!DEV) document.getElementById('devBanner').remove();
-  const APP_VERSION = '1.7.8';
+  const APP_VERSION = '1.7.9';
 
   const $ = id => document.getElementById(id);
 
@@ -4178,8 +4178,8 @@
     {value:'any', label:'Any tag'}, {value:'__none', label:'No tag'}
   ], localStorage.getItem('glass-todos-tag-filter') || 'any', () => { localStorage.setItem('glass-todos-tag-filter', tagFilter.value); scheduleAutoUpload(); renderTasks(); });
   let _searchTimer;
-  searchInput.addEventListener('input', () => { clearTimeout(_searchTimer); _searchTimer = setTimeout(() => { saveListFilters(); scheduleAutoUpload(); renderTasks(); }, 150); });
-  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { clearTimeout(_searchTimer); searchInput.value = ''; saveListFilters(); scheduleAutoUpload(); renderTasks(); searchInput.blur(); e.stopPropagation(); } });
+  searchInput.addEventListener('input', () => { clearTimeout(_searchTimer); _searchTimer = setTimeout(() => { renderTasks(); }, 150); });
+  searchInput.addEventListener('keydown', e => { if (e.key === 'Escape') { clearTimeout(_searchTimer); searchInput.value = ''; renderTasks(); searchInput.blur(); e.stopPropagation(); } });
 
   function setFiltersOpen(open) {
     filtersToggleBtn.classList.toggle('open', open);
@@ -4243,7 +4243,7 @@
   function filtersKey(id) { return 'g-flt-' + id; }
   function saveListFilters() {
     localStorage.setItem(filtersKey(state.activeId), JSON.stringify({
-      f: filter, s: searchInput.value,
+      f: filter,
       d: dueFilter.value, p: prioFilter.value, t: tagFilter.value,
       sb: sortBy.value, sb2: sortBy2.value, sb3: sortBy3.value,
       sd: sortDir.classList.contains('desc'),
@@ -4257,7 +4257,7 @@
       const o = JSON.parse(localStorage.getItem(filtersKey(id)));
       if (!o) return false;
       filter = o.f || 'all';
-      searchInput.value = o.s || '';
+      searchInput.value = '';
       dueFilter.value = o.d || 'any';
       prioFilter.value = o.p || 'any';
       tagFilter.value = o.t || 'any';
