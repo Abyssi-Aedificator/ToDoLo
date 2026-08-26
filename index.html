@@ -360,6 +360,8 @@
   }
   .new-list-btn:hover { background: rgba(var(--w),0.22); }
   .new-list-btn:active { transform: scale(0.97); }
+  #syncBtn { position: relative; }
+  #syncBtn.dirty::after { content: ''; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; }
   #syncBtn.syncing { border-style: solid; border-color: rgba(110,231,183,0.55); background: rgba(62,207,142,0.18); }
   .sync-ico { transform-origin: 50% 50%; }
   .sidebar-btn-row { display: flex; gap: 8px; margin-top: 14px; }
@@ -1497,7 +1499,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.8.0</span>
+        ToDoLo<span class="brand-badge">v1.8.1</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -4550,10 +4552,14 @@
   const dbxRedirectUri = () => location.origin + location.pathname;
 
   // auto-upload: debounced push after 10s of inactivity
-  let _syncTimer = null, _skipAutoUpload = false, _lastUploadedState = '', _syncing = 0;
+  let _syncTimer = null, _skipAutoUpload = false, _lastUploadedState = '', _syncing = 0, _backupDirty = false;
+  function isBackupDirty() { return !!dbx.accessToken && _backupDirty; }
+  function updateSyncDirtyIndicator() { const btn = $('syncBtn'); if (btn) btn.classList.toggle('dirty', isBackupDirty()); }
   function scheduleAutoUpload() {
     if (!dbx.accessToken || !dbx.autoUpload) return;
-    if (_skipAutoUpload) { _skipAutoUpload = false; return; } // don't bounce a just-downloaded state back up
+    if (_skipAutoUpload) { _skipAutoUpload = false; return; }
+    _backupDirty = true;
+    updateSyncDirtyIndicator();
     clearTimeout(_syncTimer);
     _syncTimer = setTimeout(() => dropboxUpload(true), 10000);
   }
@@ -4676,7 +4682,9 @@
       });
       if (!res.ok) throw new Error('upload failed (' + res.status + ')');
       _lastUploadedState = snapshot;
+      _backupDirty = false;
       dbx.lastSync = new Date().toLocaleString(); dbx.lastSyncAt = Date.now(); dbxSave(); updateDropboxUI();
+      updateSyncDirtyIndicator();
       toast(silent ? 'Auto-synced to Dropbox' : 'Uploaded to Dropbox');
     } catch (err) { toast('⚠ ' + err.message); }
     finally { setSyncing(false); }
@@ -4696,7 +4704,9 @@
       const { data, ui } = dbxParseBackup(await res.text());
       if (!skipConfirm && !await confirmDialog('Download from Dropbox? It will replace all your current lists and tasks.', 'Download from Dropbox', 'Download')) return;
       dbxApplyData(data, ui);
+      _backupDirty = false;
       dbx.lastSync = new Date().toLocaleString(); dbx.lastSyncAt = Date.now(); dbxSave(); updateDropboxUI();
+      updateSyncDirtyIndicator();
       toast('Synced from Dropbox');
     } catch (err) { toast('⚠ ' + (err.message === 'bad backup format' ? 'Dropbox file isn\'t a ToDoLo backup' : err.message)); }
   }
@@ -4704,7 +4714,8 @@
   async function dropboxDisconnect() {
     if (!await confirmDialog('Disconnect Dropbox? You can reconnect any time with your App key.', 'Disconnect Dropbox', 'Disconnect')) return;
     dbx = { appKey: dbx.appKey, accessToken: '', refreshToken: '', expiresAt: 0, account: '', lastSync: '', lastSyncAt: 0, dismissedRemoteAt: 0, autoSync: false, autoUpload: false };
-    dbxSave(); updateDropboxUI(); toast('Dropbox disconnected');
+    _backupDirty = false;
+    dbxSave(); updateDropboxUI(); updateSyncDirtyIndicator(); toast('Dropbox disconnected');
   }
 
   function dropboxSetAutoUpload(on) {
@@ -5244,6 +5255,10 @@
   window.addEventListener('resize', () => {
     if (ctxMenu.classList.contains('open')) closeCtxMenu();
   }, { passive: true });
+
+  window.addEventListener('beforeunload', e => {
+    if (isBackupDirty()) { e.preventDefault(); e.returnValue = ''; }
+  });
 
   // ---- notifications & tab title badge ----
   function updateTabTitle() {
