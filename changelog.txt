@@ -1,3 +1,6 @@
+Version 1.7.9
+- Search bar is now always visible above the filters; it clears on section change and reload instead of being saved per list
+
 Version 1.7.8
 - Saved presets now appear alphabetically in the dropdown
 
