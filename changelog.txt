@@ -1,3 +1,9 @@
+Version 1.8.1
+- Warn before closing when a Dropbox backup is pending; sync button shows a red dot while unsaved changes wait to upload
+
+Version 1.8.0
+- Right-click a task to duplicate it — copies all fields and places it below the original
+
 Version 1.7.9
 - Search bar is now always visible above the filters; it clears on section change and reload instead of being saved per list
 
