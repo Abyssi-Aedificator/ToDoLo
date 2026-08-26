@@ -21,7 +21,6 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 ## Versioning & changelog
 
 - `APP_VERSION` constant (line ~1852) and the first entry in `changelog.txt` must stay in sync
-- `DEV = true` shows a red dev banner — set to `false` before release
 - Changelog lives in `changelog.txt`; new entry goes at the top
 
 ## Mobile responsive breakpoint
@@ -38,6 +37,7 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 - Each bug fix or feature change must be a separate, individual commit
 - Never include version numbers in commit descriptions
 - Do not push to origin unless explicitly asked
+- Never bump a version (APP_VERSION, sidebar badge, sw.js `CACHE`, changelog version header) unless explicitly asked
 - Version bumps (APP_VERSION, sidebar badge, sw.js `CACHE`, changelog version header) are folded into the commit for the release's last change — never a separate "Bump version" commit
 
 ## Gotchas
