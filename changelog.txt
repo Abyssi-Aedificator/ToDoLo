@@ -1,3 +1,6 @@
+Version 1.8.2
+- Add a themed, dismissable banner that reminds you to sync while a backup is pending
+
 Version 1.8.1
 - Restyle the pending-backup indicator on the Sync button as a theme-colored pulsing dot
 
