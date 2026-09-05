@@ -26,7 +26,7 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 ## Mobile responsive breakpoint
 
 - `@media (max-width: 720px)` — sidebar becomes a slide-in drawer, detail panel goes full-screen
-- `--panel-solid` — mobile panel background (dark `rgba(20,40,50,0.94)`, light tinted toward the theme via `color-mix`); prevents list bleed-through on mobile
+- `--panel-solid` — mobile panel background (both dark and light tinted toward the theme via `color-mix`); prevents list bleed-through on mobile
 
 ## Workflow
 
