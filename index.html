@@ -47,7 +47,7 @@
   /* ---------- THEME SYSTEM ----------
      Two independent axes:
        data-mode  = light | dark   → text + glass tint (neutrals)
-       data-color = teal(default) | blue | purple | pink | orange | green → background hue
+       data-color = teal(default) | blue | purple | pink | orange | green | red → background hue
   */
   :root {
     /* DARK mode neutrals (default) */
@@ -90,6 +90,7 @@
   html[data-color="pink"]   { --a: 214, 71, 143; --bg-gradient: linear-gradient(135deg, #5b1648 0%, #d6478f 50%, #ff8c69 100%); --blob-1: rgba(240,110,180,0.40); --blob-2: rgba(255,150,110,0.34); }
   html[data-color="orange"] { --a: 239, 122, 24; --bg-gradient: linear-gradient(135deg, #7c2d12 0%, #ef7a18 50%, #f5d020 100%); --blob-1: rgba(245,150,60,0.40);  --blob-2: rgba(245,210,40,0.34); }
   html[data-color="green"]  { --a: 20, 128, 61; --bg-gradient: linear-gradient(135deg, #0a2417 0%, #14803d 50%, #a3e635 100%); --blob-1: rgba(110,210,120,0.38); --blob-2: rgba(180,225,70,0.34); }
+  html[data-color="red"]    { --a: 202, 38, 38; --bg-gradient: linear-gradient(135deg, #450a0a 0%, #ca2626 50%, #fb7185 100%); --blob-1: rgba(240,90,90,0.40); --blob-2: rgba(255,140,120,0.34); }
 
   /* light-mode pale multi-hue variants (override the dark gradient) */
   html[data-mode="light"][data-color="blue"]   { --a: 44, 104, 171; --bg-gradient: linear-gradient(135deg, #d3e4fb 0%, #aaccf5 50%, #c6ebf6 100%); }
@@ -97,6 +98,7 @@
   html[data-mode="light"][data-color="pink"]   { --a: 161, 65, 121; --bg-gradient: linear-gradient(135deg, #fbd9ea 0%, #f7bcd6 50%, #ffd6c2 100%); }
   html[data-mode="light"][data-color="orange"] { --a: 179, 100, 38; --bg-gradient: linear-gradient(135deg, #fce3c4 0%, #fad29a 50%, #fdeeb0 100%); }
   html[data-mode="light"][data-color="green"]  { --a: 25, 105, 64; --bg-gradient: linear-gradient(135deg, #daf0c9 0%, #bce5a8 50%, #e8f5b0 100%); }
+  html[data-mode="light"][data-color="red"]    { --a: 161, 48, 48; --bg-gradient: linear-gradient(135deg, #fbdada 0%, #f5b8b8 50%, #ffd9cf 100%); }
 
   /* in light mode, don't darken the page behind modals (keeps panels bright) */
   html[data-mode="light"] .overlay { background: rgba(70, 100, 140, 0.14); }
@@ -1521,7 +1523,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.8.4</span>
+        ToDoLo<span class="brand-badge">v1.8.5</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -2181,7 +2183,7 @@
     logbook: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
     checkSquare: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg>'
   };
-  const APP_VERSION = '1.8.4';
+  const APP_VERSION = '1.8.5';
 
   const $ = id => document.getElementById(id);
 
@@ -3865,7 +3867,8 @@
     { id: 'purple', name: 'Purple', dark: 'linear-gradient(135deg, #2a1055, #7b3fbf, #d76d77)', light: 'linear-gradient(135deg, #ebe1fb, #d6c0f0, #f4cfe6)' },
     { id: 'pink',   name: 'Pink',   dark: 'linear-gradient(135deg, #5b1648, #d6478f, #ff8c69)', light: 'linear-gradient(135deg, #fbd9ea, #f7bcd6, #ffd6c2)' },
     { id: 'orange', name: 'Orange', dark: 'linear-gradient(135deg, #7c2d12, #ef7a18, #f5d020)', light: 'linear-gradient(135deg, #fce3c4, #fad29a, #fdeeb0)' },
-    { id: 'green',  name: 'Green',  dark: 'linear-gradient(135deg, #0a2417, #14803d, #a3e635)', light: 'linear-gradient(135deg, #daf0c9, #bce5a8, #e8f5b0)' }
+    { id: 'green',  name: 'Green',  dark: 'linear-gradient(135deg, #0a2417, #14803d, #a3e635)', light: 'linear-gradient(135deg, #daf0c9, #bce5a8, #e8f5b0)' },
+    { id: 'red',    name: 'Red',    dark: 'linear-gradient(135deg, #450a0a, #ca2626, #fb7185)', light: 'linear-gradient(135deg, #fbdada, #f5b8b8, #ffd9cf)' }
   ];
   const savedMode = () => localStorage.getItem('glass-todos-mode') || 'system';
   const currentMode = () => {
