@@ -1,3 +1,6 @@
+Version 1.8.5
+- New Red colour theme
+
 Version 1.8.4
 - Mobile sidebar and task panels now tint toward the theme colour in dark mode, matching the light-mode panels
 
