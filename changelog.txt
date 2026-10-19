@@ -1,51 +1,35 @@
-Version 1.8.6
+Version 1.10.6
 - Calendar week can now start on Monday (option in Settings)
 - New Grey colour theme that works in both light and dark mode
 
-Version 1.8.5
+Version 1.10.5
 - New Red colour theme
 
-Version 1.8.4
+Version 1.10.4
 - Mobile sidebar and task panels now tint toward the theme colour in dark mode, matching the light-mode panels
 
-Version 1.8.3
+Version 1.10.3
 - Add an option in Settings to hide the sync reminder banner when a backup is pending
 
-Version 1.8.2
+Version 1.10.2
 - Add a themed, dismissable banner that reminds you to sync while a backup is pending
 
-Version 1.8.1
+Version 1.10.1
 - Restyle the pending-backup indicator on the Sync button as a theme-colored pulsing dot
 
-Version 1.8.0
+Version 1.10.0
 - Right-click a task to duplicate it — copies all fields and places it below the original
 - Warn before closing when a Dropbox backup is pending; sync button shows a red dot while unsaved changes wait to upload
-
-Version 1.7.9
 - Search bar is now always visible above the filters; it clears on section change and reload instead of being saved per list
-
-Version 1.7.8
 - Saved presets now appear alphabetically in the dropdown
-
-Version 1.7.7
 - The Presets dropdown now shows the active preset's name and highlights it in the menu; it resets to "Presets" whenever the filter/sort combo changes
 - Tasks now sit closer to the group bar and group names, and the current-group header no longer gets stuck when scrolling slowly into the next group
-
-Version 1.7.6
 - Filter and sort settings, search, and saved presets now sync across devices via Dropbox and are included in exported backups
-
-Version 1.7.5
 - Fixed the empty task-detail hint leaking over the layout on mobile
 - Light-mode drawer and task-detail panels now tint to match the theme colour instead of plain white
-
-Version 1.7.4
 - Setting a task to In Progress or Paused now opens that Focus section so you follow where the task went
-
-Version 1.7.3
 - Tag input now suggests existing tags as you type
 - Fixed the update notification showing a stale version number
-
-Version 1.7.2
 - Fixed the list getting stuck when scrolling across group titles
 - Fixed Ctrl+Z after right-click "Due Today" or "Won't Do" crashing or silently mutating a different task — undo now targets the original task
 - Fixed deleting the last list and then undoing duplicating the list
@@ -61,8 +45,6 @@ Version 1.7.2
 - Fixed natural-language parsing leaving a stray "'s" in "today's" / "tomorrow's"
 - Batch Edit now asks whether to remove due dates when setting tasks to In Progress or Paused
 - Recurring tasks added without a due date now warn that they won't advance until one is set
-
-Version 1.7.1
 - The current group shows in a reserved bar at the top of the list that swaps as you scroll, while upcoming groups are labeled inline — group names never overlap tasks
 - Tasks now fade out as they scroll under the top edge of the list instead of being cut off
 - Documented commit and push policies in AGENTS.md
@@ -72,10 +54,8 @@ Version 1.7.1
 - Tag manager in Settings — rename, merge, or delete tags across all tasks with undo
 - Quick Open (Ctrl+K) now matches subtask text and shows the matching subtask
 
-Version 1.7.0
+Version 1.9.0
 - Per-list filter & sort — each list and smart view remembers its own filters, sort column, and sort direction
-
-Version 1.6.1
 - Fixed drag-and-drop between lists duplicating tasks when detail panel is open
 - Fixed batch bar disappearing after view switches and filter changes
 - Fixed shallow copy in batch delete undo corrupting nested task data
@@ -85,7 +65,7 @@ Version 1.6.1
 - Changelog migrated to standalone file (changelog.txt)
 - Version overlay now opens changelog.txt instead of in-app panel
 
-Version 1.6.0
+Version 1.8.0
 - Batch edit — change priority, status, list, or due date on multiple selected tasks at once
 - Drag tasks onto sidebar lists to move them between lists
 - Statistics panel in Settings — completion rates, priority breakdown, per-list progress, and 14-day activity heatmap
@@ -94,7 +74,7 @@ Version 1.6.0
 - Fixed undo support for batch complete and batch delete
 - Fixed drag-and-drop reorder within the same list
 
-Version 1.5.0
+Version 1.7.0
 - Multi-select & batch actions — select multiple tasks and complete or delete them in bulk
 - Due-date notifications with browser push alerts and an overdue badge in the tab title
 - Calendar view — see your tasks on a month grid, click a day to jump to it
@@ -108,7 +88,7 @@ Version 1.5.0
 - When changing a task to In Progress or Paused, you're now asked whether to remove its due date
 - Confirmation dialogs now have descriptive titles and context-specific buttons
 
-Version 1.4.6
+Version 1.6.0
 - Fixed crash when clicking a tag chip on a task to filter by that tag
 - Fixed detail panel not refreshing tags and subtasks after Dropbox sync or file import
 - Fixed zero-count badges showing on smart views with no tasks
@@ -152,8 +132,6 @@ Version 1.4.6
 - Cached today's date in daysFromToday() to avoid redundant Date object allocations per task
 - Fixed context menu "Due Today" visibility and action using UTC date instead of local date — tasks could appear wrong on the boundary between days
 - Fixed "Date created" sort group headers using UTC date instead of local date — groups could be off by one day
-
-Version 1.4.5
 - Fixed task detail and sidebar panels being too transparent on mobile — switched to the solid panel background (--panel-solid) so list content behind doesn't bleed through
 - Optimised sidebar smart-view counts — all 8 counts now computed in a single pass instead of flattening the full task list 8 times
 - Added search input debounce (150ms) to avoid rebuilding the DOM on every keystroke
@@ -163,8 +141,6 @@ Version 1.4.5
 - Declared drawerBackdrop and menuBtn properly with $() instead of relying on implicit browser globals
 - Removed dead CSS classes (.all-item, .all-divider, .filter-select) and unused HTML IDs
 - Scoped overly broad .text and .empty CSS rules to #list to prevent unintended styling
-
-Version 1.4.4
 - Fixed data-loss bug in "Move to list" — task was removed from the source list before confirming the target list exists; if the target was invalid the task would vanish
 - Fixed crash when deleting a list that was already removed — added null check before accessing list.name
 - Fixed subtask delete using a stale index after the confirmation dialog — now finds the subtask by its unique ID
@@ -175,38 +151,28 @@ Version 1.4.4
 - Fixed detail panel status and priority buttons not updating when changed via the right-click context menu
 - Fixed status chips (In Progress, Paused, Won't Do, Overdue, Due Today) being slightly faded by inheriting the base chip opacity
 - Fixed Dropbox restore and file import not back-filling all legacy task fields (desc, due, recur, priority, wontdo, list color)
-
-Version 1.4.3
 - Fixed sidebar and task-detail panel not showing the theme colour on mobile — the nearly-opaque --panel-solid background was hiding the gradient; both now use a translucent glass tint like desktop, so the chosen colour theme shows through
 - Added "Won't Do" right-click option — marks the task as completed and adds a gray "Won't Do" badge so you can distinguish rejected tasks from completed ones
 - "No Date" view now hides In Progress and Paused tasks — they have their own Focus sections in the sidebar, so the No Date list stays clean for unorganized tasks
-
-Version 1.4.2
 - Tighter sidebar spacing — reduced gaps between smart views, Focus section (In Progress / Paused), and their items for a more compact left panel
 - Sync now and Settings buttons are now side by side on the last row when Dropbox is connected
 - Right detail panel now has a "Mark complete" button (with "Mark incomplete" for already-done tasks), making it usable from the panel without returning to the list
-
-Version 1.4.1
 - Fixed crash on corrupted task data — JSON.parse on state load now wrapped in try/catch so a broken localStorage entry no longer kills the entire app
 - Fixed tag filter dropdown label not updating when clicking a tag chip on a task
 - New default list name is now "Today" instead of "Default" for first-time visitors
 
-Version 1.4.0
+Version 1.5.0
 - New "Paused" status — set a task aside without losing its place. A dedicated "Paused" sidebar section (right below In Progress) lists and counts paused tasks
 - Toggle Paused from the right-click menu or the task detail panel; click the "⏸ Paused" chip to send a task back to To Do. Completing a paused task clears the status, like In Progress
-
-Version 1.3.2
 - Fixed Dropbox "Connect to Dropbox" button not responding — script was aborting early due to AGGREGATE_VIEWS.has (arrays don't have .has()); also hardened dbx state parsing against corrupted localStorage
-
-Version 1.3.1
 - Right-click menu "Due Today" option — sets the task's due date to the current day; hidden if already due today
 - Completing a task now clears "In Progress" status — no longer shows the chip or counts toward the sidebar
 
-Version 1.3.0
+Version 1.4.0
 - Right-click context menu on tasks — "Set In Progress" and "Skip" (for recurring tasks) actions directly on any task
 - "Skip" on a recurring task advances the due date to its next occurrence and clears the "In Progress" status if set
 
-Version 1.2.0
+Version 1.3.0
 - Smooth animated transitions when adding, completing, or deleting tasks — tasks fade and slide in/out instead of popping
 - Contextual empty states with themed SVG illustrations — different artwork and messages for empty lists, smart views, search results, and filtered views
 - Sticky group headers (Overdue, Today, Tomorrow...) stay pinned while scrolling through that group; a subtle shadow appears at the top of the list when scrolled
@@ -214,21 +180,15 @@ Version 1.2.0
 - Natural Language Quick Add — type #tags, !priority, and due dates (tomorrow, next week, etc.) right in the task input
 - Quick Open palette — press Cmd+K / Ctrl+K to search every task, description, and tag, then jump straight to it
 
-Version 1.1.4
+Version 1.2.0
 - Default list renamed from "Default" to "Today" — new visitors now start with a "Today" list instead of a generic "Default" list
 - "In Progress" sidebar section with its own glass container, count badge, and icon — sits between smart views and your lists
-
-Version 1.1.3
 - Settings page redesigned with larger cards, bigger swatches, softer glass, and more spacing
 - Primary buttons now use your theme accent colour instead of a generic tint
 - Toggle switches, mode picker, tabs, and badges all polished for a cleaner look
-
-Version 1.1.2
 - Light/dark mode can now follow your system preference — pick "System" in settings
 - Date chips in the task list now use your theme colour instead of a generic tint
 - Reset filters button placed conveniently on the right of the "Filters & sort" toggle
-
-Version 1.1.1
 - Filters & sort are now tucked into a collapsible section with a badge showing how many filters are active
 - Fixed sidebar and task-detail panel resize handles not responding to touch on tablets
 - Fixed dialogs and toast notifications staying neutral grey instead of following your theme colour
