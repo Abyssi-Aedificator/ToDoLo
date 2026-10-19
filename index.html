@@ -2249,8 +2249,13 @@
     }
     function renderGrid() {
       titleEl.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+      const weekdaysEl = el.querySelector('.gl-cal-weekdays');
+      if (weekdaysEl) weekdaysEl.innerHTML = weekStartsMon()
+        ? '<span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>'
+        : '<span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>';
       gridEl.innerHTML = '';
-      const startDow = new Date(viewYear, viewMonth, 1).getDay();
+      const dow = new Date(viewYear, viewMonth, 1).getDay();
+      const startDow = weekStartsMon() ? (dow + 6) % 7 : dow;
       const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
       const todayStr = fmt(new Date());
       for (let i = 0; i < 42; i++) {
