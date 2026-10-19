@@ -1,5 +1,6 @@
 Version 1.8.6
 - Calendar week can now start on Monday (option in Settings)
+- New Grey colour theme that works in both light and dark mode
 
 Version 1.8.5
 - New Red colour theme

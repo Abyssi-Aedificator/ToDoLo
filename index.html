@@ -47,7 +47,7 @@
   /* ---------- THEME SYSTEM ----------
      Two independent axes:
        data-mode  = light | dark   → text + glass tint (neutrals)
-       data-color = teal(default) | blue | purple | pink | orange | green | red → background hue
+       data-color = teal(default) | blue | purple | pink | orange | green | red | grey → background hue
   */
   :root {
     /* DARK mode neutrals (default) */
@@ -91,6 +91,7 @@
   html[data-color="orange"] { --a: 239, 122, 24; --bg-gradient: linear-gradient(135deg, #7c2d12 0%, #ef7a18 50%, #f5d020 100%); --blob-1: rgba(245,150,60,0.40);  --blob-2: rgba(245,210,40,0.34); }
   html[data-color="green"]  { --a: 20, 128, 61; --bg-gradient: linear-gradient(135deg, #0a2417 0%, #14803d 50%, #a3e635 100%); --blob-1: rgba(110,210,120,0.38); --blob-2: rgba(180,225,70,0.34); }
   html[data-color="red"]    { --a: 202, 38, 38; --bg-gradient: linear-gradient(135deg, #450a0a 0%, #ca2626 50%, #fb7185 100%); --blob-1: rgba(240,90,90,0.40); --blob-2: rgba(255,140,120,0.34); }
+  html[data-color="grey"]   { --a: 122, 130, 144; --bg-gradient: linear-gradient(135deg, #1b1f24 0%, #4b5563 50%, #9aa4b2 100%); --blob-1: rgba(150,160,175,0.32); --blob-2: rgba(110,120,140,0.30); }
 
   /* light-mode pale multi-hue variants (override the dark gradient) */
   html[data-mode="light"][data-color="blue"]   { --a: 44, 104, 171; --bg-gradient: linear-gradient(135deg, #d3e4fb 0%, #aaccf5 50%, #c6ebf6 100%); }
@@ -99,6 +100,7 @@
   html[data-mode="light"][data-color="orange"] { --a: 179, 100, 38; --bg-gradient: linear-gradient(135deg, #fce3c4 0%, #fad29a 50%, #fdeeb0 100%); }
   html[data-mode="light"][data-color="green"]  { --a: 25, 105, 64; --bg-gradient: linear-gradient(135deg, #daf0c9 0%, #bce5a8 50%, #e8f5b0 100%); }
   html[data-mode="light"][data-color="red"]    { --a: 161, 48, 48; --bg-gradient: linear-gradient(135deg, #fbdada 0%, #f5b8b8 50%, #ffd9cf 100%); }
+  html[data-mode="light"][data-color="grey"]   { --a: 88, 96, 110; --bg-gradient: linear-gradient(135deg, #e6e8ec 0%, #cdd2d9 50%, #f2f4f7 100%); }
 
   /* in light mode, don't darken the page behind modals (keeps panels bright) */
   html[data-mode="light"] .overlay { background: rgba(70, 100, 140, 0.14); }
@@ -3882,7 +3884,8 @@
     { id: 'pink',   name: 'Pink',   dark: 'linear-gradient(135deg, #5b1648, #d6478f, #ff8c69)', light: 'linear-gradient(135deg, #fbd9ea, #f7bcd6, #ffd6c2)' },
     { id: 'orange', name: 'Orange', dark: 'linear-gradient(135deg, #7c2d12, #ef7a18, #f5d020)', light: 'linear-gradient(135deg, #fce3c4, #fad29a, #fdeeb0)' },
     { id: 'green',  name: 'Green',  dark: 'linear-gradient(135deg, #0a2417, #14803d, #a3e635)', light: 'linear-gradient(135deg, #daf0c9, #bce5a8, #e8f5b0)' },
-    { id: 'red',    name: 'Red',    dark: 'linear-gradient(135deg, #450a0a, #ca2626, #fb7185)', light: 'linear-gradient(135deg, #fbdada, #f5b8b8, #ffd9cf)' }
+    { id: 'red',    name: 'Red',    dark: 'linear-gradient(135deg, #450a0a, #ca2626, #fb7185)', light: 'linear-gradient(135deg, #fbdada, #f5b8b8, #ffd9cf)' },
+    { id: 'grey',   name: 'Grey',   dark: 'linear-gradient(135deg, #1b1f24, #4b5563, #9aa4b2)', light: 'linear-gradient(135deg, #e6e8ec, #cdd2d9, #f2f4f7)' }
   ];
   const savedMode = () => localStorage.getItem('glass-todos-mode') || 'system';
   const currentMode = () => {
