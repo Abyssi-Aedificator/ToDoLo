@@ -1523,7 +1523,7 @@
         <span class="brand-icon">
           <svg class="ico" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3.5h6V6a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V3.5Z" fill="currentColor" stroke="none" opacity="0.55"/><path d="M8.5 12h7M8.5 16h4"/></svg>
         </span>
-        ToDoLo<span class="brand-badge">v1.8.5</span>
+        ToDoLo<span class="brand-badge">v1.8.6</span>
       </div>
       <ul class="lists smart-views" id="smartNav"></ul>
       <div class="status-group-section">
@@ -1917,6 +1917,15 @@
             <p class="settings-hint">Pick the background colour.</p>
             <div class="theme-grid" id="colorGrid"></div>
           </div>
+          <div class="settings-card">
+            <h3 class="settings-subhead">Calendar</h3>
+            <p class="settings-hint">Control how the calendar displays week days.</p>
+            <label class="dbx-toggle">
+              <input type="checkbox" id="calWeekStartMon" onchange="setCalWeekStart(this.checked)">
+              <span class="dbx-toggle-track"><span class="dbx-toggle-thumb"></span></span>
+              <span class="dbx-toggle-label">Calendar week starts on Monday</span>
+            </label>
+          </div>
         </div>
 
         <!-- SYNC & BACKUP TAB -->
@@ -2183,7 +2192,7 @@
     logbook: '<svg viewBox="0 0 24 24" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>',
     checkSquare: '<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 12.5l3 3 7-7" stroke="currentColor" stroke-width="2" fill="none"/></svg>'
   };
-  const APP_VERSION = '1.8.5';
+  const APP_VERSION = '1.8.6';
 
   const $ = id => document.getElementById(id);
 
@@ -3894,6 +3903,10 @@
     else document.documentElement.dataset.color = c;
     localStorage.setItem('glass-todos-color', c);
   }
+  function setCalWeekStart(on) {
+    localStorage.setItem('glass-todos-weekstart-mon', on ? 'true' : 'false');
+    if (typeof viewMode !== 'undefined' && viewMode === 'calendar' && typeof renderCalendar === 'function') renderCalendar();
+  }
   function renderModeToggle() {
     const m = savedMode();
     document.querySelectorAll('#modeToggle .mode-btn').forEach(b => {
@@ -3932,6 +3945,8 @@
   });
 
   // ---- version change notification ----
+  const calWeekStartChk = $('calWeekStartMon');
+  if (calWeekStartChk) calWeekStartChk.checked = localStorage.getItem('glass-todos-weekstart-mon') === 'true';
   const versionOverlay = $('versionOverlay'), versionOk = $('versionOk');
   $('versionText').textContent = 'Updated to v' + APP_VERSION + '.';
   const prevVersion = localStorage.getItem('glass-todos-version');
@@ -5349,7 +5364,10 @@
 
   // ---- calendar view ----
   const calView = $('calView'), calGrid = $('calGrid'), calTitle = $('calTitle');
-  const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  function weekStartsMon() { return localStorage.getItem('glass-todos-weekstart-mon') === 'true'; }
+  function getDayLabels() {
+    return weekStartsMon() ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  }
 
   function initCal() {
     const now = new Date();
@@ -5360,9 +5378,9 @@
   function renderCalendar() {
     calGrid.innerHTML = '';
     calTitle.textContent = MONTH_NAMES[calMonth] + ' ' + calYear;
-    DAY_LABELS.forEach(d => { const el = document.createElement('div'); el.className = 'cal-day-label'; el.textContent = d; calGrid.appendChild(el); });
+    getDayLabels().forEach(d => { const el = document.createElement('div'); el.className = 'cal-day-label'; el.textContent = d; calGrid.appendChild(el); });
     const first = new Date(calYear, calMonth, 1);
-    const startDay = first.getDay();
+    const startDay = weekStartsMon() ? (first.getDay() + 6) % 7 : first.getDay();
     const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
     const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
     const todayStr = dateStr(0);
