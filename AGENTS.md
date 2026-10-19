@@ -23,6 +23,15 @@ There are none. Edit `index.html` directly. Refresh the browser to see changes. 
 - `APP_VERSION` constant (line ~1852) and the first entry in `changelog.txt` must stay in sync
 - Changelog lives in `changelog.txt`; new entry goes at the top
 
+## Version consolidation
+
+- Consolidation is a routine the user triggers explicitly, phrased like "consolidate version from X to Y" (e.g. 1.0.1 to 1.0.8). The user supplies BOTH the start/end range AND the target consolidated version (e.g. 1.1.0) AND the new cache name (e.g. `todolo-vX`). Follow those exactly; never derive or invent them.
+- Collapse every `changelog.txt` entry whose version falls within and includes the start/end range into ONE new block at the top under the consolidated version, combining their user-facing bullets. Dedupe near-duplicates; keep entries user-facing; preserve ~oldest-to-newest feature order.
+- Versions below the start of the range remain as their own entries, unchanged.
+- Update ALL version markers to the consolidated version and new cache name: `.brand-badge`, `APP_VERSION`, and sw.js `CACHE`.
+- This is a version/cache operation only — no feature behavior changes.
+- No standalone "bumped cache/version" bullet; changelog entries stay user-facing only.
+
 ## Mobile responsive breakpoint
 
 - `@media (max-width: 720px)` — sidebar becomes a slide-in drawer, detail panel goes full-screen
