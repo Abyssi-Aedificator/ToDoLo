@@ -1513,6 +1513,8 @@
     if (_m === 'system' || !_m) { if (window.matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.dataset.mode = 'light'; }
     else if (_m === 'light') document.documentElement.dataset.mode = 'light';
     var _c = localStorage.getItem('glass-todos-color'); if (_c && _c !== 'teal') document.documentElement.dataset.color = _c;
+    var _a = getComputedStyle(document.documentElement).getPropertyValue('--a').trim();
+    if (_a) document.querySelector('meta[name="theme-color"]').setAttribute('content', 'rgb(' + _a + ')');
   } catch (e) {}
 </script>
 </head>
@@ -3896,6 +3898,11 @@
   };
   const currentColor = () => localStorage.getItem('glass-todos-color') || 'teal';
 
+  function updateThemeColorMeta() {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const a = getComputedStyle(document.documentElement).getPropertyValue('--a').trim();
+    if (meta && a) meta.setAttribute('content', 'rgb(' + a + ')');
+  }
   function applyMode(m) {
     if (m === 'light') document.documentElement.dataset.mode = 'light';
     else if (m === 'system') {
@@ -3905,11 +3912,13 @@
       delete document.documentElement.dataset.mode;
     }
     localStorage.setItem('glass-todos-mode', m);
+    updateThemeColorMeta();
   }
   function applyColor(c) {
     if (c === 'teal') delete document.documentElement.dataset.color;
     else document.documentElement.dataset.color = c;
     localStorage.setItem('glass-todos-color', c);
+    updateThemeColorMeta();
   }
   function setCalWeekStart(on) {
     localStorage.setItem('glass-todos-weekstart-mon', on ? 'true' : 'false');
