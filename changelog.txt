@@ -1,6 +1,10 @@
+Version 1.10.7
+- The Sync button now uses the theme colour while syncing instead of a fixed green
+
 Version 1.10.6
 - Calendar week can now start on Monday (option in Settings)
 - New Grey colour theme that works in both light and dark mode
+- Fix changelog with new structure
 
 Version 1.10.5
 - New Red colour theme
